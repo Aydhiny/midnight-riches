@@ -1,0 +1,171 @@
+"use client";
+
+import { useRef, useCallback, useState, useEffect } from "react";
+import { useGameStore } from "@/store/game-store";
+import { useWalletStore } from "@/store/wallet-store";
+import { gameSpinAction } from "@/server/actions/game";
+import { GameCanvas, type GameCanvasHandle } from "./game-canvas";
+import { GameControls } from "./game-controls";
+import { GameInfo } from "./game-info";
+import { GameSelector } from "./game-selector";
+import { WinModal } from "./win-modal";
+import { BonusModal } from "./bonus-modal";
+
+export function SlotMachine() {
+  const canvasRef = useRef<GameCanvasHandle>(null);
+  const autoSpinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const {
+    gameType,
+    betPerLine,
+    totalBet,
+    spinState,
+    bonus,
+    autoSpin,
+    turboMode,
+    setSpinState,
+    setLastResult,
+    setLastWin,
+    setBonus,
+    setAutoSpin,
+  } = useGameStore();
+
+  const { balance, optimisticDeduct, syncFromServer } = useWalletStore();
+
+  const [showWinModal, setShowWinModal] = useState(false);
+  const [showBonusModal, setShowBonusModal] = useState(false);
+  const [lastWinAmount, setLastWinAmount] = useState(0);
+
+  useEffect(() => {
+    canvasRef.current?.setTurboMode(turboMode);
+  }, [turboMode]);
+
+  const executeSpin = useCallback(async () => {
+    if (spinState !== "idle") return;
+    if (!bonus.isActive && balance < totalBet) return;
+
+    setSpinState("pending");
+
+    if (!bonus.isActive) {
+      optimisticDeduct(totalBet);
+    }
+
+    const response = await gameSpinAction({
+      gameType,
+      betAmount: totalBet,
+      betPerLine,
+      bonus,
+    });
+
+    if (!response.success) {
+      setSpinState("idle");
+      syncFromServer(balance);
+      return;
+    }
+
+    setSpinState("animating");
+    setLastResult(response.result);
+    setBonus(response.bonus);
+    syncFromServer(response.balance);
+
+    await canvasRef.current?.playSpinAnimation(response.result);
+
+    if (response.result.totalWin > 0 && response.result.wins) {
+      canvasRef.current?.setWinAmount(response.result.totalWin);
+      await canvasRef.current?.playWinAnimation(response.result.wins);
+    }
+
+    if (response.result.cascades && response.result.cascades.length > 0) {
+      await canvasRef.current?.playCascadeSequence(response.result.cascades);
+    }
+
+    setLastWin(response.result.wins ?? null);
+    setLastWinAmount(response.result.totalWin);
+
+    if (response.result.totalWin >= totalBet * 10) {
+      setShowWinModal(true);
+    }
+
+    if (response.result.bonusTriggered && !bonus.isActive) {
+      setShowBonusModal(true);
+    }
+
+    setSpinState("result");
+
+    setTimeout(() => {
+      setSpinState("idle");
+    }, 500);
+  }, [
+    spinState,
+    bonus,
+    balance,
+    totalBet,
+    gameType,
+    betPerLine,
+    optimisticDeduct,
+    syncFromServer,
+    setSpinState,
+    setLastResult,
+    setLastWin,
+    setBonus,
+  ]);
+
+  useEffect(() => {
+    if (!autoSpin || spinState !== "idle") return;
+    if (autoSpin.remainingSpins <= 0) {
+      setAutoSpin(null);
+      return;
+    }
+
+    if (autoSpin.stopOnBalanceBelow > 0 && balance < autoSpin.stopOnBalanceBelow) {
+      setAutoSpin(null);
+      return;
+    }
+
+    if (autoSpin.stopOnWinAbove > 0 && lastWinAmount >= autoSpin.stopOnWinAbove) {
+      setAutoSpin(null);
+      return;
+    }
+
+    if (autoSpin.stopOnBonus && bonus.isActive) {
+      setAutoSpin(null);
+      return;
+    }
+
+    autoSpinTimerRef.current = setTimeout(() => {
+      setAutoSpin({
+        ...autoSpin,
+        remainingSpins: autoSpin.remainingSpins - 1,
+      });
+      executeSpin();
+    }, 500);
+
+    return () => {
+      if (autoSpinTimerRef.current) {
+        clearTimeout(autoSpinTimerRef.current);
+      }
+    };
+  }, [autoSpin, spinState, balance, lastWinAmount, bonus.isActive, executeSpin, setAutoSpin]);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <GameSelector />
+      <GameInfo />
+      <div className="relative">
+        <GameCanvas ref={canvasRef} gameType={gameType} />
+      </div>
+      <GameControls onSpin={executeSpin} disabled={spinState !== "idle"} />
+      <WinModal
+        amount={lastWinAmount}
+        betAmount={totalBet}
+        isVisible={showWinModal}
+        onClose={() => setShowWinModal(false)}
+      />
+      <BonusModal
+        bonus={bonus}
+        isVisible={showBonusModal}
+        onStart={() => setShowBonusModal(false)}
+      />
+    </div>
+  );
+}

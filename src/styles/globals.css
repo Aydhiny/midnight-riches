@@ -1,0 +1,505 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bebas), "Impact", sans-serif;
+  --font-garamond: var(--font-cormorant), Georgia, serif;
+  --color-gold: #f5c842;
+  --color-emerald-win: #10b981;
+  --color-deep-purple: #1a0a2e;
+  --color-royal-purple: #2d1b69;
+
+  /* Neon palette */
+  --color-neon-gold: #ffd700;
+  --color-neon-orange: #ff6b00;
+  --color-neon-pink: #ff2d78;
+  --color-neon-purple: #8b2be2;
+  --color-neon-green: #00ff88;
+  --color-neon-blue: #00d4ff;
+
+  /* Casino surfaces */
+  --color-casino-black: #0a0a0f;
+  --color-casino-dark: #12121a;
+  --color-casino-card: #1a1a2e;
+  --color-casino-border: #2a2a4a;
+}
+
+/* ─── Semantic theme variables ───────────────────────────── */
+:root {
+  --bg-primary: #fdfaff;
+  --bg-secondary: #f5f0ff;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --bg-card-hover: rgba(255, 255, 255, 0.92);
+  --bg-card-border: rgba(139, 92, 246, 0.15);
+  --text-primary: #0f0520;
+  --text-secondary: #4a2d80;
+  --text-muted: #7c7490;
+  --glow-primary: rgba(139, 92, 246, 0.08);
+  --glow-gold: rgba(245, 158, 11, 0.12);
+  --aurora-1: #8b5cf6;
+  --aurora-2: #e879a0;
+  --aurora-3: #f59e0b;
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(139, 92, 246, 0.12);
+  --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(139, 92, 246, 0.06);
+  --nav-bg: rgba(253, 250, 255, 0.85);
+  --nav-border: rgba(139, 92, 246, 0.1);
+}
+
+.dark {
+  --bg-primary: #06010f;
+  --bg-secondary: #0c0228;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.07);
+  --bg-card-border: rgba(139, 92, 246, 0.12);
+  --text-primary: #f0ebff;
+  --text-secondary: #b8a9e8;
+  --text-muted: #6b6080;
+  --glow-primary: rgba(139, 92, 246, 0.12);
+  --glow-gold: rgba(255, 215, 0, 0.12);
+  --aurora-1: #4f1b8a;
+  --aurora-2: #9d174d;
+  --aurora-3: #92400e;
+  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --nav-bg: rgba(6, 1, 15, 0.85);
+  --nav-border: rgba(255, 255, 255, 0.07);
+}
+
+/* ─── Smooth Scrolling ───────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+/* ─── Keyframes ──────────────────────────────────────────── */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes gradient-rotate {
+  from {
+    --angle: 0deg;
+  }
+  to {
+    --angle: 360deg;
+  }
+}
+
+@keyframes neon-flicker {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
+    text-shadow:
+      0 0 4px currentColor,
+      0 0 11px currentColor,
+      0 0 19px currentColor,
+      0 0 40px var(--neon-color, #ffd700),
+      0 0 80px var(--neon-color, #ffd700);
+    opacity: 1;
+  }
+  20%,
+  24%,
+  55% {
+    text-shadow: none;
+    opacity: 0.8;
+  }
+}
+
+@keyframes gold-shimmer-sweep {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0%,
+  40% {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  60%,
+  100% {
+    transform: translateX(300%) skewX(-20deg);
+  }
+}
+
+@keyframes ticker-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes neon-border-cycle {
+  0% {
+    border-color: #ffd700;
+    box-shadow:
+      0 0 10px #ffd70040,
+      inset 0 0 10px #ffd70020;
+  }
+  33% {
+    border-color: #ff2d78;
+    box-shadow:
+      0 0 10px #ff2d7840,
+      inset 0 0 10px #ff2d7820;
+  }
+  66% {
+    border-color: #8b2be2;
+    box-shadow:
+      0 0 10px #8b2be240,
+      inset 0 0 10px #8b2be220;
+  }
+  100% {
+    border-color: #ffd700;
+    box-shadow:
+      0 0 10px #ffd70040,
+      inset 0 0 10px #ffd70020;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.5;
+  }
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes star-movement-bottom {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-100%, 0%);
+    opacity: 0;
+  }
+}
+
+@keyframes star-movement-top {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(100%, 0%);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes reel-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes jackpotFlash {
+  0% {
+    transform: scale(1);
+    text-shadow: none;
+  }
+  50% {
+    transform: scale(1.08);
+    text-shadow:
+      0 0 20px rgba(255, 215, 0, 0.9),
+      0 0 40px rgba(255, 215, 0, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  }
+}
+
+@keyframes spin-idle-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(251, 191, 36, 0.25),
+      0 0 20px rgba(251, 191, 36, 0.3);
+  }
+}
+
+@keyframes win-entry {
+  0% {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ray-pulse-1 {
+  0%,
+  100% {
+    opacity: 0.03;
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+@keyframes ray-pulse-2 {
+  0%,
+  100% {
+    opacity: 0.04;
+  }
+  50% {
+    opacity: 0.09;
+  }
+}
+@keyframes ray-pulse-3 {
+  0%,
+  100% {
+    opacity: 0.02;
+  }
+  50% {
+    opacity: 0.07;
+  }
+}
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ─── Utility animations ─────────────────────────────────── */
+@utility animate-shimmer {
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+@utility animate-neon-flicker {
+  animation: neon-flicker 3s infinite;
+}
+
+@utility animate-gold-shimmer {
+  animation: gold-shimmer-sweep 3s linear infinite;
+}
+
+@utility animate-neon-border {
+  animation: neon-border-cycle 4s ease-in-out infinite;
+}
+
+@utility animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@utility animate-ticker {
+  animation: ticker-scroll 50s linear infinite;
+}
+
+@utility animate-star-movement-bottom {
+  animation: star-movement-bottom linear infinite alternate;
+}
+
+@utility animate-star-movement-top {
+  animation: star-movement-top linear infinite alternate;
+}
+
+@utility animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@utility animate-reel {
+  animation: reel-scroll 12s linear infinite;
+}
+
+@utility animate-jackpot-flash {
+  animation: jackpotFlash 0.4s ease-out forwards;
+}
+
+@utility animate-spin-idle {
+  animation: spin-idle-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Base ───────────────────────────────────────────────── */
+body {
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Light mode body */
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 0% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 80%, rgba(219, 39, 119, 0.04) 0%, transparent 60%),
+    linear-gradient(180deg, #fdfaff 0%, #f8f4ff 50%, #fdfaff 100%);
+}
+
+/* Dark mode body */
+.dark body {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(80, 30, 160, 0.18) 0%, transparent 70%),
+    linear-gradient(180deg, #06010f 0%, #0b021f 50%, #060118 100%);
+}
+
+/* ─── Global grain overlay — subtle texture on whole page ── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  opacity: 0.06;
+  mix-blend-mode: soft-light;
+}
+
+.dark body::before {
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+}
+
+/* Content above grain */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Display font utility ───────────────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* ─── Custom casino scrollbar ────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #7c3aed 0%, #db2777 100%);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #9333ea 0%, #ec4899 100%);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed transparent;
+}
+
+/* Light mode scrollbar */
+:root ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8b5cf6 0%, #e879a0 100%);
+}
+:root ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #7c3aed 0%, #db2777 100%);
+}
+
+/* ─── Jackpot modal fruit fall ───────────────────────────── */
+@keyframes fruit-fall {
+  0% {
+    transform: translateY(-80px) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg) scale(0.6);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(520deg);
+    opacity: 0;
+  }
+}
+
+@keyframes modal-pop {
+  0% {
+    transform: scale(0.85) translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes jackpot-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(251, 191, 36, 0.4),
+      0 0 20px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 12px rgba(251, 191, 36, 0),
+      0 0 40px rgba(251, 191, 36, 0.5);
+  }
+}

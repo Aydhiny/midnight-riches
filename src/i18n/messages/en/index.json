@@ -1,0 +1,301 @@
+{
+  "common": {
+    "appName": "Midnight Riches",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "home": "Home",
+    "game": "Play",
+    "wallet": "Wallet",
+    "history": "History",
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "signInTitle": "Welcome Back",
+    "signUpTitle": "Create Account",
+    "signInDescription": "Sign in to your account to continue playing",
+    "signUpDescription": "Create an account to start playing",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "orContinueWith": "Or continue with",
+    "google": "Google"
+  },
+  "game": {
+    "spin": "SPIN",
+    "autoPlay": "Auto Play",
+    "stop": "Stop",
+    "betPerLine": "Bet / Line",
+    "totalBet": "Total Bet",
+    "win": "WIN",
+    "balance": "Balance",
+    "lines": "Lines",
+    "bonusRound": "BONUS ROUND",
+    "freeSpins": "Free Spins",
+    "spinsRemaining": "Spins Remaining",
+    "multiplier": "Multiplier",
+    "bonusWin": "Bonus Win",
+    "bonusTriggered": "Bonus Triggered!",
+    "bigWin": "BIG WIN!",
+    "megaWin": "MEGA WIN!",
+    "insufficientBalance": "Insufficient balance"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "balance": "Current Balance",
+    "deposit": "Deposit",
+    "withdraw": "Withdraw",
+    "amount": "Amount",
+    "transactions": "Transaction History",
+    "type": "Type",
+    "date": "Date",
+    "noTransactions": "No transactions yet",
+    "depositSuccess": "Deposit successful",
+    "mockDeposit": "Mock Deposit",
+    "creditBundles": "Credit Bundles",
+    "credits": "credits",
+    "purchase": "Purchase",
+    "popular": "Most Popular",
+    "dailyBonus": "Daily Bonus",
+    "dailyBonusDescription": "Claim 50 free credits every day!",
+    "claimBonus": "Claim Bonus",
+    "bonusClaimed": "You received {credits} credits!",
+    "bonusAlreadyClaimed": "Already claimed today — come back tomorrow!"
+  },
+  "history": {
+    "title": "Game History",
+    "date": "Date",
+    "bet": "Bet",
+    "outcome": "Outcome",
+    "winAmount": "Win Amount",
+    "noHistory": "No games played yet",
+    "filterByOutcome": "Filter by outcome",
+    "all": "All",
+    "wins": "Wins",
+    "losses": "Losses",
+    "bonuses": "Bonuses"
+  },
+  "settings": {
+    "title": "Responsible Gambling",
+    "gamblingLimits": "Gambling Limits",
+    "lossLimit": "Loss Limit",
+    "depositLimit": "Deposit Limit",
+    "sessionLimit": "Session Limit",
+    "limitAmount": "Amount",
+    "days": "Days",
+    "setLimit": "Set Limit",
+    "selfExclusion": "Self-Exclusion",
+    "selfExclusionDescription": "If you feel you need a break from gambling, you can temporarily or permanently exclude yourself.",
+    "selfExclusionActive": "Self-Exclusion Active",
+    "permanentExclusion": "You are permanently self-excluded. Contact support to discuss options.",
+    "temporaryExclusion": "You are excluded until {endDate}.",
+    "temporary": "Temporary",
+    "permanent": "Permanent",
+    "reason": "Reason (optional)",
+    "selfExcludeButton": "Self-Exclude",
+    "confirmExclude": "Confirm — This cannot be easily undone",
+    "excludeWarning": "Self-exclusion will immediately prevent you from playing. Temporary exclusion can only be lifted after the period expires."
+  },
+  "landing": {
+    "nav": {
+      "brand": "Midnight Riches",
+      "games": "Games",
+      "bonuses": "Bonuses",
+      "howItWorks": "How It Works",
+      "faq": "FAQ",
+      "signIn": "Sign In",
+      "claimBonus": "Claim Bonus"
+    },
+    "hero": {
+      "playersOnline": "players online",
+      "heroHeadlineA": "Win Big. Play Free. Start Now.",
+      "heroHeadlineB": "500 Free Credits. No Card. No Catch.",
+      "heroSubA": "Get 500 free credits instantly. No deposit required.",
+      "heroSubB": "Start spinning in seconds — your welcome bonus is waiting.",
+      "subheadline": "Get 500 free credits instantly. No deposit required.",
+      "currentJackpot": "Current Jackpot",
+      "credits": "credits",
+      "primaryCta": "Claim 500 Free Credits",
+      "secondaryCta": "Watch How It Works",
+      "trustSecure": "Secure",
+      "trustInstant": "Instant Credits",
+      "trustFair": "Fair Play Certified",
+      "trustMultilingual": "Multilingual"
+    },
+    "demo": {
+      "demoMode": "DEMO MODE",
+      "payline": "PAYLINE",
+      "balance": "Balance",
+      "win": "WIN!",
+      "spin": "SPIN",
+      "overlayTitle": "Nice Spins!",
+      "overlayDescription": "You won {credits} credits in demo mode! Sign up to keep playing with 500 free credits.",
+      "overlayCta": "Claim 500 Free Credits",
+      "overlayDismiss": "Keep playing demo"
+    },
+    "bonus": {
+      "headline": "LIMITED TIME WELCOME OFFER",
+      "hours": "Hours",
+      "minutes": "Min",
+      "seconds": "Sec",
+      "firstDeposit": {
+        "label": "1st Deposit",
+        "value": "100% match up to 5,000 credits"
+      },
+      "welcomeGift": {
+        "label": "Welcome Gift",
+        "value": "500 free credits (no deposit)"
+      },
+      "dailyLogin": {
+        "label": "Daily Login",
+        "value": "100 credits every day"
+      },
+      "firstWin": {
+        "label": "First Win",
+        "value": "2x multiplier on first winning spin"
+      },
+      "howBonusesWork": "How do bonuses work?",
+      "howBonusesWorkText": "Welcome credits are added to your account immediately on signup. Deposit bonuses are matched when you purchase your first credit bundle. Daily login bonuses can be claimed once every 24 hours. First win bonus is applied automatically to your first winning spin. All bonuses are subject to fair play terms.",
+      "cta": "Claim Before Timer Expires",
+      "finePrint": "For entertainment purposes only. Play responsibly. 18+ only."
+    },
+    "games": {
+      "headline": "Choose Your Game",
+      "subheadline": "Four unique slot experiences, each with their own style",
+      "playNow": "Play Now",
+      "classic": { "name": "Classic Slots", "variant": "3-Reel Classic" },
+      "fiveReel": { "name": "5-Reel Deluxe", "variant": "5-Reel Premium" },
+      "cascade": { "name": "Cascade Reels", "variant": "Cascade Chain" },
+      "megaways": { "name": "Megaways", "variant": "Dynamic Reels" }
+    },
+    "howItWorks": {
+      "headline": "How It Works",
+      "step1": {
+        "title": "Create Account",
+        "description": "Sign up in 30 seconds with just your email"
+      },
+      "step2": {
+        "title": "Claim Free Credits",
+        "description": "Get 500 credits instantly — no deposit needed"
+      },
+      "step3": {
+        "title": "Start Winning",
+        "description": "Choose your game and spin to win big"
+      },
+      "cta": "Get Started in 30 Seconds"
+    },
+    "jackpotHistory": {
+      "headline": "Recent Jackpot Winners",
+      "subheadline": "Could be you next",
+      "player": "Player",
+      "game": "Game",
+      "amount": "Amount",
+      "when": "When"
+    },
+    "testimonials": {
+      "headline": "What Players Say",
+      "ratingCount": "from 2,400+ players",
+      "t1": "Won 15,000 credits on my first day! The Classic Slots are addictive.",
+      "t2": "Love how easy it is to get started. The free credits were a nice surprise.",
+      "t3": "Megaways is insane — 117,649 ways to win. Best slot game I've played.",
+      "t4": "The mobile experience is perfect. I play on my commute every day.",
+      "t5": "Cascade Reels with chain multipliers is genius. Hit an 8x multiplier yesterday!",
+      "t6": "Simple, beautiful, and fair. The provably fair system gives me confidence."
+    },
+    "faq": {
+      "headline": "Frequently Asked Questions",
+      "freeToPlay": {
+        "q": "Is it free to play?",
+        "a": "Yes! Every new player receives 500 free credits on signup with no deposit required. You also earn 50 free credits daily just by logging in."
+      },
+      "welcomeBonus": {
+        "q": "How do I claim my welcome bonus?",
+        "a": "Simply create an account and your 500 free credits will be added automatically. No promo code needed."
+      },
+      "fairGames": {
+        "q": "Are the games fair?",
+        "a": "Absolutely. We use a provably fair system based on HMAC-SHA256 cryptographic seeds. Every spin result can be independently verified. You can check any past spin using the server seed, client seed, and nonce."
+      },
+      "jackpotWorks": {
+        "q": "How does the jackpot work?",
+        "a": "A small percentage (0.5%) of every bet contributes to the progressive jackpot pool. The jackpot can be won on any spin — the current amount is displayed in real time."
+      },
+      "mobilePlay": {
+        "q": "Can I play on mobile?",
+        "a": "Yes! Midnight Riches is fully responsive and works on all modern mobile browsers. No app download required."
+      },
+      "paymentMethods": {
+        "q": "What payment methods are accepted?",
+        "a": "We accept all major credit and debit cards through our secure Stripe payment integration. All transactions are encrypted and PCI-DSS compliant."
+      },
+      "withdrawWinnings": {
+        "q": "How do I withdraw my winnings?",
+        "a": "Navigate to your Wallet page and select Withdraw. Withdrawals are processed within 24 hours to your original payment method."
+      },
+      "dataSecure": {
+        "q": "Is my data secure?",
+        "a": "Yes. We use industry-standard encryption for all data transmission. Passwords are hashed with bcrypt, and all payments are handled by Stripe with no card details stored on our servers."
+      }
+    },
+    "finalCta": {
+      "headline": "Your Next Big Win is One Spin Away",
+      "jackpotLabel": "Progressive Jackpot",
+      "primaryCta": "Create Free Account",
+      "secondaryCta": "Try Demo First",
+      "playerCount": "Join 12,400+ players already winning"
+    },
+    "exitIntent": {
+      "headline": "Wait! Your 500 Free Credits Are About to Expire",
+      "description": "Claim your welcome bonus before it's gone. No deposit, no card required.",
+      "expiresIn": "seconds remaining",
+      "cta": "Claim My Free Credits",
+      "dismiss": "No thanks, I'll pass on free credits"
+    },
+    "footer": {
+      "tagline": "Premium fruit slot machine experience with provably fair gameplay.",
+      "gamesTitle": "Games",
+      "classic": "Classic Slots",
+      "fiveReel": "5-Reel Deluxe",
+      "cascade": "Cascade Reels",
+      "megaways": "Megaways",
+      "legalTitle": "Legal",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "fairPlay": "Provably Fair",
+      "responsible": "Responsible Gambling",
+      "supportTitle": "Support",
+      "helpCenter": "Help Center",
+      "contact": "Contact Us",
+      "disclaimer": "For entertainment purposes only. Play responsibly. Gambling can be addictive. 18+ only.",
+      "rights": "All rights reserved."
+    },
+    "legal": {
+      "backToHome": "Back to Home",
+      "lastUpdated": "Last updated",
+      "terms": {
+        "title": "Terms of Service",
+        "description": "Please read these terms carefully before using Midnight Riches."
+      },
+      "privacy": {
+        "title": "Privacy Policy",
+        "description": "How we collect, use, and protect your personal information."
+      },
+      "provablyFair": {
+        "title": "Provably Fair",
+        "description": "How we ensure every spin is transparent and verifiable."
+      },
+      "responsibleGaming": {
+        "title": "Responsible Gaming",
+        "description": "Our commitment to safe, responsible play."
+      }
+    }
+  }
+}

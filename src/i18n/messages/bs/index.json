@@ -1,0 +1,301 @@
+{
+  "common": {
+    "appName": "Midnight Riches",
+    "loading": "Učitavanje...",
+    "error": "Nešto je pošlo po zlu",
+    "signIn": "Prijava",
+    "signUp": "Registracija",
+    "signOut": "Odjava",
+    "home": "Početna",
+    "game": "Igraj",
+    "wallet": "Novčanik",
+    "history": "Historija",
+    "settings": "Postavke",
+    "language": "Jezik",
+    "theme": "Tema",
+    "dark": "Tamna",
+    "light": "Svijetla"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Lozinka",
+    "name": "Ime",
+    "signInTitle": "Dobrodošli nazad",
+    "signUpTitle": "Kreirajte račun",
+    "signInDescription": "Prijavite se da nastavite igrati",
+    "signUpDescription": "Kreirajte račun da počnete igrati",
+    "noAccount": "Nemate račun?",
+    "hasAccount": "Već imate račun?",
+    "orContinueWith": "Ili nastavite sa",
+    "google": "Google"
+  },
+  "game": {
+    "spin": "VRTI",
+    "autoPlay": "Auto Igra",
+    "stop": "Zaustavi",
+    "betPerLine": "Ulog / Linija",
+    "totalBet": "Ukupan Ulog",
+    "win": "DOBITAK",
+    "balance": "Stanje",
+    "lines": "Linije",
+    "bonusRound": "BONUS RUNDA",
+    "freeSpins": "Besplatna Vrtenja",
+    "spinsRemaining": "Preostala Vrtenja",
+    "multiplier": "Multiplikator",
+    "bonusWin": "Bonus Dobitak",
+    "bonusTriggered": "Bonus Aktiviran!",
+    "bigWin": "VELIKI DOBITAK!",
+    "megaWin": "MEGA DOBITAK!",
+    "insufficientBalance": "Nedovoljno sredstava"
+  },
+  "wallet": {
+    "title": "Novčanik",
+    "balance": "Trenutno Stanje",
+    "deposit": "Uplata",
+    "withdraw": "Isplata",
+    "amount": "Iznos",
+    "transactions": "Historija Transakcija",
+    "type": "Tip",
+    "date": "Datum",
+    "noTransactions": "Nema transakcija",
+    "depositSuccess": "Uplata uspješna",
+    "mockDeposit": "Testna Uplata",
+    "creditBundles": "Paketi Kredita",
+    "credits": "kredita",
+    "purchase": "Kupi",
+    "popular": "Najpopularnije",
+    "dailyBonus": "Dnevni Bonus",
+    "dailyBonusDescription": "Preuzmi 50 besplatnih kredita svaki dan!",
+    "claimBonus": "Preuzmi Bonus",
+    "bonusClaimed": "Dobili ste {credits} kredita!",
+    "bonusAlreadyClaimed": "Već preuzeto danas — vratite se sutra!"
+  },
+  "history": {
+    "title": "Historija Igara",
+    "date": "Datum",
+    "bet": "Ulog",
+    "outcome": "Ishod",
+    "winAmount": "Iznos Dobitka",
+    "noHistory": "Još nema odigranih igara",
+    "filterByOutcome": "Filtriraj po ishodu",
+    "all": "Sve",
+    "wins": "Dobici",
+    "losses": "Gubici",
+    "bonuses": "Bonusi"
+  },
+  "settings": {
+    "title": "Odgovorno Kockanje",
+    "gamblingLimits": "Limiti Kockanja",
+    "lossLimit": "Limit Gubitka",
+    "depositLimit": "Limit Uplate",
+    "sessionLimit": "Limit Sesije",
+    "limitAmount": "Iznos",
+    "days": "Dana",
+    "setLimit": "Postavi Limit",
+    "selfExclusion": "Samoiskključenje",
+    "selfExclusionDescription": "Ako osjećate da vam treba pauza od kockanja, možete se privremeno ili trajno iskključiti.",
+    "selfExclusionActive": "Samoiskključenje Aktivno",
+    "permanentExclusion": "Trajno ste iskključeni. Kontaktirajte podršku za opcije.",
+    "temporaryExclusion": "Iskključeni ste do {endDate}.",
+    "temporary": "Privremeno",
+    "permanent": "Trajno",
+    "reason": "Razlog (opciono)",
+    "selfExcludeButton": "Samoiskključi se",
+    "confirmExclude": "Potvrdi — Ovo se ne može lako poništiti",
+    "excludeWarning": "Samoiskključenje će vas odmah spriječiti od igranja. Privremeno iskključenje se može ukinuti tek nakon isteka perioda."
+  },
+  "landing": {
+    "nav": {
+      "brand": "Midnight Riches",
+      "games": "Igre",
+      "bonuses": "Bonusi",
+      "howItWorks": "Kako Funkcioniše",
+      "faq": "Pitanja",
+      "signIn": "Prijava",
+      "claimBonus": "Preuzmi Bonus"
+    },
+    "hero": {
+      "playersOnline": "igrača online",
+      "heroHeadlineA": "Osvoji Veliko. Igraj Besplatno. Počni Sad.",
+      "heroHeadlineB": "500 Besplatnih Kredita. Bez Kartice. Bez Caka.",
+      "heroSubA": "Dobij 500 besplatnih kredita odmah. Bez depozita.",
+      "heroSubB": "Počni vrtjeti za sekunde — tvoj bonus čeka.",
+      "subheadline": "Dobij 500 besplatnih kredita odmah. Bez depozita.",
+      "currentJackpot": "Trenutni Jackpot",
+      "credits": "kredita",
+      "primaryCta": "Preuzmi 500 Besplatnih Kredita",
+      "secondaryCta": "Pogledaj Kako Funkcioniše",
+      "trustSecure": "Sigurno",
+      "trustInstant": "Instant Krediti",
+      "trustFair": "Fer Igra Certificirana",
+      "trustMultilingual": "Višejezično"
+    },
+    "demo": {
+      "demoMode": "DEMO REŽIM",
+      "payline": "LINIJA",
+      "balance": "Stanje",
+      "win": "DOBITAK!",
+      "spin": "VRTI",
+      "overlayTitle": "Odlično Vrtenje!",
+      "overlayDescription": "Osvojili ste {credits} kredita u demo režimu! Registrujte se za 500 besplatnih kredita.",
+      "overlayCta": "Preuzmi 500 Besplatnih Kredita",
+      "overlayDismiss": "Nastavi demo"
+    },
+    "bonus": {
+      "headline": "PONUDA ZA DOBRODOŠLICU — OGRANIČENO VRIJEME",
+      "hours": "Sati",
+      "minutes": "Min",
+      "seconds": "Sek",
+      "firstDeposit": {
+        "label": "1. Depozit",
+        "value": "100% match do 5,000 kredita"
+      },
+      "welcomeGift": {
+        "label": "Poklon Dobrodošlice",
+        "value": "500 besplatnih kredita (bez depozita)"
+      },
+      "dailyLogin": {
+        "label": "Dnevna Prijava",
+        "value": "100 kredita svaki dan"
+      },
+      "firstWin": {
+        "label": "Prvi Dobitak",
+        "value": "2x multiplikator na prvi dobitak"
+      },
+      "howBonusesWork": "Kako funkcionišu bonusi?",
+      "howBonusesWorkText": "Krediti dobrodošlice se dodaju odmah pri registraciji. Bonus na depozit se aktivira pri prvoj kupovini. Dnevni bonus se može preuzeti jednom u 24 sata. Bonus za prvi dobitak se automatski primjenjuje. Svi bonusi podliježu pravilima fer igre.",
+      "cta": "Preuzmi Prije Isteka",
+      "finePrint": "Samo u zabavne svrhe. Igraj odgovorno. Samo 18+."
+    },
+    "games": {
+      "headline": "Izaberi Svoju Igru",
+      "subheadline": "Četiri jedinstvena slot iskustva",
+      "playNow": "Igraj Sad",
+      "classic": { "name": "Klasični Slotovi", "variant": "3-Reel Klasik" },
+      "fiveReel": { "name": "5-Reel Deluxe", "variant": "5-Reel Premium" },
+      "cascade": { "name": "Cascade Reels", "variant": "Cascade Chain" },
+      "megaways": { "name": "Megaways", "variant": "Dinamički Reelovi" }
+    },
+    "howItWorks": {
+      "headline": "Kako Funkcioniše",
+      "step1": {
+        "title": "Kreiraj Račun",
+        "description": "Registruj se za 30 sekundi samo sa emailom"
+      },
+      "step2": {
+        "title": "Preuzmi Besplatne Kredite",
+        "description": "Dobij 500 kredita odmah — bez depozita"
+      },
+      "step3": {
+        "title": "Počni Osvajati",
+        "description": "Izaberi igru i vrti za velike dobitke"
+      },
+      "cta": "Počni za 30 Sekundi"
+    },
+    "jackpotHistory": {
+      "headline": "Nedavni Dobitnici Jackpota",
+      "subheadline": "Sljedeći možeš biti ti",
+      "player": "Igrač",
+      "game": "Igra",
+      "amount": "Iznos",
+      "when": "Kada"
+    },
+    "testimonials": {
+      "headline": "Šta Kažu Igrači",
+      "ratingCount": "od 2,400+ igrača",
+      "t1": "Osvojio sam 15,000 kredita prvog dana! Klasični Slotovi su zarazni.",
+      "t2": "Obožavam koliko je lako početi. Besplatni krediti su bili lijepo iznenađenje.",
+      "t3": "Megaways je lud — 117,649 načina za dobitak. Najbolja slot igra ikad.",
+      "t4": "Mobilno iskustvo je savršeno. Igram svaki dan na putu do posla.",
+      "t5": "Cascade Reels sa chain multiplikatorima je genijalan. Jučer sam pogodio 8x!",
+      "t6": "Jednostavno, lijepo i fer. Sistem dokazive fer igre mi daje povjerenje."
+    },
+    "faq": {
+      "headline": "Često Postavljana Pitanja",
+      "freeToPlay": {
+        "q": "Da li je besplatno za igru?",
+        "a": "Da! Svaki novi igrač dobiva 500 besplatnih kredita pri registraciji bez depozita. Također zarađujete 50 besplatnih kredita dnevno samim prijavom."
+      },
+      "welcomeBonus": {
+        "q": "Kako preuzeti bonus dobrodošlice?",
+        "a": "Jednostavno kreirajte račun i vaših 500 besplatnih kredita će biti dodano automatski. Nije potreban promo kod."
+      },
+      "fairGames": {
+        "q": "Da li su igre fer?",
+        "a": "Apsolutno. Koristimo sistem dokazive fer igre baziran na HMAC-SHA256 kriptografskim sjemenkama. Svaki rezultat vrtnje se može nezavisno provjeriti."
+      },
+      "jackpotWorks": {
+        "q": "Kako funkcioniše jackpot?",
+        "a": "Mali postotak (0.5%) svake opklade doprinosi progresivnom jackpot bazenu. Jackpot se može osvojiti na bilo kojoj vrtnji."
+      },
+      "mobilePlay": {
+        "q": "Mogu li igrati na mobitelu?",
+        "a": "Da! Midnight Riches je potpuno responsivan i radi na svim modernim mobilnim preglednicima. Nije potrebno preuzimanje aplikacije."
+      },
+      "paymentMethods": {
+        "q": "Koje metode plaćanja su prihvaćene?",
+        "a": "Prihvaćamo sve glavne kreditne i debitne kartice kroz našu sigurnu Stripe integraciju. Sve transakcije su šifrirane."
+      },
+      "withdrawWinnings": {
+        "q": "Kako podići dobitak?",
+        "a": "Idite na stranicu Novčanik i odaberite Isplata. Isplate se obrađuju unutar 24 sata na vaš originalni način plaćanja."
+      },
+      "dataSecure": {
+        "q": "Da li su moji podaci sigurni?",
+        "a": "Da. Koristimo industrijsko standardno šifriranje. Lozinke su hashirane sa bcrypt, a sva plaćanja obrađuje Stripe bez pohranjivanja podataka o karticama."
+      }
+    },
+    "finalCta": {
+      "headline": "Tvoj Sljedeći Veliki Dobitak je na Jednu Vrtnju",
+      "jackpotLabel": "Progresivni Jackpot",
+      "primaryCta": "Kreiraj Besplatni Račun",
+      "secondaryCta": "Probaj Demo Prvo",
+      "playerCount": "Pridruži se 12,400+ igrača koji već osvajaju"
+    },
+    "exitIntent": {
+      "headline": "Stani! Tvojih 500 Besplatnih Kredita Uskoro Ističe",
+      "description": "Preuzmi bonus dobrodošlice dok je tu. Bez depozita, bez kartice.",
+      "expiresIn": "sekundi preostalo",
+      "cta": "Preuzmi Moje Besplatne Kredite",
+      "dismiss": "Ne hvala, propuštam besplatne kredite"
+    },
+    "footer": {
+      "tagline": "Premium slot iskustvo sa dokazivo fer igrom.",
+      "gamesTitle": "Igre",
+      "classic": "Klasični Slotovi",
+      "fiveReel": "5-Reel Deluxe",
+      "cascade": "Cascade Reels",
+      "megaways": "Megaways",
+      "legalTitle": "Pravno",
+      "terms": "Uslovi Korištenja",
+      "privacy": "Politika Privatnosti",
+      "fairPlay": "Dokazivo Fer",
+      "responsible": "Odgovorno Kockanje",
+      "supportTitle": "Podrška",
+      "helpCenter": "Centar Pomoći",
+      "contact": "Kontaktirajte Nas",
+      "disclaimer": "Samo u zabavne svrhe. Igrajte odgovorno. Kockanje može biti zavisno. Samo 18+.",
+      "rights": "Sva prava zadržana."
+    },
+    "legal": {
+      "backToHome": "Nazad na Početnu",
+      "lastUpdated": "Zadnje ažuriranje",
+      "terms": {
+        "title": "Uslovi Korištenja",
+        "description": "Molimo pročitajte ove uslove pažljivo prije korištenja Midnight Riches."
+      },
+      "privacy": {
+        "title": "Politika Privatnosti",
+        "description": "Kako prikupljamo, koristimo i štitimo vaše lične podatke."
+      },
+      "provablyFair": {
+        "title": "Dokazivo Fer",
+        "description": "Kako osiguravamo da je svaka vrtnja transparentna i provjerljiva."
+      },
+      "responsibleGaming": {
+        "title": "Odgovorno Kockanje",
+        "description": "Naša posvećenost sigurnoj i odgovornoj igri."
+      }
+    }
+  }
+}

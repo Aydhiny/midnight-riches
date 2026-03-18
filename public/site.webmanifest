@@ -1,0 +1,12 @@
+{
+  "name": "Midnight Riches",
+  "short_name": "Midnight Riches",
+  "description": "Premium fruit slot machine with provably fair gameplay",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06010f",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

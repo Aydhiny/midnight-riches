@@ -1,0 +1,204 @@
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { GlassCard, PulsingDot } from "../ui/glass";
+import CountUp from "@/components/ui/count-up";
+import ClickSpark from "@/components/ui/click-spark";
+import ShinyButton from "@/components/ui/shiny-button";
+import ScrollReveal from "@/components/ui/scroll-reveal";
+import { useConversionTracker } from "@/lib/analytics/conversion";
+
+const CARD_SUITS = [
+  { char: "\u2660", x: 8, y: 12 },
+  { char: "\u2665", x: 85, y: 18 },
+  { char: "\u2666", x: 15, y: 72 },
+  { char: "\u2663", x: 78, y: 68 },
+  { char: "\u2660", x: 50, y: 8 },
+  { char: "\u2665", x: 42, y: 82 },
+];
+
+function useJackpot(initial: number) {
+  const [jackpot, setJackpot] = useState(initial);
+  const [flash, setFlash] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleNext = useCallback(() => {
+    const delay = 3000 + Math.random() * 4000;
+    timerRef.current = setTimeout(() => {
+      const isBig = Math.random() < 0.08;
+      if (isBig) {
+        setFlash(true);
+        setTimeout(() => setFlash(false), 500);
+        setJackpot((prev) => prev + Math.floor(Math.random() * 1200) + 800);
+      } else {
+        setJackpot((prev) => prev + Math.floor(Math.random() * 101) + 50);
+      }
+      scheduleNext();
+    }, delay);
+  }, []);
+
+  useEffect(() => {
+    scheduleNext();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [scheduleNext]);
+
+  return { jackpot, flash };
+}
+
+export function FinalCTASection() {
+  const t = useTranslations("landing.finalCta");
+  const { track } = useConversionTracker();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  const { jackpot, flash } = useJackpot(847293 + Math.floor(Math.random() * 50000));
+
+  return (
+    <section className="relative overflow-hidden py-32">
+      {/* ── Dramatic radial gradient background ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        {/* Primary purple bloom */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isDark
+              ? "radial-gradient(ellipse 90% 70% at 50% 50%, rgba(124,58,237,0.35) 0%, transparent 65%)"
+              : "radial-gradient(ellipse 90% 70% at 50% 50%, rgba(167,139,250,0.35) 0%, transparent 65%)",
+          }}
+        />
+        {/* Rose bloom — bottom left */}
+        <div
+          className="absolute -left-1/4 bottom-0 w-3/4 h-3/4"
+          style={{
+            background: isDark
+              ? "radial-gradient(ellipse at 30% 80%, rgba(190,24,93,0.25) 0%, transparent 60%)"
+              : "radial-gradient(ellipse at 30% 80%, rgba(244,114,182,0.25) 0%, transparent 60%)",
+          }}
+        />
+        {/* Gold bloom — top right */}
+        <div
+          className="absolute -right-1/4 -top-1/4 w-3/4 h-3/4"
+          style={{
+            background: isDark
+              ? "radial-gradient(ellipse at 70% 20%, rgba(245,158,11,0.15) 0%, transparent 55%)"
+              : "radial-gradient(ellipse at 70% 20%, rgba(245,158,11,0.12) 0%, transparent 55%)",
+          }}
+        />
+      </div>
+
+      {/* ── Grain overlay ── */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          backgroundSize: "128px",
+          opacity: isDark ? 0.12 : 0.06,
+          mixBlendMode: "overlay",
+        }}
+      />
+
+      {/* ── Floating card suit symbols ── */}
+      <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none select-none" aria-hidden="true">
+        {CARD_SUITS.map((suit, i) => (
+          <span
+            key={i}
+            className="absolute text-4xl md:text-5xl"
+            style={{
+              left: `${suit.x}%`,
+              top: `${suit.y}%`,
+              opacity: isDark ? 0.06 : 0.04,
+              color: "var(--text-muted)",
+              animation: `float-up ${10 + i * 2.5}s ease-in-out infinite`,
+              animationDelay: `${i * 1.5}s`,
+              filter: "blur(0.5px)",
+            }}
+          >
+            {suit.char}
+          </span>
+        ))}
+      </div>
+
+      {/* ── Content ── */}
+      <div className="relative z-10 mx-auto max-w-3xl px-4 text-center">
+        {/* Headline — Cormorant Garamond bold italic */}
+        <ScrollReveal>
+          <h2
+            className={[
+              "text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight",
+              isDark
+                ? "bg-gradient-to-r from-violet-300 via-purple-200 to-pink-300"
+                : "bg-gradient-to-r from-violet-700 via-purple-600 to-pink-600",
+              "bg-clip-text text-transparent",
+            ].join(" ")}
+            style={{
+              fontFamily: "var(--font-garamond)",
+              fontWeight: 700,
+              fontStyle: "italic",
+            }}
+          >
+            {t("headline")}
+          </h2>
+        </ScrollReveal>
+
+        {/* Jackpot counter */}
+        <ScrollReveal delay={0.15}>
+          <GlassCard
+            className="mx-auto mt-10 inline-flex flex-col items-center gap-2 px-10 py-7 hover:shadow-[0_0_60px_rgba(255,215,0,0.25)] transition-all duration-300"
+            hover
+          >
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
+              <span className="relative flex items-center gap-1.5">
+                <PulsingDot color="bg-red-500" size="w-2 h-2" />
+                <span className="text-red-400 font-bold tracking-widest">LIVE</span>
+              </span>
+              <span className="mx-1 text-[var(--glass-border)]">|</span>
+              {t("jackpotLabel")}
+            </div>
+            <div
+              className="text-5xl md:text-7xl font-black tabular-nums text-amber-400"
+              style={flash ? { animation: "jackpotFlash 0.4s ease-out" } : undefined}
+            >
+              <CountUp to={jackpot} duration={1.5} separator="," />
+            </div>
+          </GlassCard>
+        </ScrollReveal>
+
+        {/* CTA buttons */}
+        <ScrollReveal delay={0.25}>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <ClickSpark sparkColor="#FFD700" sparkCount={18} sparkRadius={24}>
+              <Link
+                href="/auth/signup"
+                onClick={() => track("cta_click", { section: "final_cta", button: "create_account" })}
+              >
+                <ShinyButton className="h-14 px-10 text-lg font-bold">
+                  {t("primaryCta")}
+                </ShinyButton>
+              </Link>
+            </ClickSpark>
+
+            <Link
+              href="#hero"
+              onClick={(e) => {
+                e.preventDefault();
+                track("cta_click", { section: "final_cta", button: "try_demo" });
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md px-8 py-4 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)] transition-all duration-200"
+            >
+              {t("secondaryCta")}
+            </Link>
+          </div>
+
+          <p className="mt-7 text-sm text-[var(--text-muted)]">{t("playerCount")}</p>
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+}

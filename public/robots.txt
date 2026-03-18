@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /settings
+Disallow: /history
+Disallow: /wallet
+
+Sitemap: https://midnightriches.com/sitemap.xml
