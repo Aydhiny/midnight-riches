@@ -72,19 +72,19 @@ export function GameControls({ onSpin, disabled }: GameControlsProps) {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1 rounded-lg border border-purple-800 bg-purple-950/50 px-3 py-1.5">
+        <div className="flex items-center gap-1 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md px-3 py-1.5">
           <Button
             variant="ghost"
             size="sm"
             onClick={decrementBet}
             disabled={isSpinning || currentIndex <= 0}
-            className="h-6 w-6 p-0 text-purple-300"
+            className="h-6 w-6 p-0 text-[var(--text-secondary)]"
           >
             −
           </Button>
           <div className="min-w-[80px] text-center">
-            <span className="text-xs text-purple-400">BET/LINE</span>
-            <div className="text-sm font-bold text-yellow-400">
+            <span className="text-xs text-[var(--text-muted)]">BET/LINE</span>
+            <div className="text-sm font-bold text-amber-600 dark:text-amber-400">
               ${betPerLine.toFixed(2)}
             </div>
           </div>
@@ -93,23 +93,23 @@ export function GameControls({ onSpin, disabled }: GameControlsProps) {
             size="sm"
             onClick={incrementBet}
             disabled={isSpinning || currentIndex >= DENOMINATIONS.length - 1}
-            className="h-6 w-6 p-0 text-purple-300"
+            className="h-6 w-6 p-0 text-[var(--text-secondary)]"
           >
             +
           </Button>
         </div>
 
-        <div className="rounded-lg border border-purple-800 bg-purple-950/50 px-3 py-1.5 text-center">
-          <span className="text-xs text-purple-400">TOTAL BET</span>
-          <div className="text-sm font-bold text-yellow-400">
+        <div className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md px-3 py-1.5 text-center">
+          <span className="text-xs text-[var(--text-muted)]">TOTAL BET</span>
+          <div className="text-sm font-bold text-amber-600 dark:text-amber-400">
             ${totalBet.toFixed(2)}
           </div>
         </div>
 
         {showLines && (
-          <div className="rounded-lg border border-purple-800 bg-purple-950/50 px-3 py-1.5 text-center">
-            <span className="text-xs text-purple-400">LINES</span>
-            <div className="text-sm font-bold text-yellow-400">
+          <div className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md px-3 py-1.5 text-center">
+            <span className="text-xs text-[var(--text-muted)]">LINES</span>
+            <div className="text-sm font-bold text-amber-600 dark:text-amber-400">
               {gameType === "classic" ? 5 : 20}
             </div>
           </div>
@@ -122,7 +122,7 @@ export function GameControls({ onSpin, disabled }: GameControlsProps) {
           size="sm"
           onClick={setMaxBet}
           disabled={isSpinning}
-          className="border-purple-700 text-purple-300"
+          className="border-[var(--glass-border)] text-[var(--text-secondary)]"
         >
           MAX
         </Button>
@@ -144,7 +144,7 @@ export function GameControls({ onSpin, disabled }: GameControlsProps) {
           size="sm"
           onClick={() => setTurboMode(!turboMode)}
           disabled={isSpinning}
-          className={turboMode ? "bg-yellow-600" : "border-purple-700 text-purple-300"}
+          className={turboMode ? "bg-amber-600 text-white" : "border-[var(--glass-border)] text-[var(--text-secondary)]"}
         >
           ⚡
         </Button>
@@ -167,7 +167,7 @@ export function GameControls({ onSpin, disabled }: GameControlsProps) {
               size="sm"
               onClick={() => startAutoSpin(count)}
               disabled={isSpinning}
-              className="border-purple-800 text-xs text-purple-300"
+              className="border-[var(--glass-border)] text-xs text-[var(--text-secondary)]"
             >
               {count}x
             </Button>

@@ -1,4 +1,10 @@
 {
+  "metadata": {
+    "title": "Midnight Riches — Osvoji 500 Besplatnih Kredita. Bez Kartice. Bez Caka.",
+    "description": "Igraj Midnight Riches — premium slot mašina sa dokazivo fer igrom. Preuzmi 500 besplatnih kredita odmah, bez depozita. Klasični Slotovi, Megaways i više.",
+    "ogTitle": "Midnight Riches — Osvoji 500 Besplatnih Kredita. Bez Kartice. Bez Caka.",
+    "ogDescription": "Premium slot mašina. Preuzmi 500 besplatnih kredita odmah. Dokazivo fer, višejezično, instant igra."
+  },
   "common": {
     "appName": "Midnight Riches",
     "loading": "Učitavanje...",
@@ -84,7 +90,7 @@
     "bonuses": "Bonusi"
   },
   "settings": {
-    "title": "Odgovorno Kockanje",
+    "title": "Postavke",
     "gamblingLimits": "Limiti Kockanja",
     "lossLimit": "Limit Gubitka",
     "depositLimit": "Limit Uplate",

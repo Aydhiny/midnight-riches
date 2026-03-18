@@ -21,6 +21,7 @@ export const users = pgTable("users", {
   image: text("image"),
   passwordHash: text("password_hash"),
   role: text("role").$type<"user" | "admin">().notNull().default("user"),
+  stripeCustomerId: text("stripe_customer_id"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -254,6 +255,62 @@ export const selfExclusions = pgTable(
   ]
 );
 
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type")
+      .$type<"feature" | "daily_spin" | "daily_puzzle" | "community_win" | "jackpot" | "promotion" | "system">()
+      .notNull(),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    metadata: jsonb("metadata"),
+    read: boolean("read").notNull().default(false),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("notifications_user_idx").on(table.userId, table.read, table.createdAt),
+  ]
+);
+
+export const userAchievements = pgTable(
+  "user_achievements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    achievementId: text("achievement_id").notNull(),
+    unlockedAt: timestamp("unlocked_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("user_achievements_user_idx").on(table.userId),
+    index("user_achievements_unique_idx").on(table.userId, table.achievementId),
+  ]
+);
+
+export const dailyChallengeProgress = pgTable(
+  "daily_challenge_progress",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    challengeId: text("challenge_id").notNull(),
+    date: text("date").notNull(), // YYYY-MM-DD
+    progress: integer("progress").notNull().default(0),
+    completed: boolean("completed").notNull().default(false),
+    completedAt: timestamp("completed_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("daily_challenge_progress_user_date_idx").on(table.userId, table.date),
+  ]
+);
+
 export const usersRelations = relations(users, ({ one, many }) => ({
   wallet: one(wallets, {
     fields: [users.id],
@@ -268,6 +325,9 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   provablyFairSeeds: many(provablyFairSeeds),
   gamblingLimits: many(gamblingLimits),
   selfExclusions: many(selfExclusions),
+  userAchievements: many(userAchievements),
+  dailyChallengeProgress: many(dailyChallengeProgress),
+  notifications: many(notifications),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -345,6 +405,21 @@ export const gamblingLimitsRelations = relations(gamblingLimits, ({ one }) => ({
 export const selfExclusionsRelations = relations(selfExclusions, ({ one }) => ({
   user: one(users, {
     fields: [selfExclusions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, { fields: [userAchievements.userId], references: [users.id] }),
+}));
+
+export const dailyChallengeProgressRelations = relations(dailyChallengeProgress, ({ one }) => ({
+  user: one(users, { fields: [dailyChallengeProgress.userId], references: [users.id] }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
     references: [users.id],
   }),
 }));

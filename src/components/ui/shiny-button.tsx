@@ -25,7 +25,7 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "relative cursor-pointer overflow-hidden rounded-xl px-6 py-3 font-semibold text-white",
+          "relative inline-flex items-center justify-center cursor-pointer overflow-hidden rounded-xl px-6 py-3 font-semibold text-white",
           "border border-white/[0.12]",
           "shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]",
           "transition-all duration-200",

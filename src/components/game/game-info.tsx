@@ -9,15 +9,15 @@ export function GameInfo() {
   const { balance } = useWalletStore();
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-purple-800 bg-purple-950/50 px-4 py-2">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md px-4 py-2">
       <div className="text-center">
-        <span className="text-xs uppercase tracking-wider text-purple-400">Balance</span>
-        <div className="text-lg font-bold text-yellow-400">{formatCurrency(balance)}</div>
+        <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Balance</span>
+        <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{formatCurrency(balance)}</div>
       </div>
 
       <div className="text-center">
-        <span className="text-xs uppercase tracking-wider text-purple-400">Last Win</span>
-        <div className="text-lg font-bold text-emerald-400">
+        <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Last Win</span>
+        <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
           {lastResult?.totalWin ? formatCurrency(lastResult.totalWin) : "$0.00"}
         </div>
       </div>
@@ -25,16 +25,16 @@ export function GameInfo() {
       {bonus.isActive && (
         <>
           <div className="text-center">
-            <span className="text-xs uppercase tracking-wider text-purple-400">Free Spins</span>
-            <div className="text-lg font-bold text-pink-400">{bonus.spinsRemaining}</div>
+            <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Free Spins</span>
+            <div className="text-lg font-bold text-pink-600 dark:text-pink-400">{bonus.spinsRemaining}</div>
           </div>
           <div className="text-center">
-            <span className="text-xs uppercase tracking-wider text-purple-400">Multiplier</span>
-            <div className="text-lg font-bold text-yellow-400">{bonus.multiplier}x</div>
+            <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Multiplier</span>
+            <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{bonus.multiplier}x</div>
           </div>
           <div className="text-center">
-            <span className="text-xs uppercase tracking-wider text-purple-400">Bonus Win</span>
-            <div className="text-lg font-bold text-emerald-400">
+            <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">Bonus Win</span>
+            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
               {formatCurrency(bonus.totalBonusWin)}
             </div>
           </div>

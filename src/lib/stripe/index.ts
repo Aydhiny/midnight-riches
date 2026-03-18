@@ -1,5 +1,8 @@
 import Stripe from "stripe";
 import type { CreditBundle } from "@/types";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 function getStripeSecretKey(): string {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -59,3 +62,39 @@ export function getBundleById(id: string): CreditBundle | undefined {
 
 export const WELCOME_CREDITS = 500;
 export const DAILY_BONUS_CREDITS = 50;
+
+/**
+ * Get or create a Stripe customer for the given user.
+ * Stores the Stripe customer ID in the users table for future lookups.
+ */
+export async function getOrCreateStripeCustomer(
+  userId: string,
+  email: string,
+  name?: string
+): Promise<string> {
+  // Check if user already has a stripeCustomerId in DB
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { stripeCustomerId: true },
+  });
+
+  if (user?.stripeCustomerId) {
+    return user.stripeCustomerId;
+  }
+
+  // Create a new Stripe customer
+  const stripe = getStripe();
+  const customer = await stripe.customers.create({
+    email,
+    name: name ?? undefined,
+    metadata: { userId },
+  });
+
+  // Save the customer ID to the database
+  await db
+    .update(users)
+    .set({ stripeCustomerId: customer.id })
+    .where(eq(users.id, userId));
+
+  return customer.id;
+}

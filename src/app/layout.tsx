@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Cormorant_Garamond, Bebas_Neue } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { SessionProvider } from "@/components/shared/session-provider";
 import "@/styles/globals.css";
@@ -30,64 +30,67 @@ const bebasNeue = Bebas_Neue({
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://midnightriches.com";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
-  title: {
-    default: "Midnight Riches — Win 500 Free Credits. No Card. No Catch.",
-    template: "%s | Midnight Riches",
-  },
-  description:
-    "Play Midnight Riches — the premium fruit slot machine with provably fair gameplay. Claim 500 free credits instantly, no deposit required. Classic Slots, Megaways & more.",
-  keywords: [
-    "slot machine", "fruit slots", "free slots", "online casino", "free credits",
-    "megaways", "classic slots", "provably fair", "midnight riches", "casino game",
-  ],
-  authors: [{ name: "Midnight Riches" }],
-  creator: "Midnight Riches",
-  publisher: "Midnight Riches",
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    alternateLocale: ["bs_BA"],
-    url: BASE_URL,
-    siteName: "Midnight Riches",
-    title: "Midnight Riches — Win 500 Free Credits. No Card. No Catch.",
-    description:
-      "Premium fruit slot machine. Claim 500 free credits instantly. Provably fair, multilingual, instant play.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Midnight Riches — Premium Slot Machine",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Midnight Riches — Win 500 Free Credits. No Card. No Catch.",
-    description: "Premium fruit slot machine. Claim 500 free credits instantly.",
-    images: ["/og-image.png"],
-    creator: "@midnightriches",
-  },
-  alternates: {
-    canonical: BASE_URL,
-    languages: {
-      en: `${BASE_URL}/en`,
-      bs: `${BASE_URL}/bs`,
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("metadata");
+  const locale = await getLocale();
+
+  return {
+    metadataBase: new URL(BASE_URL),
+    title: {
+      default: t("title"),
+      template: "%s | Midnight Riches",
     },
-  },
-  icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
-  },
-  manifest: "/site.webmanifest",
-};
+    description: t("description"),
+    keywords: [
+      "slot machine", "fruit slots", "free slots", "online casino", "free credits",
+      "megaways", "classic slots", "provably fair", "midnight riches", "casino game",
+    ],
+    authors: [{ name: "Midnight Riches" }],
+    creator: "Midnight Riches",
+    publisher: "Midnight Riches",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    },
+    openGraph: {
+      type: "website",
+      locale: locale === "bs" ? "bs_BA" : "en_US",
+      alternateLocale: locale === "bs" ? ["en_US"] : ["bs_BA"],
+      url: BASE_URL,
+      siteName: "Midnight Riches",
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "Midnight Riches — Premium Slot Machine",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      images: ["/og-image.png"],
+      creator: "@midnightriches",
+    },
+    alternates: {
+      canonical: BASE_URL,
+      languages: {
+        en: `${BASE_URL}/en`,
+        bs: `${BASE_URL}/bs`,
+      },
+    },
+    icons: {
+      icon: "/logo.svg",
+      apple: "/logo.svg",
+    },
+    manifest: "/site.webmanifest",
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();

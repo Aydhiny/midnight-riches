@@ -426,6 +426,24 @@ body > * {
   font-family: var(--font-display);
 }
 
+/* ─── Light mode UI improvements ────────────────────────── */
+/* Shadcn Card component — make readable in light */
+:root .border {
+  border-color: var(--glass-border);
+}
+
+/* Fix hardcoded dark text that appears invisible in light */
+:root .text-purple-400 { color: #7c3aed; }
+:root .text-purple-300 { color: #6d28d9; }
+:root .border-purple-800 { border-color: rgba(139, 92, 246, 0.25); }
+:root .bg-purple-950\/50 { background-color: rgba(245, 240, 255, 0.6); }
+:root .border-purple-700 { border-color: rgba(139, 92, 246, 0.3); }
+
+/* Min-height for inner app pages so bg gradient covers full viewport */
+:root .min-h-screen {
+  background-color: var(--bg-primary);
+}
+
 /* ─── Custom casino scrollbar ────────────────────────────── */
 ::-webkit-scrollbar {
   width: 5px;

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimatedGradientBorder } from "@/components/ui/animated-gradient-border";
+import { signInSchema } from "@/lib/validators";
 
 export default function SignInPage() {
   const t = useTranslations("auth");
@@ -16,17 +17,41 @@ export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  function validateFields(): boolean {
+    const result = signInSchema.safeParse({ email, password });
+    if (result.success) {
+      setFieldErrors({});
+      return true;
+    }
+
+    const errors: Record<string, string> = {};
+    for (const issue of result.error.issues) {
+      const field = issue.path[0] as string;
+      if (!errors[field]) {
+        errors[field] = issue.message;
+      }
+    }
+    setFieldErrors(errors);
+    return false;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
+
+    if (!validateFields()) return;
+
+    setIsLoading(true);
 
     const result = await signIn("credentials", {
       email,
       password,
+      rememberMe: rememberMe ? "true" : "false",
       redirect: false,
     });
 
@@ -54,28 +79,55 @@ export default function SignInPage() {
                 </div>
               )}
               <div className="space-y-2">
-                <label className="text-sm text-purple-300">{t("email")}</label>
+                <label className="text-sm text-purple-700 dark:text-purple-300">{t("email")}</label>
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                  }}
                   required
                 />
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.email}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <label className="text-sm text-purple-300">{t("password")}</label>
+                <label className="text-sm text-purple-700 dark:text-purple-300">{t("password")}</label>
                 <Input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+                  }}
                   required
                 />
+                {fieldErrors.password && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.password}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-transparent accent-yellow-500"
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="text-sm text-[var(--text-secondary)] select-none cursor-pointer"
+                >
+                  Remember me
+                </label>
               </div>
               <Button type="submit" variant="gold" className="w-full" disabled={isLoading}>
                 {tCommon("signIn")}
               </Button>
             </form>
-            <div className="mt-4 text-center text-sm text-purple-400">
+            <div className="mt-4 text-center text-sm text-purple-700 dark:text-purple-400">
               {t("orContinueWith")}
             </div>
             <Button
@@ -93,9 +145,9 @@ export default function SignInPage() {
             </Button>
           </CardContent>
           <CardFooter className="justify-center">
-            <p className="text-sm text-purple-400">
+            <p className="text-sm text-purple-700 dark:text-purple-400">
               {t("noAccount")}{" "}
-              <Link href="/auth/signup" className="text-yellow-400 hover:underline">
+              <Link href="/auth/signup" className="text-yellow-600 dark:text-yellow-400 hover:underline">
                 {tCommon("signUp")}
               </Link>
             </p>

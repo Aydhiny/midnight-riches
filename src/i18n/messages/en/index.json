@@ -1,4 +1,10 @@
 {
+  "metadata": {
+    "title": "Midnight Riches — Win 500 Free Credits. No Card. No Catch.",
+    "description": "Play Midnight Riches — the premium fruit slot machine with provably fair gameplay. Claim 500 free credits instantly, no deposit required. Classic Slots, Megaways & more.",
+    "ogTitle": "Midnight Riches — Win 500 Free Credits. No Card. No Catch.",
+    "ogDescription": "Premium fruit slot machine. Claim 500 free credits instantly. Provably fair, multilingual, instant play."
+  },
   "common": {
     "appName": "Midnight Riches",
     "loading": "Loading...",
@@ -84,7 +90,7 @@
     "bonuses": "Bonuses"
   },
   "settings": {
-    "title": "Responsible Gambling",
+    "title": "Settings",
     "gamblingLimits": "Gambling Limits",
     "lossLimit": "Loss Limit",
     "depositLimit": "Deposit Limit",

@@ -41,7 +41,10 @@
       "Bash(ls -la /c/User/Programming/midnight-riches/*.md)",
       "Bash(find /c/User/Programming/midnight-riches/src -name globals.css -o -name bonus-offer-section.tsx -o -name *CTA* -type f)",
       "Bash(find /c/User/Programming/midnight-riches/src -type f -name *CTA* -o -type f -name *cta*)",
-      "Bash(npx drizzle-kit:*)"
+      "Bash(npx drizzle-kit:*)",
+      "Bash(ls src/app/\\\\\\(main\\\\\\)/)",
+      "Bash(ls C:/User/Programming/midnight-riches/src/app/\\\\\\(main\\\\\\)/settings/)",
+      "Bash(1)"
     ]
   }
 }

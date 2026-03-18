@@ -1,5 +1,5 @@
 import { Application } from "pixi.js";
-import type { SpinResult, WinEvaluation, CascadeStep, GameType } from "@/types";
+import type { SpinResult, WinEvaluation, CascadeStep, GameType, GameSymbol } from "@/types";
 import { ReelRenderer } from "./ReelRenderer";
 import { WinRenderer } from "./WinRenderer";
 import { CabinetRenderer } from "./CabinetRenderer";
@@ -30,9 +30,11 @@ export class RendererManager {
   private turboMode = false;
 
   async init(canvas: HTMLCanvasElement, gameType: GameType): Promise<void> {
-    if (this.initialized && this.gameType === gameType) return;
+    if (this.initialized && this.app) {
+      await this.changeGame(gameType);
+      return;
+    }
 
-    this.destroy();
     this.gameType = gameType;
 
     const gameConfig = GAME_CONFIGS[gameType];
@@ -47,8 +49,10 @@ export class RendererManager {
       ...gameConfig,
     };
 
-    this.app = new Application();
-    await this.app.init({
+    const app = new Application();
+    this.app = app;
+
+    await app.init({
       canvas,
       width,
       height,
@@ -58,11 +62,23 @@ export class RendererManager {
       autoDensity: true,
     });
 
+    // If destroy() was called while we were awaiting app.init, bail out
+    if (this.app !== app) return;
+
     this.cabinetRenderer = new CabinetRenderer(width, height);
     this.app.stage.addChild(this.cabinetRenderer.container);
 
     this.winRenderer = new WinRenderer();
     this.createReels();
+
+    // Show initial symbols so the canvas is not blank on first load
+    const symbols: GameSymbol[] = ["cherry", "lemon", "orange", "grape", "watermelon", "seven", "bar"];
+    for (const reel of this.reelRenderers) {
+      const initialSymbols = Array.from({ length: this.currentConfig!.rows },
+        () => symbols[Math.floor(Math.random() * symbols.length)]
+      );
+      reel.setSymbols(initialSymbols);
+    }
 
     this.app.stage.addChild(this.winRenderer.container);
 
@@ -76,6 +92,63 @@ export class RendererManager {
     });
 
     this.initialized = true;
+  }
+
+  async changeGame(gameType: GameType): Promise<void> {
+    if (!this.app || !this.initialized) return;
+
+    this.gameType = gameType;
+
+    const gameConfig = GAME_CONFIGS[gameType];
+    const padding = 40;
+    const reelGap = 4;
+    const width = gameConfig.reels * (gameConfig.symbolSize + reelGap) + padding * 2;
+    const height = gameConfig.rows * gameConfig.symbolSize + padding * 2 + 60;
+
+    this.currentConfig = {
+      width,
+      height,
+      ...gameConfig,
+    };
+
+    // Tear down old renderers (but keep the PixiJS Application alive)
+    for (const reel of this.reelRenderers) {
+      try { reel.destroy(); } catch { /* ignore */ }
+    }
+    this.reelRenderers = [];
+
+    try { this.winRenderer?.destroy(); } catch { /* ignore */ }
+    this.winRenderer = null;
+
+    try { this.cabinetRenderer?.destroy(); } catch { /* ignore */ }
+    this.cabinetRenderer = null;
+
+    // Clear the stage without touching the WebGL context
+    this.app.stage.removeChildren();
+
+    // Resize the existing renderer — no new WebGL context needed
+    this.app.renderer.resize(width, height);
+
+    // Rebuild renderers in the existing stage
+    this.cabinetRenderer = new CabinetRenderer(width, height);
+    this.app.stage.addChild(this.cabinetRenderer.container);
+
+    this.winRenderer = new WinRenderer();
+    this.createReels();
+
+    // Populate initial symbols so the canvas isn't blank after the switch
+    const symbols: GameSymbol[] = ["cherry", "lemon", "orange", "grape", "watermelon", "seven", "bar"];
+    for (const reel of this.reelRenderers) {
+      const initialSymbols = Array.from({ length: this.currentConfig!.rows },
+        () => symbols[Math.floor(Math.random() * symbols.length)]
+      );
+      reel.setSymbols(initialSymbols);
+    }
+
+    this.app.stage.addChild(this.winRenderer.container);
+
+    // Let the resize flush before resolving
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   }
 
   private createReels(): void {
@@ -186,15 +259,27 @@ export class RendererManager {
   }
 
   destroy(): void {
+    // Guard against double-destroy (React Strict Mode invokes cleanup twice)
+    if (!this.app && !this.initialized) return;
+
     for (const reel of this.reelRenderers) {
-      reel.destroy();
+      try { reel.destroy(); } catch { /* ignore partial-init state */ }
     }
     this.reelRenderers = [];
-    this.winRenderer?.destroy();
+
+    try { this.winRenderer?.destroy(); } catch { /* ignore */ }
     this.winRenderer = null;
-    this.cabinetRenderer?.destroy();
+
+    try { this.cabinetRenderer?.destroy(); } catch { /* ignore */ }
     this.cabinetRenderer = null;
-    this.app?.destroy();
+
+    // PixiJS ResizePlugin may throw if app was destroyed before init completed
+    // (React Strict Mode double-invokes effects mid-async-init)
+    try {
+      this.app?.destroy(false, { children: true });
+    } catch {
+      // Swallow: _cancelResize not a function when resize observer wasn't registered
+    }
     this.app = null;
     this.initialized = false;
   }

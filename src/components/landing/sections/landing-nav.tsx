@@ -12,6 +12,7 @@ import Magnet from "@/components/ui/magnet";
 import ClickSpark from "@/components/ui/click-spark";
 import ShinyButton from "@/components/ui/shiny-button";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 const NAV_LINKS = [
   { href: "#games", labelKey: "games" },
@@ -25,6 +26,7 @@ export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { track } = useConversionTracker();
+  const { data: session } = useSession();
 
   useEffect(() => {
     function onScroll() {
@@ -86,23 +88,52 @@ export function LandingNav() {
             <LanguageSwitcher />
             <ThemeToggle />
 
-            <Link
-              href="/auth/signin"
-              className={cn(
-                "hidden md:block px-3 py-1.5 text-sm font-medium rounded-lg",
-                "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-                "border border-[var(--glass-border)] hover:bg-[var(--glass-bg)]",
-                "transition-all duration-200",
-              )}
-            >
-              {t("signIn")}
-            </Link>
+            {session?.user ? (
+              <>
+                {/* Play Now button */}
+                <Link href="/game" className="hidden md:block">
+                  <ShinyButton className="h-9 px-4 text-sm flex items-center gap-1.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    Play Now
+                  </ShinyButton>
+                </Link>
+                {/* Profile avatar */}
+                <Link href="/settings" className="hidden md:flex">
+                  <div className="relative h-9 w-9 rounded-full border-2 border-[var(--glass-border)] overflow-hidden bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center hover:border-violet-400 transition-colors">
+                    {session.user.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={session.user.image} alt={session.user.name ?? "User"} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-bold text-white">
+                        {(session.user.name ?? session.user.email ?? "U")[0].toUpperCase()}
+                      </span>
+                    )}
+                    {/* Online indicator */}
+                    <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-[var(--nav-bg)]" />
+                  </div>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className={cn(
+                    "hidden md:block px-3 py-1.5 text-sm font-medium rounded-lg",
+                    "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
+                    "border border-[var(--glass-border)] hover:bg-[var(--glass-bg)]",
+                    "transition-all duration-200",
+                  )}
+                >
+                  {t("signIn")}
+                </Link>
 
-            <ClickSpark sparkColor="#FFD700" sparkCount={12}>
-              <Link href="/auth/signup" onClick={handleCtaClick}>
-                <ShinyButton className="h-9 px-4 text-sm hidden md:flex items-center">{t("claimBonus")}</ShinyButton>
-              </Link>
-            </ClickSpark>
+                <ClickSpark sparkColor="#FFD700" sparkCount={12}>
+                  <Link href="/auth/signup" onClick={handleCtaClick}>
+                    <ShinyButton className="h-9 px-4 text-sm hidden md:flex items-center">{t("claimBonus")}</ShinyButton>
+                  </Link>
+                </ClickSpark>
+              </>
+            )}
 
             {/* Hamburger */}
             <button
@@ -147,32 +178,80 @@ export function LandingNav() {
                     {t(link.labelKey)}
                   </a>
                 ))}
-                <Link
-                  href="/auth/signin"
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "px-4 py-3 rounded-xl text-sm font-medium",
-                    "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-                    "hover:bg-[var(--glass-bg)] transition-all duration-200",
-                  )}
-                >
-                  {t("signIn")}
-                </Link>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--glass-border)]">
-                  <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                    <LanguageSwitcher />
-                  </div>
-                  <Link
-                    href="/auth/signup"
-                    onClick={() => {
-                      setMobileOpen(false);
-                      handleCtaClick();
-                    }}
-                  >
-                    <ShinyButton className="h-9 px-4 text-sm">{t("claimBonus")}</ShinyButton>
-                  </Link>
-                </div>
+
+                {session?.user ? (
+                  <>
+                    <Link
+                      href="/game"
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "px-4 py-3 rounded-xl text-sm font-medium",
+                        "text-white bg-gradient-to-r from-violet-600 to-pink-600",
+                        "hover:from-violet-500 hover:to-pink-500 transition-all duration-200",
+                        "flex items-center gap-2",
+                      )}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="inline mr-1"><path d="M8 5v14l11-7z"/></svg>
+                    Play Now
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "px-4 py-3 rounded-xl text-sm font-medium",
+                        "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
+                        "hover:bg-[var(--glass-bg)] transition-all duration-200",
+                        "flex items-center gap-3",
+                      )}
+                    >
+                      <div className="relative h-7 w-7 rounded-full border border-[var(--glass-border)] overflow-hidden bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shrink-0">
+                        {session.user.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={session.user.image} alt={session.user.name ?? "User"} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-bold text-white">
+                            {(session.user.name ?? session.user.email ?? "U")[0].toUpperCase()}
+                          </span>
+                        )}
+                        <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 border border-[var(--nav-bg)]" />
+                      </div>
+                      <span>{session.user.name ?? session.user.email ?? "Profile"}</span>
+                    </Link>
+                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--glass-border)]">
+                      <ThemeToggle />
+                      <LanguageSwitcher />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "px-4 py-3 rounded-xl text-sm font-medium",
+                        "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
+                        "hover:bg-[var(--glass-bg)] transition-all duration-200",
+                      )}
+                    >
+                      {t("signIn")}
+                    </Link>
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--glass-border)]">
+                      <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <LanguageSwitcher />
+                      </div>
+                      <Link
+                        href="/auth/signup"
+                        onClick={() => {
+                          setMobileOpen(false);
+                          handleCtaClick();
+                        }}
+                      >
+                        <ShinyButton className="h-9 px-4 text-sm">{t("claimBonus")}</ShinyButton>
+                      </Link>
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           )}

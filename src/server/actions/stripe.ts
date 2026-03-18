@@ -6,7 +6,7 @@ import { wallets, transactions } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/server/rate-limiter";
 import { logger } from "@/lib/logger";
-import { getStripe, getBundleById, DAILY_BONUS_CREDITS } from "@/lib/stripe";
+import { getStripe, getBundleById, DAILY_BONUS_CREDITS, getOrCreateStripeCustomer } from "@/lib/stripe";
 import { purchaseBundleSchema } from "@/lib/validators";
 
 interface CheckoutSuccess {
@@ -67,14 +67,25 @@ export async function createCheckoutAction(data: {
     const stripe = getStripe();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
+    // Get or create a Stripe customer so saved cards work
+    const customerId = await getOrCreateStripeCustomer(
+      userId,
+      session.user.email ?? "",
+      session.user.name ?? undefined
+    );
+
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "payment",
+      customer: customerId,
       line_items: [
         {
           price: bundle.stripePriceId,
           quantity: 1,
         },
       ],
+      payment_intent_data: {
+        setup_future_usage: "on_session",
+      },
       metadata: {
         userId,
         bundleId: bundle.id,

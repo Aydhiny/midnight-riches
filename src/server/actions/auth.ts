@@ -1,10 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { users, wallets } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { signUpSchema } from "@/lib/validators";
+import { signUpSchema, signInSchema } from "@/lib/validators";
 import { signIn } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/server/rate-limiter";
 import { logger } from "@/lib/logger";
@@ -21,16 +22,40 @@ interface AuthError {
 
 type AuthResponse = AuthSuccess | AuthError;
 
+async function getClientIp(): Promise<string> {
+  const hdrs = await headers();
+  return (
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    hdrs.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
 export async function signUpAction(data: { name: string; email: string; password: string }): Promise<AuthResponse> {
   try {
-    const rateLimitResult = checkRateLimit(`signup:${data.email}`, { maxRequests: 5, windowMs: 300_000 });
-    if (!rateLimitResult.success) {
+    // Rate limit: max 3 sign-ups per IP per hour
+    const ip = await getClientIp();
+    const ipRateLimit = checkRateLimit(`signup-ip:${ip}`, {
+      maxRequests: 3,
+      windowMs: 3_600_000, // 1 hour
+    });
+    if (!ipRateLimit.success) {
+      return { success: false, error: "Too many sign-up attempts. Please try again later.", code: "RATE_LIMITED" };
+    }
+
+    // Also rate limit per email to prevent enumeration
+    const emailRateLimit = checkRateLimit(`signup-email:${data.email}`, {
+      maxRequests: 3,
+      windowMs: 3_600_000,
+    });
+    if (!emailRateLimit.success) {
       return { success: false, error: "Too many requests", code: "RATE_LIMITED" };
     }
 
     const parsed = signUpSchema.safeParse(data);
     if (!parsed.success) {
-      return { success: false, error: "Invalid input", code: "VALIDATION_ERROR" };
+      const firstError = parsed.error.issues[0]?.message ?? "Invalid input";
+      return { success: false, error: firstError, code: "VALIDATION_ERROR" };
     }
 
     const existing = await db.query.users.findFirst({
@@ -72,9 +97,19 @@ export async function signUpAction(data: { name: string; email: string; password
 
 export async function signInAction(data: { email: string; password: string }): Promise<AuthResponse> {
   try {
-    const rateLimitResult = checkRateLimit(`signin:${data.email}`, { maxRequests: 10, windowMs: 300_000 });
+    // Rate limit: max 5 attempts per email per 15 minutes
+    const rateLimitResult = checkRateLimit(`signin:${data.email}`, {
+      maxRequests: 5,
+      windowMs: 900_000, // 15 minutes
+    });
     if (!rateLimitResult.success) {
-      return { success: false, error: "Too many requests", code: "RATE_LIMITED" };
+      return { success: false, error: "Too many sign-in attempts. Please try again in 15 minutes.", code: "RATE_LIMITED" };
+    }
+
+    // Validate input
+    const parsed = signInSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: "Invalid input", code: "VALIDATION_ERROR" };
     }
 
     await signIn("credentials", {

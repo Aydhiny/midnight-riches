@@ -4,6 +4,8 @@ import { useRef, useCallback, useState, useEffect } from "react";
 import { useGameStore } from "@/store/game-store";
 import { useWalletStore } from "@/store/wallet-store";
 import { gameSpinAction } from "@/server/actions/game";
+import { checkAchievementsAction, updateDailyChallengeProgressAction } from "@/server/actions/achievements";
+import { showAchievementToast, showChallengeCompleteToast } from "./achievement-toast";
 import { GameCanvas, type GameCanvasHandle } from "./game-canvas";
 import { GameControls } from "./game-controls";
 import { GameInfo } from "./game-info";
@@ -91,6 +93,30 @@ export function SlotMachine() {
     }
 
     setSpinState("result");
+
+    // Non-blocking achievement + challenge checks
+    Promise.all([
+      checkAchievementsAction({
+        totalWin: response.result.totalWin,
+        betAmount: totalBet,
+        bonusTriggered: response.result.bonusTriggered,
+        jackpotWin: response.jackpotWin,
+        gameType,
+      }),
+      updateDailyChallengeProgressAction({
+        won: response.result.totalWin > 0,
+        bonusTriggered: response.result.bonusTriggered,
+        creditsWon: response.result.totalWin,
+        gameType,
+      }),
+    ]).then(([achievementResult, challengeResult]) => {
+      for (const achievement of achievementResult.newAchievements) {
+        showAchievementToast(achievement);
+      }
+      if (challengeResult.completedChallenges.length > 0) {
+        showChallengeCompleteToast("Daily Challenge", 50);
+      }
+    }).catch(() => {}); // Silent fail — non-critical path
 
     setTimeout(() => {
       setSpinState("idle");
