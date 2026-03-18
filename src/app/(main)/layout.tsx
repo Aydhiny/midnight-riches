@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/shared/navbar";
 import { WalletSyncWrapper } from "./wallet-sync-wrapper";
+import { MusicPlayer } from "@/components/game/music-player";
 import { Toaster } from "sonner";
 
 export default function MainLayout({
@@ -12,6 +13,7 @@ export default function MainLayout({
       <Navbar />
       <WalletSyncWrapper />
       <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+      <MusicPlayer />
       <Toaster
         theme="dark"
         position="top-right"

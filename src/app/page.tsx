@@ -47,7 +47,10 @@ function RotatingTitle() {
 
 export default function LandingPage() {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // Default to dark on SSR — matches next-themes default theme so no hydration mismatch
+  const isDark = mounted ? resolvedTheme === "dark" : true;
 
   return (
     <SmoothScrollProvider>

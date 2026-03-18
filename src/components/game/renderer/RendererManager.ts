@@ -3,6 +3,7 @@ import type { SpinResult, WinEvaluation, CascadeStep, GameType, GameSymbol } fro
 import { ReelRenderer } from "./ReelRenderer";
 import { WinRenderer } from "./WinRenderer";
 import { CabinetRenderer } from "./CabinetRenderer";
+import { preloadSymbolTextures } from "./SymbolRenderer";
 
 interface RendererConfig {
   width: number;
@@ -21,6 +22,7 @@ const GAME_CONFIGS: Record<GameType, Omit<RendererConfig, "width" | "height">> =
 
 export class RendererManager {
   private app: Application | null = null;
+  private container: HTMLElement | null = null;
   private reelRenderers: ReelRenderer[] = [];
   private winRenderer: WinRenderer | null = null;
   private cabinetRenderer: CabinetRenderer | null = null;
@@ -29,12 +31,18 @@ export class RendererManager {
   private initialized = false;
   private turboMode = false;
 
-  async init(canvas: HTMLCanvasElement, gameType: GameType): Promise<void> {
+  /**
+   * Initialize PixiJS into a container div.
+   * PixiJS creates its own <canvas> and appends it to `container`.
+   * This avoids the "destroyed WebGL context reuse" bug from React Strict Mode.
+   */
+  async init(container: HTMLElement, gameType: GameType): Promise<void> {
     if (this.initialized && this.app) {
       await this.changeGame(gameType);
       return;
     }
 
+    this.container = container;
     this.gameType = gameType;
 
     const gameConfig = GAME_CONFIGS[gameType];
@@ -43,17 +51,13 @@ export class RendererManager {
     const width = gameConfig.reels * (gameConfig.symbolSize + reelGap) + padding * 2;
     const height = gameConfig.rows * gameConfig.symbolSize + padding * 2 + 60;
 
-    this.currentConfig = {
-      width,
-      height,
-      ...gameConfig,
-    };
+    this.currentConfig = { width, height, ...gameConfig };
 
     const app = new Application();
     this.app = app;
 
+    // Do NOT pass a canvas — PixiJS creates and owns its own canvas element.
     await app.init({
-      canvas,
       width,
       height,
       backgroundAlpha: 0,
@@ -62,7 +66,17 @@ export class RendererManager {
       autoDensity: true,
     });
 
-    // If destroy() was called while we were awaiting app.init, bail out
+    // If destroy() ran while we were awaiting, bail out
+    if (this.app !== app) return;
+
+    // Append PixiJS-owned canvas into our container div
+    app.canvas.style.width = "100%";
+    app.canvas.style.height = "100%";
+    app.canvas.style.borderRadius = "8px";
+    container.appendChild(app.canvas);
+
+    // Pre-load PNG symbol textures (module-level cache — no-op after first load)
+    await preloadSymbolTextures();
     if (this.app !== app) return;
 
     this.cabinetRenderer = new CabinetRenderer(width, height);
@@ -71,10 +85,11 @@ export class RendererManager {
     this.winRenderer = new WinRenderer();
     this.createReels();
 
-    // Show initial symbols so the canvas is not blank on first load
+    // Populate initial symbols so canvas is not blank on first load
     const symbols: GameSymbol[] = ["cherry", "lemon", "orange", "grape", "watermelon", "seven", "bar"];
     for (const reel of this.reelRenderers) {
-      const initialSymbols = Array.from({ length: this.currentConfig!.rows },
+      const initialSymbols = Array.from(
+        { length: this.currentConfig!.rows },
         () => symbols[Math.floor(Math.random() * symbols.length)]
       );
       reel.setSymbols(initialSymbols);
@@ -84,9 +99,7 @@ export class RendererManager {
 
     this.app.ticker.add((ticker) => {
       const delta = ticker.deltaTime;
-      for (const reel of this.reelRenderers) {
-        reel.update(delta);
-      }
+      for (const reel of this.reelRenderers) reel.update(delta);
       this.winRenderer?.update(delta);
       this.cabinetRenderer?.update(delta);
     });
@@ -97,6 +110,9 @@ export class RendererManager {
   async changeGame(gameType: GameType): Promise<void> {
     if (!this.app || !this.initialized) return;
 
+    // Helper: yield to the browser so the loading overlay can paint
+    const raf = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+
     this.gameType = gameType;
 
     const gameConfig = GAME_CONFIGS[gameType];
@@ -105,50 +121,48 @@ export class RendererManager {
     const width = gameConfig.reels * (gameConfig.symbolSize + reelGap) + padding * 2;
     const height = gameConfig.rows * gameConfig.symbolSize + padding * 2 + 60;
 
-    this.currentConfig = {
-      width,
-      height,
-      ...gameConfig,
-    };
+    this.currentConfig = { width, height, ...gameConfig };
 
-    // Tear down old renderers (but keep the PixiJS Application alive)
+    // ── Phase 1: teardown (yield first so overlay renders) ──────────────────
+    await raf();
     for (const reel of this.reelRenderers) {
       try { reel.destroy(); } catch { /* ignore */ }
     }
     this.reelRenderers = [];
-
     try { this.winRenderer?.destroy(); } catch { /* ignore */ }
     this.winRenderer = null;
-
     try { this.cabinetRenderer?.destroy(); } catch { /* ignore */ }
     this.cabinetRenderer = null;
-
-    // Clear the stage without touching the WebGL context
     this.app.stage.removeChildren();
 
-    // Resize the existing renderer — no new WebGL context needed
+    // ── Phase 2: resize (yield so teardown GPU work flushes) ─────────────────
+    await raf();
     this.app.renderer.resize(width, height);
 
-    // Rebuild renderers in the existing stage
+    // ── Phase 3: rebuild cabinet + win renderer ───────────────────────────────
+    await raf();
     this.cabinetRenderer = new CabinetRenderer(width, height);
     this.app.stage.addChild(this.cabinetRenderer.container);
-
     this.winRenderer = new WinRenderer();
+
+    // ── Phase 4: create reels (most expensive — yield before + after) ─────────
+    await raf();
     this.createReels();
 
-    // Populate initial symbols so the canvas isn't blank after the switch
+    // ── Phase 5: populate initial symbols ────────────────────────────────────
+    await raf();
     const symbols: GameSymbol[] = ["cherry", "lemon", "orange", "grape", "watermelon", "seven", "bar"];
     for (const reel of this.reelRenderers) {
-      const initialSymbols = Array.from({ length: this.currentConfig!.rows },
+      const initialSymbols = Array.from(
+        { length: this.currentConfig!.rows },
         () => symbols[Math.floor(Math.random() * symbols.length)]
       );
       reel.setSymbols(initialSymbols);
     }
-
     this.app.stage.addChild(this.winRenderer.container);
 
-    // Let the resize flush before resolving
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    // Final paint flush
+    await raf();
   }
 
   private createReels(): void {
@@ -259,11 +273,10 @@ export class RendererManager {
   }
 
   destroy(): void {
-    // Guard against double-destroy (React Strict Mode invokes cleanup twice)
-    if (!this.app && !this.initialized) return;
+    if (!this.app && !this.initialized) return; // guard double-destroy
 
     for (const reel of this.reelRenderers) {
-      try { reel.destroy(); } catch { /* ignore partial-init state */ }
+      try { reel.destroy(); } catch { /* ignore partial-init */ }
     }
     this.reelRenderers = [];
 
@@ -273,14 +286,22 @@ export class RendererManager {
     try { this.cabinetRenderer?.destroy(); } catch { /* ignore */ }
     this.cabinetRenderer = null;
 
-    // PixiJS ResizePlugin may throw if app was destroyed before init completed
-    // (React Strict Mode double-invokes effects mid-async-init)
+    // Remove PixiJS canvas from our container before destroying the app.
+    // This prevents the "destroyed WebGL context" bug — each new init()
+    // call creates a fresh Application with a brand-new <canvas>.
     try {
-      this.app?.destroy(false, { children: true });
-    } catch {
-      // Swallow: _cancelResize not a function when resize observer wasn't registered
-    }
+      if (this.app?.canvas && this.container?.contains(this.app.canvas)) {
+        this.container.removeChild(this.app.canvas);
+      }
+    } catch { /* ignore */ }
+
+    try {
+      // destroy(true) removes the canvas element from the DOM as well (belt-and-suspenders)
+      this.app?.destroy(true, { children: true });
+    } catch { /* swallow: _cancelResize / resize observer not registered */ }
+
     this.app = null;
+    this.container = null;
     this.initialized = false;
   }
 }

@@ -36,23 +36,22 @@
     "google": "Google"
   },
   "game": {
-    "spin": "SPIN",
-    "autoPlay": "Auto Play",
-    "stop": "Stop",
-    "betPerLine": "Bet / Line",
-    "totalBet": "Total Bet",
-    "win": "WIN",
+    "selectGame": "Select Game",
     "balance": "Balance",
-    "lines": "Lines",
-    "bonusRound": "BONUS ROUND",
-    "freeSpins": "Free Spins",
-    "spinsRemaining": "Spins Remaining",
-    "multiplier": "Multiplier",
-    "bonusWin": "Bonus Win",
-    "bonusTriggered": "Bonus Triggered!",
-    "bigWin": "BIG WIN!",
-    "megaWin": "MEGA WIN!",
-    "insufficientBalance": "Insufficient balance"
+    "lastWin": "Last Win",
+    "liveWins": "Live Wins",
+    "dailyChallenges": "Daily Challenges",
+    "completed": "completed",
+    "howToPlay": "How to Play",
+    "leaderboard": "Leaderboard",
+    "provablyFair": "Provably Fair",
+    "claimBonus": "Claim Daily Bonus",
+    "liveSupport": "Live Support",
+    "liveStats": "Live Stats",
+    "playersOnline": "Players Online",
+    "biggestWin": "Biggest Win Today",
+    "totalSpins": "Total Spins",
+    "jackpotPool": "Jackpot Pool"
   },
   "wallet": {
     "title": "Wallet",
@@ -108,7 +107,39 @@
     "reason": "Reason (optional)",
     "selfExcludeButton": "Self-Exclude",
     "confirmExclude": "Confirm — This cannot be easily undone",
-    "excludeWarning": "Self-exclusion will immediately prevent you from playing. Temporary exclusion can only be lifted after the period expires."
+    "excludeWarning": "Self-exclusion will immediately prevent you from playing. Temporary exclusion can only be lifted after the period expires.",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "security": "Security & Limits",
+    "profileTab": {
+      "title": "Your Profile",
+      "name": "Display Name",
+      "email": "Email Address",
+      "namePlaceholder": "Enter your name",
+      "saveChanges": "Save Changes",
+      "memberSince": "Member Since",
+      "level": "Player Level",
+      "xp": "XP"
+    },
+    "preferencesTab": {
+      "title": "App Preferences",
+      "language": "Language",
+      "theme": "Theme",
+      "notifications": "Notifications",
+      "notificationsDesc": "Receive win alerts and promotions",
+      "sounds": "Sound Effects",
+      "soundsDesc": "Play sounds during game"
+    },
+    "securityTab": {
+      "title": "Account Security",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "updatePassword": "Update Password",
+      "advancedTitle": "Advanced Settings",
+      "advancedDesc": "Responsible gaming tools"
+    }
   },
   "landing": {
     "nav": {
@@ -145,7 +176,8 @@
       "overlayTitle": "Nice Spins!",
       "overlayDescription": "You won {credits} credits in demo mode! Sign up to keep playing with 500 free credits.",
       "overlayCta": "Claim 500 Free Credits",
-      "overlayDismiss": "Keep playing demo"
+      "overlayDismiss": "Keep playing demo",
+      "spinning": "Spinning..."
     },
     "bonus": {
       "headline": "LIMITED TIME WELCOME OFFER",
@@ -177,10 +209,22 @@
       "headline": "Choose Your Game",
       "subheadline": "Four unique slot experiences, each with their own style",
       "playNow": "Play Now",
-      "classic": { "name": "Classic Slots", "variant": "3-Reel Classic" },
-      "fiveReel": { "name": "5-Reel Deluxe", "variant": "5-Reel Premium" },
-      "cascade": { "name": "Cascade Reels", "variant": "Cascade Chain" },
-      "megaways": { "name": "Megaways", "variant": "Dynamic Reels" }
+      "classic": {
+        "name": "Classic Slots",
+        "variant": "3-Reel Classic"
+      },
+      "fiveReel": {
+        "name": "5-Reel Deluxe",
+        "variant": "5-Reel Premium"
+      },
+      "cascade": {
+        "name": "Cascade Reels",
+        "variant": "Cascade Chain"
+      },
+      "megaways": {
+        "name": "Megaways",
+        "variant": "Dynamic Reels"
+      }
     },
     "howItWorks": {
       "headline": "How It Works",

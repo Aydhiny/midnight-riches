@@ -50,7 +50,7 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
             animation: "shimmer-sweep 5s ease-in-out infinite",
           }}
         />
-        <span className="relative z-10">{children}</span>
+        <span className="relative z-10 flex items-center gap-1.5">{children}</span>
       </button>
     );
   },

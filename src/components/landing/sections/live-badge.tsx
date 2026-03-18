@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 export function LiveBadge() {
-  const initialCount = useMemo(() => 2400 + Math.floor(Math.random() * 800), []);
-  const [playerCount, setPlayerCount] = useState(initialCount);
+  const [playerCount, setPlayerCount] = useState(0);
+
+  // Initialise client-side only to avoid server/client hydration mismatch
+  useEffect(() => {
+    setPlayerCount(2400 + Math.floor(Math.random() * 800));
+  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -41,7 +45,7 @@ export function LiveBadge() {
       <span className="w-px h-3 bg-white/20 shrink-0" />
 
       <span className="text-xs font-medium text-white/70 whitespace-nowrap">
-        <span className="text-white font-bold tabular-nums">{playerCount.toLocaleString()}</span>{" "}
+        <span className="text-white font-bold tabular-nums" suppressHydrationWarning>{playerCount > 0 ? playerCount.toLocaleString() : "—"}</span>{" "}
         players online
       </span>
 

@@ -311,6 +311,30 @@ export const dailyChallengeProgress = pgTable(
   ]
 );
 
+export const collectibles = pgTable("collectibles", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").$type<"avatar_frame" | "reel_theme" | "symbol_skin" | "sound_pack">().notNull(),
+  rarity: text("rarity").$type<"common" | "rare" | "epic" | "legendary">().notNull().default("common"),
+  priceCredits: decimal("price_credits", { precision: 10, scale: 2 }),
+  priceUsd: decimal("price_usd", { precision: 10, scale: 2 }),
+  imageUrl: text("image_url"),
+  previewSymbols: text("preview_symbols").array(), // e.g. ["/images/Cherry.png", ...]
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const userCollectibles = pgTable("user_collectibles", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  collectibleId: uuid("collectible_id").notNull().references(() => collectibles.id),
+  acquiredAt: timestamp("acquired_at", { mode: "date" }).defaultNow().notNull(),
+  equippedSlot: text("equipped_slot").$type<"avatar_frame" | "reel_theme" | "symbol_skin" | "sound_pack" | null>().default(null),
+}, (table) => [
+  index("user_collectibles_user_idx").on(table.userId),
+]);
+
 export const usersRelations = relations(users, ({ one, many }) => ({
   wallet: one(wallets, {
     fields: [users.id],
@@ -328,6 +352,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   userAchievements: many(userAchievements),
   dailyChallengeProgress: many(dailyChallengeProgress),
   notifications: many(notifications),
+  userCollectibles: many(userCollectibles),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -422,4 +447,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
     fields: [notifications.userId],
     references: [users.id],
   }),
+}));
+
+export const collectiblesRelations = relations(collectibles, ({ many }) => ({
+  userCollectibles: many(userCollectibles),
+}));
+
+export const userCollectiblesRelations = relations(userCollectibles, ({ one }) => ({
+  user: one(users, { fields: [userCollectibles.userId], references: [users.id] }),
+  collectible: one(collectibles, { fields: [userCollectibles.collectibleId], references: [collectibles.id] }),
 }));

@@ -7,15 +7,91 @@ import { gameSpinAction } from "@/server/actions/game";
 import { checkAchievementsAction, updateDailyChallengeProgressAction } from "@/server/actions/achievements";
 import { showAchievementToast, showChallengeCompleteToast } from "./achievement-toast";
 import { GameCanvas, type GameCanvasHandle } from "./game-canvas";
-import { GameControls } from "./game-controls";
-import { GameInfo } from "./game-info";
 import { GameSelector } from "./game-selector";
+import { CabinetFrame } from "./cabinet-frame";
+import { ControlPanel } from "./control-panel";
 import { WinModal } from "./win-modal";
 import { BonusModal } from "./bonus-modal";
 
+// ─── Sound helpers ────────────────────────────────────────────────────────────
+function createAudio(src: string, volume = 0.5): HTMLAudioElement | null {
+  if (typeof window === "undefined") return null;
+  const audio = new Audio(src);
+  audio.volume = volume;
+  return audio;
+}
+
+/** Returns true when SFX is not explicitly disabled in localStorage */
+function isSfxEnabled(): boolean {
+  if (typeof window === "undefined") return true;
+  return localStorage.getItem("mr_sfx_enabled") !== "false";
+}
+
+let spinAudio:     HTMLAudioElement | null = null;
+let jackpotAudio:  HTMLAudioElement | null = null;
+let megaWinAudio:  HTMLAudioElement | null = null;
+let superWinAudio: HTMLAudioElement | null = null;
+
+function getSpinAudio() {
+  if (!spinAudio) {
+    spinAudio = createAudio("/sounds/slot-spin-2.mp3", 0.4);
+    if (spinAudio) spinAudio.loop = true;
+  }
+  return spinAudio;
+}
+function getJackpotAudio() {
+  if (!jackpotAudio) jackpotAudio = createAudio("/sounds/jackpot.mp3", 0.55);
+  return jackpotAudio;
+}
+function getMegaWinAudio() {
+  if (!megaWinAudio) megaWinAudio = createAudio("/sounds/mega-win.mp3", 0.55);
+  return megaWinAudio;
+}
+function getSuperWinAudio() {
+  if (!superWinAudio) superWinAudio = createAudio("/sounds/super-win.mp3", 0.5);
+  return superWinAudio;
+}
+
+function playSound(audio: HTMLAudioElement | null) {
+  if (!audio || !isSfxEnabled()) return;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
+}
+function stopSound(audio: HTMLAudioElement | null) {
+  if (!audio) return;
+  audio.pause();
+  audio.currentTime = 0;
+}
+
+/**
+ * Play the correct win stinger based on totalWin amount and auto-stop it.
+ *  > 100  → mega-win.mp3 (stops after 4 s)
+ *  > 25   → super-win.mp3 (stops after 3 s)
+ *  any win→ (no extra sound; jackpot.mp3 only triggers via WinModal path)
+ */
+function playWinSound(totalWin: number, totalBet: number) {
+  if (!isSfxEnabled()) return;
+
+  if (totalWin > 100) {
+    // Mega win — also play jackpot stab for the biggest tier
+    const mega = getMegaWinAudio();
+    const jackpot = getJackpotAudio();
+    playSound(mega);
+    playSound(jackpot);
+    setTimeout(() => stopSound(mega),    4000);
+    setTimeout(() => stopSound(jackpot), 4000);
+  } else if (totalWin > 25) {
+    const sup = getSuperWinAudio();
+    playSound(sup);
+    setTimeout(() => stopSound(sup), 3000);
+  }
+  // Small wins produce no extra stinger (spin sound already finished)
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function SlotMachine() {
-  const canvasRef = useRef<GameCanvasHandle>(null);
-  const autoSpinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const canvasRef          = useRef<GameCanvasHandle>(null);
+  const autoSpinTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     gameType,
@@ -34,9 +110,9 @@ export function SlotMachine() {
 
   const { balance, optimisticDeduct, syncFromServer } = useWalletStore();
 
-  const [showWinModal, setShowWinModal] = useState(false);
+  const [showWinModal,   setShowWinModal]   = useState(false);
   const [showBonusModal, setShowBonusModal] = useState(false);
-  const [lastWinAmount, setLastWinAmount] = useState(0);
+  const [lastWinAmount,  setLastWinAmount]  = useState(0);
 
   useEffect(() => {
     canvasRef.current?.setTurboMode(turboMode);
@@ -70,7 +146,13 @@ export function SlotMachine() {
     setBonus(response.bonus);
     syncFromServer(response.balance);
 
+    // Play spin sound (looping) immediately before animation starts
+    playSound(getSpinAudio());
+
     await canvasRef.current?.playSpinAnimation(response.result);
+
+    // Stop spin sound as soon as animation ends
+    stopSound(getSpinAudio());
 
     if (response.result.totalWin > 0 && response.result.wins) {
       canvasRef.current?.setWinAmount(response.result.totalWin);
@@ -84,6 +166,12 @@ export function SlotMachine() {
     setLastWin(response.result.wins ?? null);
     setLastWinAmount(response.result.totalWin);
 
+    // ── Win sounds (tiered) ───────────────────────────────────────────────
+    if (response.result.totalWin > 0) {
+      playWinSound(response.result.totalWin, totalBet);
+    }
+
+    // Show big-win modal for wins >= 10× bet (unchanged threshold)
     if (response.result.totalWin >= totalBet * 10) {
       setShowWinModal(true);
     }
@@ -97,16 +185,16 @@ export function SlotMachine() {
     // Non-blocking achievement + challenge checks
     Promise.all([
       checkAchievementsAction({
-        totalWin: response.result.totalWin,
-        betAmount: totalBet,
+        totalWin:       response.result.totalWin,
+        betAmount:      totalBet,
         bonusTriggered: response.result.bonusTriggered,
-        jackpotWin: response.jackpotWin,
+        jackpotWin:     response.jackpotWin,
         gameType,
       }),
       updateDailyChallengeProgressAction({
-        won: response.result.totalWin > 0,
+        won:            response.result.totalWin > 0,
         bonusTriggered: response.result.bonusTriggered,
-        creditsWon: response.result.totalWin,
+        creditsWon:     response.result.totalWin,
         gameType,
       }),
     ]).then(([achievementResult, challengeResult]) => {
@@ -174,13 +262,12 @@ export function SlotMachine() {
   }, [autoSpin, spinState, balance, lastWinAmount, bonus.isActive, executeSpin, setAutoSpin]);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3 w-full max-w-lg mx-auto">
       <GameSelector />
-      <GameInfo />
-      <div className="relative">
+      <CabinetFrame>
         <GameCanvas ref={canvasRef} gameType={gameType} />
-      </div>
-      <GameControls onSpin={executeSpin} disabled={spinState !== "idle"} />
+      </CabinetFrame>
+      <ControlPanel onSpin={executeSpin} disabled={spinState !== "idle"} />
       <WinModal
         amount={lastWinAmount}
         betAmount={totalBet}

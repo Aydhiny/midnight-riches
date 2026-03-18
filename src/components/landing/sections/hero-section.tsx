@@ -76,7 +76,9 @@ export function HeroSection() {
   const { track } = useConversionTracker();
   const { headline } = useHeroVariant();
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted ? resolvedTheme === "dark" : true;
 
   const { jackpot, flash } = useJackpot(847293 + Math.floor(Math.random() * 50000));
 
@@ -117,10 +119,13 @@ export function HeroSection() {
   return (
     <section id="hero" className="relative flex min-h-screen items-center pt-16 overflow-hidden">
       <HeroBackground isDark={isDark} />
-      <BackgroundReel side="left" isDark={isDark} />
-      <BackgroundReel side="right" isDark={isDark} />
-      <GodRays isDark={isDark} />
-      <CardSuitsParallax />
+      {/* Hide expensive visuals on mobile — keeps 60fps on low-end devices */}
+      <div className="hidden md:contents">
+        <BackgroundReel side="left" isDark={isDark} />
+        <BackgroundReel side="right" isDark={isDark} />
+        <GodRays isDark={isDark} />
+        <CardSuitsParallax />
+      </div>
 
       <div className="relative z-10 mx-auto grid w-full max-w-7xl gap-8 px-4 py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:py-0">
         {/* ── Left — Copy ────────────────────────────────────── */}
@@ -146,28 +151,27 @@ export function HeroSection() {
 
           {/* "Start Now." — Cormorant Garamond bold italic, dominant */}
           <AnimatedContent delay={0.22} direction="vertical" distance={24}>
-            <div
-              className="leading-[0.88]"
+            <span
+              className={[
+                "leading-[0.88] inline-block",
+                "bg-clip-text text-transparent",
+                // Dark: white→zinc gradient; Light: deep violet gradient
+                // Using Tailwind dark: so the switch is pure-CSS — no JS flash
+                "bg-gradient-to-b",
+                "dark:from-white dark:via-zinc-200 dark:to-zinc-400",
+                "from-[#1a0533] via-[#4a1d8a] to-violet-600",
+              ].join(" ")}
               style={{
                 fontFamily: "var(--font-garamond)",
                 fontWeight: 700,
                 fontStyle: "italic",
                 fontSize: "clamp(4rem, 12vw, 8rem)",
-                background: isDark
-                  ? "linear-gradient(to bottom, #ffffff 0%, #e4e4e7 40%, #a1a1aa 100%)"
-                  : "linear-gradient(to bottom, #1a0533 0%, #4a1d8a 40%, #7c3aed 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
                 letterSpacing: "-0.09em",
-                filter: isDark
-                  ? "drop-shadow(0 2px 10px rgba(0,0,0,0.03))"
-                  : "drop-shadow(0 2px 12px rgba(124,58,237,0.15))",
-                display: "inline-block",
+                WebkitTextFillColor: "transparent",
               }}
             >
               start now.
-            </div>
+            </span>
           </AnimatedContent>
 
           {/* Subheadline */}

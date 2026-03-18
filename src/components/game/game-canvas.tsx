@@ -27,24 +27,25 @@ function getDimensions(gameType: GameType): { width: number; height: number } {
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
   function GameCanvas({ gameType }, ref) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    // Container div — PixiJS appends its own <canvas> here.
+    // We never reuse the same <canvas> element across inits, which avoids
+    // the "WebGL context already destroyed" bug in React Strict Mode.
+    const containerRef = useRef<HTMLDivElement>(null);
     const managerRef = useRef<RendererManager | null>(null);
-    // Tracks whether init() has fully resolved at least once
     const initDoneRef = useRef(false);
     const [isLoading, setIsLoading] = useState(true);
     const [dimensions, setDimensions] = useState(() => getDimensions(gameType));
 
-    // ── Effect 1: create the RendererManager and run the one-time app.init() ──
-    // Empty deps — runs exactly once on mount and cleans up on unmount.
+    // ── Effect 1: one-time PixiJS init ──────────────────────────────────────
     useEffect(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      const container = containerRef.current;
+      if (!container) return;
 
       let cancelled = false;
       const manager = new RendererManager();
       managerRef.current = manager;
 
-      manager.init(canvas, gameType)
+      manager.init(container, gameType)
         .then(() => {
           if (!cancelled) {
             initDoneRef.current = true;
@@ -53,7 +54,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
         })
         .catch((err) => {
           if (!cancelled) {
-            console.error("GameCanvas init error:", err);
+            console.error("[GameCanvas] init error:", err);
             setIsLoading(false);
           }
         });
@@ -62,18 +63,16 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
         cancelled = true;
         initDoneRef.current = false;
         manager.destroy();
-        managerRef.current = null;
+        if (managerRef.current === manager) managerRef.current = null;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ── Effect 2: swap renderers in-place when gameType changes ──
-    // Skips the very first render (init handles that) by guarding on initDoneRef.
+    // ── Effect 2: swap game type without recreating WebGL context ───────────
     useEffect(() => {
       if (!initDoneRef.current) return;
 
       setIsLoading(true);
-      setDimensions(getDimensions(gameType));
 
       let cancelled = false;
       const manager = managerRef.current;
@@ -88,42 +87,22 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
         })
         .catch((err) => {
           if (!cancelled) {
-            console.error("GameCanvas changeGame error:", err);
+            console.error("[GameCanvas] changeGame error:", err);
             setIsLoading(false);
           }
         });
 
-      return () => {
-        cancelled = true;
-      };
+      return () => { cancelled = true; };
     }, [gameType]);
 
-    const playSpinAnimation = useCallback(async (result: SpinResult) => {
-      await managerRef.current?.playSpinAnimation(result);
-    }, []);
-
-    const playWinAnimation = useCallback(async (wins: WinEvaluation) => {
-      await managerRef.current?.playWinAnimation(wins);
-    }, []);
-
-    const playCascadeSequence = useCallback(async (cascades: CascadeStep[]) => {
-      await managerRef.current?.playCascadeSequence(cascades);
-    }, []);
-
-    const setTurboMode = useCallback((turbo: boolean) => {
-      managerRef.current?.setTurboMode(turbo);
-    }, []);
-
-    const setWinAmount = useCallback((amount: number) => {
-      managerRef.current?.setWinAmount(amount);
-    }, []);
+    const playSpinAnimation  = useCallback(async (r: SpinResult)     => { await managerRef.current?.playSpinAnimation(r); },  []);
+    const playWinAnimation   = useCallback(async (w: WinEvaluation)  => { await managerRef.current?.playWinAnimation(w); },   []);
+    const playCascadeSequence = useCallback(async (c: CascadeStep[]) => { await managerRef.current?.playCascadeSequence(c); }, []);
+    const setTurboMode       = useCallback((t: boolean)              => { managerRef.current?.setTurboMode(t); },              []);
+    const setWinAmount       = useCallback((a: number)               => { managerRef.current?.setWinAmount(a); },              []);
 
     useImperativeHandle(ref, () => ({
-      playSpinAnimation,
-      playWinAnimation,
-      playCascadeSequence,
-      setTurboMode,
-      setWinAmount,
+      playSpinAnimation, playWinAnimation, playCascadeSequence, setTurboMode, setWinAmount,
     }), [playSpinAnimation, playWinAnimation, playCascadeSequence, setTurboMode, setWinAmount]);
 
     return (
@@ -131,14 +110,15 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
         className="relative mx-auto"
         style={{ width: dimensions.width, height: dimensions.height }}
       >
-        <canvas
-          ref={canvasRef}
-          className="block rounded-lg"
-          style={{ width: "100%", height: "100%" }}
+        {/* PixiJS appends its canvas here — no shared <canvas> element */}
+        <div
+          ref={containerRef}
+          className="h-full w-full rounded-lg overflow-hidden"
         />
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/60 backdrop-blur-sm">
+          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/70 backdrop-blur-sm gap-3">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-purple-500/30 border-t-yellow-400" />
+            <span className="text-xs text-white/40 tracking-widest uppercase animate-pulse">Loading…</span>
           </div>
         )}
       </div>

@@ -65,11 +65,11 @@ export function BonusOfferSection() {
   }, []);
 
   return (
-    <section id="bonuses" className="py-20">
+    <section id="bonuses" className="py-24 md:py-32">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
           <SpotlightCard
-            className="relative overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-xl p-6 sm:p-8 md:p-12 lg:p-14"
+            className="relative overflow-hidden rounded-3xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-xl p-8 sm:p-12 md:p-16 lg:p-20"
             spotlightColor="rgba(139, 92, 246, 0.15)"
           >
             {/* Grain overlay */}
@@ -90,39 +90,50 @@ export function BonusOfferSection() {
                 background: "radial-gradient(ellipse, rgba(139,92,246,0.15) 0%, transparent 70%)",
               }}
             />
-            {/* Headline */}
-            <div className="text-center">
+            {/* Headline pill + section title */}
+            <div className="text-center p-12">
               <GlassPill className="mx-auto w-fit text-amber-500 dark:text-amber-400 border-amber-400/30 bg-amber-400/10">
                 <Zap className="h-3.5 w-3.5" />
                 <GoldGradientText className="text-xs font-bold">{t("headline")}</GoldGradientText>
               </GlassPill>
+              <h2 className="mt-5 text-3xl md:text-4xl font-black tracking-tight text-[var(--text-primary)]">
+                Claim Your Welcome Package
+              </h2>
+              <p className="mt-2 text-sm text-[var(--text-muted)] max-w-sm mx-auto">
+                Offer expires at midnight UTC. Don&apos;t miss your window.
+              </p>
             </div>
 
             {/* Countdown */}
-            <div className="mt-8 flex items-center justify-center gap-3">
+            <div className="mt-10 flex items-center justify-center gap-4">
               <CountdownDigit value={time.hours} label={t("hours")} />
-              <span className="text-2xl font-black text-amber-400 pb-5">:</span>
+              <span className="text-3xl font-black text-amber-400 pb-5">:</span>
               <CountdownDigit value={time.minutes} label={t("minutes")} />
-              <span className="text-2xl font-black text-amber-400 pb-5">:</span>
+              <span className="text-3xl font-black text-amber-400 pb-5">:</span>
               <CountdownDigit value={time.seconds} label={t("seconds")} />
             </div>
 
+            {/* Divider */}
+            <div className="mt-10 h-px w-full bg-gradient-to-r from-transparent via-[var(--glass-border)] to-transparent" />
+
             {/* Bonus Table */}
-            <div className="mt-8 space-y-2">
+            <div className="mt-8 space-y-3">
               {BONUS_ROWS.map((row, i) => (
                 <GlassCard
                   key={row.key}
-                  className={`flex items-center justify-between px-4 py-3.5 ${
-                    i % 2 === 0 ? "bg-white/[0.04] dark:bg-white/[0.02]" : ""
+                  className={`flex items-center justify-between px-5 py-4 transition-all duration-200 hover:border-amber-400/20 hover:bg-white/[0.06] ${
+                    i % 2 === 0 ? "bg-white/[0.03]" : ""
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <row.icon className="h-5 w-5 text-amber-400 shrink-0" />
+                  <div className="flex items-center gap-3.5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400/10">
+                      <row.icon className="h-5 w-5 text-amber-400" />
+                    </span>
                     <span className="text-sm font-medium text-[var(--text-secondary)]">
                       {t(`${row.key}.label`)}
                     </span>
                   </div>
-                  <GoldGradientText as="span" className="text-sm font-bold">
+                  <GoldGradientText as="span" className="text-sm font-bold tabular-nums">
                     {t(`${row.key}.value`)}
                   </GoldGradientText>
                 </GlassCard>
@@ -133,7 +144,7 @@ export function BonusOfferSection() {
             <div className="mt-6">
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-xs text-[var(--text-muted)] underline hover:text-[var(--text-secondary)] transition-colors"
+                className="text-xs text-[var(--text-muted)] underline underline-offset-2 hover:text-[var(--text-secondary)] transition-colors"
               >
                 {t("howBonusesWork")}
               </button>
@@ -144,7 +155,7 @@ export function BonusOfferSection() {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.25 }}
-                    className="mt-2 text-xs leading-relaxed text-[var(--text-muted)] overflow-hidden"
+                    className="mt-3 text-xs leading-relaxed text-[var(--text-muted)] overflow-hidden"
                   >
                     {t("howBonusesWorkText")}
                   </motion.p>
@@ -152,20 +163,23 @@ export function BonusOfferSection() {
               </AnimatePresence>
             </div>
 
+            {/* Divider */}
+            <div className="mt-10 h-px w-full bg-gradient-to-r from-transparent via-[var(--glass-border)] to-transparent" />
+
             {/* CTA */}
-            <div className="mt-8 text-center">
+            <div className="mt-10 text-center">
               <Link
                 href="/auth/signup"
                 onClick={() => track("cta_click", { section: "bonus", button: "claim" })}
               >
-                <ShinyButton className="h-14 px-10 text-lg font-bold">
+                <ShinyButton className="h-14 px-12 text-lg font-bold">
                   {t("cta")}
                 </ShinyButton>
               </Link>
             </div>
 
             {/* Fine print */}
-            <p className="mt-4 text-center text-[10px] text-[var(--text-muted)]/60">
+            <p className="mt-5 text-center text-[10px] text-[var(--text-muted)]/60">
               <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500/20 text-[8px] font-black text-red-400">
                 18+
               </span>

@@ -36,23 +36,22 @@
     "google": "Google"
   },
   "game": {
-    "spin": "VRTI",
-    "autoPlay": "Auto Igra",
-    "stop": "Zaustavi",
-    "betPerLine": "Ulog / Linija",
-    "totalBet": "Ukupan Ulog",
-    "win": "DOBITAK",
+    "selectGame": "Odaberi igru",
     "balance": "Stanje",
-    "lines": "Linije",
-    "bonusRound": "BONUS RUNDA",
-    "freeSpins": "Besplatna Vrtenja",
-    "spinsRemaining": "Preostala Vrtenja",
-    "multiplier": "Multiplikator",
-    "bonusWin": "Bonus Dobitak",
-    "bonusTriggered": "Bonus Aktiviran!",
-    "bigWin": "VELIKI DOBITAK!",
-    "megaWin": "MEGA DOBITAK!",
-    "insufficientBalance": "Nedovoljno sredstava"
+    "lastWin": "Zadnji dobitak",
+    "liveWins": "Uživo dobici",
+    "dailyChallenges": "Dnevni izazovi",
+    "completed": "završeno",
+    "howToPlay": "Kako igrati",
+    "leaderboard": "Rang lista",
+    "provablyFair": "Dokazano poštena igra",
+    "claimBonus": "Preuzmi dnevni bonus",
+    "liveSupport": "Podrška uživo",
+    "liveStats": "Statistike uživo",
+    "playersOnline": "Igrači online",
+    "biggestWin": "Najveći dobitak danas",
+    "totalSpins": "Ukupno okretaja",
+    "jackpotPool": "Jackpot nagradni fond"
   },
   "wallet": {
     "title": "Novčanik",
@@ -108,7 +107,39 @@
     "reason": "Razlog (opciono)",
     "selfExcludeButton": "Samoiskključi se",
     "confirmExclude": "Potvrdi — Ovo se ne može lako poništiti",
-    "excludeWarning": "Samoiskključenje će vas odmah spriječiti od igranja. Privremeno iskključenje se može ukinuti tek nakon isteka perioda."
+    "excludeWarning": "Samoiskključenje će vas odmah spriječiti od igranja. Privremeno iskključenje se može ukinuti tek nakon isteka perioda.",
+    "profile": "Profil",
+    "preferences": "Postavke",
+    "security": "Sigurnost i Ograničenja",
+    "profileTab": {
+      "title": "Vaš Profil",
+      "name": "Ime korisnika",
+      "email": "Email adresa",
+      "namePlaceholder": "Unesite ime",
+      "saveChanges": "Sačuvaj izmjene",
+      "memberSince": "Član od",
+      "level": "Nivo igrača",
+      "xp": "XP"
+    },
+    "preferencesTab": {
+      "title": "Postavke aplikacije",
+      "language": "Jezik",
+      "theme": "Tema",
+      "notifications": "Obavještenja",
+      "notificationsDesc": "Primaj obavještenja o dobicima",
+      "sounds": "Zvučni efekti",
+      "soundsDesc": "Reprodukuj zvukove u igri"
+    },
+    "securityTab": {
+      "title": "Sigurnost naloga",
+      "changePassword": "Promijeni lozinku",
+      "currentPassword": "Trenutna lozinka",
+      "newPassword": "Nova lozinka",
+      "confirmPassword": "Potvrdi lozinku",
+      "updatePassword": "Ažuriraj lozinku",
+      "advancedTitle": "Napredne postavke",
+      "advancedDesc": "Alati za odgovorno igranje"
+    }
   },
   "landing": {
     "nav": {
@@ -145,7 +176,8 @@
       "overlayTitle": "Odlično Vrtenje!",
       "overlayDescription": "Osvojili ste {credits} kredita u demo režimu! Registrujte se za 500 besplatnih kredita.",
       "overlayCta": "Preuzmi 500 Besplatnih Kredita",
-      "overlayDismiss": "Nastavi demo"
+      "overlayDismiss": "Nastavi demo",
+      "spinning": "Vrti se..."
     },
     "bonus": {
       "headline": "PONUDA ZA DOBRODOŠLICU — OGRANIČENO VRIJEME",
@@ -177,10 +209,22 @@
       "headline": "Izaberi Svoju Igru",
       "subheadline": "Četiri jedinstvena slot iskustva",
       "playNow": "Igraj Sad",
-      "classic": { "name": "Klasični Slotovi", "variant": "3-Reel Klasik" },
-      "fiveReel": { "name": "5-Reel Deluxe", "variant": "5-Reel Premium" },
-      "cascade": { "name": "Cascade Reels", "variant": "Cascade Chain" },
-      "megaways": { "name": "Megaways", "variant": "Dinamički Reelovi" }
+      "classic": {
+        "name": "Klasični Slotovi",
+        "variant": "3-Reel Klasik"
+      },
+      "fiveReel": {
+        "name": "5-Reel Deluxe",
+        "variant": "5-Reel Premium"
+      },
+      "cascade": {
+        "name": "Cascade Reels",
+        "variant": "Cascade Chain"
+      },
+      "megaways": {
+        "name": "Megaways",
+        "variant": "Dinamički Reelovi"
+      }
     },
     "howItWorks": {
       "headline": "Kako Funkcioniše",

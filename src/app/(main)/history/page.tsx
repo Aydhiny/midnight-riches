@@ -67,51 +67,179 @@ function StatsCards({ stats }: { stats: GameStats }) {
 }
 
 function RtpChart({ data }: { data: RtpPoint[] }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [metric, setMetric] = useState<"rtp" | "win" | "bet">("rtp");
+
   if (data.length === 0) return null;
 
-  const maxRtp = Math.max(...data.map((d) => d.rtp), 100);
-  const minRtp = Math.min(...data.map((d) => d.rtp), 0);
-  const range = maxRtp - minRtp || 1;
-  const width = 600;
-  const height = 200;
-  const padding = 40;
+  const W = 640, H = 240, PL = 52, PR = 24, PT = 20, PB = 36;
+  const chartW = W - PL - PR;
+  const chartH = H - PT - PB;
 
-  const points = data.map((d, i) => {
-    const x = padding + (i / Math.max(data.length - 1, 1)) * (width - padding * 2);
-    const y = height - padding - ((d.rtp - minRtp) / range) * (height - padding * 2);
-    return `${x},${y}`;
+  const values = data.map((d) => metric === "rtp" ? d.rtp : metric === "win" ? d.win : d.bet);
+  const maxV = Math.max(...values, metric === "rtp" ? 100 : 0) * 1.08;
+  const minV = Math.min(...values, metric === "rtp" ? 0 : 0);
+  const range = maxV - minV || 1;
+
+  const toX = (i: number) => PL + (i / Math.max(data.length - 1, 1)) * chartW;
+  const toY = (v: number) => PT + chartH - ((v - minV) / range) * chartH;
+
+  const linePath = data.map((d, i) => {
+    const v = metric === "rtp" ? d.rtp : metric === "win" ? d.win : d.bet;
+    return `${i === 0 ? "M" : "L"} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`;
   }).join(" ");
+
+  const areaPath = [
+    ...data.map((d, i) => {
+      const v = metric === "rtp" ? d.rtp : metric === "win" ? d.win : d.bet;
+      return `${i === 0 ? "M" : "L"} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`;
+    }),
+    `L ${toX(data.length - 1).toFixed(1)} ${PT + chartH}`,
+    `L ${toX(0).toFixed(1)} ${PT + chartH}`,
+    "Z",
+  ].join(" ");
+
+  // Y-axis gridlines (5 ticks)
+  const ticks = 5;
+  const yTicks = Array.from({ length: ticks + 1 }, (_, i) => minV + (i / ticks) * range);
+
+  const hoveredPoint = hovered !== null ? data[hovered] : null;
+  const hoveredX = hovered !== null ? toX(hovered) : 0;
+  const hoveredV = hovered !== null ? values[hovered] : 0;
+  const hoveredY = hovered !== null ? toY(hoveredV) : 0;
+
+  const METRIC_COLOR: Record<string, string> = { rtp: "#fbbf24", win: "#34d399", bet: "#a78bfa" };
+  const stroke = METRIC_COLOR[metric];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm">RTP Over Last {data.length} Sessions</CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-sm font-bold text-[var(--text-primary)]">
+            Performance over last {data.length} sessions
+          </CardTitle>
+          <div className="flex gap-1.5">
+            {(["rtp", "win", "bet"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMetric(m)}
+                className={`rounded-lg px-3 py-1 text-[11px] font-bold transition-all ${
+                  metric === m
+                    ? "bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/40"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {m === "rtp" ? "RTP %" : m === "win" ? "Win $" : "Bet $"}
+              </button>
+            ))}
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
-          <line
-            x1={padding} y1={height - padding - ((96 - minRtp) / range) * (height - padding * 2)}
-            x2={width - padding} y2={height - padding - ((96 - minRtp) / range) * (height - padding * 2)}
-            stroke="#6b21a8" strokeDasharray="4" strokeWidth="1"
-          />
-          <text
-            x={width - padding + 5}
-            y={height - padding - ((96 - minRtp) / range) * (height - padding * 2)}
-            fill="#9333ea" fontSize="10" dominantBaseline="middle"
-          >
-            96%
-          </text>
-          <polyline
-            fill="none"
-            stroke="#fbbf24"
-            strokeWidth="2"
-            points={points}
-          />
-          <text x={padding} y={height - 5} fill="#9333ea" fontSize="10">1</text>
-          <text x={width - padding} y={height - 5} fill="#9333ea" fontSize="10" textAnchor="end">
-            {data.length}
-          </text>
+      <CardContent className="relative p-4 pt-0">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-full cursor-crosshair"
+          onMouseLeave={() => setHovered(null)}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const svgX = ((e.clientX - rect.left) / rect.width) * W;
+            const relX = svgX - PL;
+            const idx = Math.round((relX / chartW) * (data.length - 1));
+            setHovered(Math.max(0, Math.min(data.length - 1, idx)));
+          }}
+        >
+          <defs>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={stroke} stopOpacity="0.25" />
+              <stop offset="100%" stopColor={stroke} stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={stroke} stopOpacity="0.4" />
+              <stop offset="50%" stopColor={stroke} />
+              <stop offset="100%" stopColor={stroke} stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
+
+          {/* Y-axis grid + labels */}
+          {yTicks.map((v, i) => {
+            const y = toY(v);
+            const label = metric === "rtp" ? `${v.toFixed(0)}%` : `$${v.toFixed(0)}`;
+            return (
+              <g key={i}>
+                <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                <text x={PL - 6} y={y} fill="rgba(255,255,255,0.3)" fontSize="9" textAnchor="end" dominantBaseline="middle">
+                  {label}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* RTP 96% target line */}
+          {metric === "rtp" && (() => {
+            const ty = toY(96);
+            return (
+              <g>
+                <line x1={PL} y1={ty} x2={W - PR} y2={ty} stroke="#7c3aed" strokeDasharray="5 3" strokeWidth="1" opacity="0.7" />
+                <text x={W - PR + 3} y={ty} fill="#9333ea" fontSize="9" dominantBaseline="middle">96%</text>
+              </g>
+            );
+          })()}
+
+          {/* Area fill */}
+          <path d={areaPath} fill="url(#areaGrad)" />
+
+          {/* Line */}
+          <path d={linePath} fill="none" stroke="url(#lineGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* X-axis session markers */}
+          {data.map((_, i) => {
+            if (data.length > 20 && i % Math.ceil(data.length / 10) !== 0) return null;
+            return (
+              <text key={i} x={toX(i)} y={H - PB + 14} fill="rgba(255,255,255,0.25)" fontSize="9" textAnchor="middle">
+                {i + 1}
+              </text>
+            );
+          })}
+
+          {/* Hover crosshair */}
+          {hovered !== null && (
+            <>
+              <line x1={hoveredX} y1={PT} x2={hoveredX} y2={PT + chartH} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx={hoveredX} cy={hoveredY} r={5} fill={stroke} stroke="#0f0520" strokeWidth="2" />
+              {/* Tooltip */}
+              {hoveredPoint && (() => {
+                const tipW = 130, tipH = 60;
+                const tipX = Math.min(hoveredX + 12, W - tipW - 4);
+                const tipY = Math.max(hoveredY - tipH / 2, PT);
+                const dispV = metric === "rtp" ? `${hoveredV.toFixed(1)}%` : `$${hoveredV.toFixed(2)}`;
+                return (
+                  <g>
+                    <rect x={tipX} y={tipY} width={tipW} height={tipH} rx="6" fill="#0d0020" stroke={stroke} strokeWidth="0.8" opacity="0.95" />
+                    <text x={tipX + 10} y={tipY + 16} fill="rgba(255,255,255,0.5)" fontSize="10">Session {hovered! + 1}</text>
+                    <text x={tipX + 10} y={tipY + 34} fill={stroke} fontSize="14" fontWeight="bold">{dispV}</text>
+                    <text x={tipX + 10} y={tipY + 50} fill="rgba(255,255,255,0.35)" fontSize="9">
+                      Bet: ${hoveredPoint.bet.toFixed(2)} · Win: ${hoveredPoint.win.toFixed(2)}
+                    </text>
+                  </g>
+                );
+              })()}
+            </>
+          )}
         </svg>
+
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-1 text-[11px] text-[var(--text-muted)]">
+          <div className="flex items-center gap-1.5">
+            <div className="h-0.5 w-6 rounded-full" style={{ background: stroke }} />
+            <span>{metric === "rtp" ? "RTP %" : metric === "win" ? "Win amount" : "Bet amount"}</span>
+          </div>
+          {metric === "rtp" && (
+            <div className="flex items-center gap-1.5">
+              <div className="h-0.5 w-6 rounded-full bg-violet-500 opacity-60" style={{ backgroundImage: "repeating-linear-gradient(90deg, #7c3aed 0 5px, transparent 5px 8px)" }} />
+              <span>Target RTP (96%)</span>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

@@ -139,7 +139,8 @@ export function NotificationBell() {
       {/* Dropdown panel */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 sm:w-96"
+          className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-[var(--glass-border)] shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 sm:w-96"
+          style={{ background: "var(--nav-bg, #0f0520)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[var(--glass-border)] px-4 py-3">

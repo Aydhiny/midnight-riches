@@ -108,8 +108,8 @@ export function LiveFeed() {
         </span>
       </div>
 
-      {/* Scrolling feed */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin px-2 py-1.5 space-y-1">
+      {/* Scrolling feed — no visible scrollbar */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-2 py-1.5 space-y-1" style={{ scrollbarWidth: "none" }}>
         {entries.map((entry) => (
           <div
             key={entry.id}

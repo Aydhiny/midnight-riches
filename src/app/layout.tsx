@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { SessionProvider } from "@/components/shared/session-provider";
+import { CookieConsent } from "@/components/shared/cookie-consent";
 import "@/styles/globals.css";
 
 const jakartaSans = Plus_Jakarta_Sans({
@@ -113,6 +114,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <ThemeProvider>{children}</ThemeProvider>
           </SessionProvider>
         </NextIntlClientProvider>
+        <CookieConsent />
       </body>
     </html>
   );

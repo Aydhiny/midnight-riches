@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { signIn } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +54,8 @@ export default function SignUpPage() {
       setError(result.error);
       setIsLoading(false);
     } else {
-      router.push("/auth/signin");
+      await signIn("credentials", { email, password, redirect: false });
+      router.push("/game");
     }
   }
 

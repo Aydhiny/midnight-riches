@@ -6,50 +6,6 @@ import { useGameStore } from "@/store/game-store";
 import type { GameType } from "@/types";
 import { getEngine } from "@/lib/game/engines";
 
-// CSS-based mini game preview — no external images needed, no CSP issues
-function GamePreview({ type }: { type: GameType }) {
-  const previews: Record<GameType, React.ReactNode> = {
-    classic: (
-      <div className="grid grid-cols-3 gap-0.5 p-1.5">
-        {["🍒","🍋","🍊","⭐","🍒","🍋","🍊","⭐","🍒"].map((s, i) => (
-          <div key={i} className="flex h-7 w-7 items-center justify-center rounded text-base bg-black/20 leading-none">{s}</div>
-        ))}
-      </div>
-    ),
-    "five-reel": (
-      <div className="grid grid-cols-5 gap-0.5 p-1.5">
-        {["⭐","💎","🍒","⭐","💎","🍋","⭐","🍊","💎","🍒","🍋","💎","⭐","🍒","🍋"].map((s, i) => (
-          <div key={i} className="flex h-5 w-5 items-center justify-center rounded text-xs bg-black/20 leading-none">{s}</div>
-        ))}
-      </div>
-    ),
-    cascade: (
-      <div className="grid grid-cols-5 gap-0.5 p-1.5">
-        {["💎","💎","⭐","💎","💎","💎","🍒","💎","🍒","💎","⭐","💎","💎","💎","⭐","💎","🍋","⭐","🍋","💎"].map((s, i) => (
-          <div key={i} className={`flex h-4 w-4 items-center justify-center rounded text-[10px] leading-none ${i === 1 || i === 3 || i === 6 || i === 8 ? "bg-emerald-500/30 ring-1 ring-emerald-400/50" : "bg-black/20"}`}>{s}</div>
-        ))}
-      </div>
-    ),
-    megaways: (
-      <div className="flex gap-0.5 p-1.5 items-end">
-        {[4,6,3,5,4,7].map((rows, col) => (
-          <div key={col} className="flex flex-col gap-0.5">
-            {Array.from({ length: rows }, (_, r) => (
-              <div key={r} className="flex h-3.5 w-4 items-center justify-center rounded text-[9px] bg-black/20 leading-none">
-                {["🔥","⭐","💎","🍒","🍋","🍊","🔮"][Math.floor((col * 3 + r) % 7)]}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    ),
-  };
-  return (
-    <div className="overflow-hidden rounded-lg">
-      {previews[type]}
-    </div>
-  );
-}
 
 const GAME_VARIANTS: {
   id: GameType;
@@ -58,6 +14,7 @@ const GAME_VARIANTS: {
   subDesc: string;
   accent: string;
   bgGradient: string;
+  thumbnail: string;
   badge?: string;
 }[] = [
   {
@@ -66,7 +23,8 @@ const GAME_VARIANTS: {
     description: "3×3 • 5 Lines",
     subDesc: "Timeless fruit slots",
     accent: "border-amber-500/60 shadow-amber-500/20",
-    bgGradient: "from-amber-950/60 to-yellow-900/30",
+    bgGradient: "from-amber-950/80 to-yellow-900/50",
+    thumbnail: "/images/Cherry.png",   // uses cherry as hero symbol
     badge: "🔥 HOT",
   },
   {
@@ -75,7 +33,8 @@ const GAME_VARIANTS: {
     description: "5×3 • 20 Lines",
     subDesc: "Wilds & multipliers",
     accent: "border-violet-500/60 shadow-violet-500/20",
-    bgGradient: "from-violet-950/60 to-purple-900/30",
+    bgGradient: "from-violet-950/80 to-purple-900/50",
+    thumbnail: "/images/five-reel-deluxe.png",
   },
   {
     id: "cascade",
@@ -83,7 +42,8 @@ const GAME_VARIANTS: {
     description: "5×5 • Chain Wins",
     subDesc: "Cascading multipliers",
     accent: "border-emerald-500/60 shadow-emerald-500/20",
-    bgGradient: "from-emerald-950/60 to-teal-900/30",
+    bgGradient: "from-emerald-950/80 to-teal-900/50",
+    thumbnail: "/images/cascading-reels.png",
     badge: "✨ NEW",
   },
   {
@@ -92,7 +52,8 @@ const GAME_VARIANTS: {
     description: "6 Reels • 117,649 Ways",
     subDesc: "Max volatility",
     accent: "border-pink-500/60 shadow-pink-500/20",
-    bgGradient: "from-pink-950/60 to-rose-900/30",
+    bgGradient: "from-pink-950/80 to-rose-900/50",
+    thumbnail: "/images/megaways.jpg",
   },
 ];
 
@@ -178,9 +139,16 @@ export function GameSelector() {
                 )}
               </AnimatePresence>
 
-              {/* Game preview */}
-              <div className="pointer-events-none">
-                <GamePreview type={variant.id} />
+              {/* Game thumbnail image */}
+              <div className="pointer-events-none relative h-20 w-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={variant.thumbnail}
+                  alt={variant.label}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                  style={{ filter: "brightness(0.85) saturate(1.2)" }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
 
               {/* Info */}

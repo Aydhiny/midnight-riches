@@ -37,10 +37,12 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+      "worker-src blob:",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' blob: data:",
       "font-src 'self'",
-      "connect-src 'self' https:",
+      "connect-src 'self' https: wss:",
+      "media-src 'self' blob:",
       "frame-ancestors 'none'",
     ].join("; "),
   },

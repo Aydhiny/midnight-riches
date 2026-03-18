@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 /**
  * AmbientOrbs — subtle grainy radial gradient circles at the edges of the page.
  * Pure CSS, no canvas, no rAF. Just positioned divs with radial gradients + grain overlay.
@@ -71,7 +73,12 @@ const ORBS: OrbConfig[] = [
 const GRAIN_URL =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
-export function AmbientOrbs({ isDark }: { isDark: boolean }) {
+export function AmbientOrbs({ isDark: isDarkProp }: { isDark: boolean }) {
+  // Prevent hydration mismatch: default to dark until client is mounted
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted ? isDarkProp : true;
+
   return (
     <div
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
