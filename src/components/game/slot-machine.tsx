@@ -261,7 +261,7 @@ export function SlotMachine() {
   }, [autoSpin, spinState, balance, lastWinAmount, bonus.isActive, executeSpin, setAutoSpin]);
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-lg mx-auto">
+    <div className="flex flex-col items-center gap-3 w-full max-w-xl mx-auto">
       <GameSelector />
       <CabinetFrame>
         <GameCanvas ref={canvasRef} gameType={gameType} />

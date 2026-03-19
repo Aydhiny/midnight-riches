@@ -75,7 +75,7 @@ export default function NotFound() {
             This page hit the jackpot of not existing.
           </p>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
-            The reels didn't line up. Let's get you back to the lobby where
+            The reels didn&apos;t line up. Let&apos;s get you back to the lobby where
             the action is.
           </p>
 

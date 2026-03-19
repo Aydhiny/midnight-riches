@@ -6,9 +6,10 @@ import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   Gamepad2, Wallet, History, Settings, LogOut,
-  ChevronDown, Zap, Menu, X, ShoppingBag,
+  ChevronDown, Zap, Menu, X, ShoppingBag, BarChart3,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -51,11 +52,12 @@ export function Navbar() {
 
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         <Link href={session?.user ? "/game" : "/"} className="flex items-center gap-2.5 shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/midnight-riches-logo.png"
             alt="Midnight Riches"
-            className="h-8 w-8 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]"
+            width={32}
+            height={32}
+            className="object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]"
           />
           <span className="hidden sm:block text-[15px] font-bold tracking-tight text-[var(--text-primary)]">
             Midnight{" "}
@@ -165,6 +167,7 @@ export function Navbar() {
                         <DropdownLink href="/settings" icon={Settings} label={t("settings")} onClick={() => setAvatarOpen(false)} />
                         <DropdownLink href="/wallet" icon={Wallet} label={t("wallet")} onClick={() => setAvatarOpen(false)} />
                         <DropdownLink href="/history" icon={History} label={t("betHistory")} onClick={() => setAvatarOpen(false)} />
+                        <DropdownLink href="/stats" icon={BarChart3} label="My Stats" onClick={() => setAvatarOpen(false)} />
                       </div>
 
                       <div className="border-t border-[var(--glass-border)] py-1.5">
