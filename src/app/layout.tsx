@@ -113,8 +113,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <SessionProvider>
             <ThemeProvider>{children}</ThemeProvider>
           </SessionProvider>
+          <CookieConsent />
         </NextIntlClientProvider>
-        <CookieConsent />
       </body>
     </html>
   );

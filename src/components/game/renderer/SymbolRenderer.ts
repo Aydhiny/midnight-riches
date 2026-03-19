@@ -1,7 +1,5 @@
 import { Assets, Sprite, Container, Graphics, Text, Texture } from "pixi.js";
 import type { GameSymbol } from "@/types";
-
-// Map symbol ids to image files in /public/images/
 const SYMBOL_IMAGE_MAP: Record<GameSymbol, string> = {
   cherry:     "/images/Cherry.png",
   lemon:      "/images/Lemon.png",
@@ -14,24 +12,20 @@ const SYMBOL_IMAGE_MAP: Record<GameSymbol, string> = {
   bar:        "/images/Bar.png",
 };
 
-// Fallback vector colours
 const SYMBOL_COLORS: Record<GameSymbol, number> = {
   cherry: 0xdc2626, lemon: 0xfacc15, orange: 0xf97316,
   grape: 0x8b5cf6, watermelon: 0x10b981, wild: 0xf5c842,
   scatter: 0xec4899, seven: 0xef4444, bar: 0x94a3b8,
 };
 
-// Module-level texture cache — shared across all reel instances
 const textureCache = new Map<GameSymbol, Texture>();
 let preloadPromise: Promise<void> | null = null;
 
-/** Reset cache — call if image paths change between hot-reloads (dev only) */
 export function resetTextureCache(): void {
   textureCache.clear();
   preloadPromise = null;
 }
 
-/** Pre-load all PNG symbol textures once — called from RendererManager.init() */
 export async function preloadSymbolTextures(): Promise<void> {
   if (preloadPromise) return preloadPromise;
   preloadPromise = (async () => {
@@ -42,7 +36,6 @@ export async function preloadSymbolTextures(): Promise<void> {
             const tex = await Assets.load<Texture>(path);
             textureCache.set(symbol, tex);
           } catch {
-            // PNG missing → fall back to vector rendering for this symbol
           }
         }
       )
@@ -51,41 +44,66 @@ export async function preloadSymbolTextures(): Promise<void> {
   return preloadPromise;
 }
 
-/** Create a PixiJS container for a single symbol cell */
 export function createSymbolGraphic(symbol: GameSymbol, size: number): Container {
   const container = new Container();
-  const pad = size * 0.05;
+  const pad = size * 0.06;
   const half = size / 2;
   const inner = size - pad * 2;
+  const r = size * 0.14;
 
-  // ── Cell background: subtle dark overlay so chrome reel shows through ──
-  const bg = new Graphics();
-  bg.roundRect(pad, pad, size - pad * 2, size - pad * 2, size * 0.1);
-  bg.fill({ color: 0x000c28, alpha: 0.22 });
-  // Metallic amber/gold stroke — gives the "slot cell" separation feel
-  bg.stroke({ color: 0xfbbf24, alpha: 0.18, width: 1.2 });
-  container.addChild(bg);
+  const outerBezel = new Graphics();
+  outerBezel.roundRect(pad - 2, pad - 2, inner + 4, inner + 4, r + 2);
+  outerBezel.fill({ color: 0x2a3454, alpha: 0.45 });
+  outerBezel.stroke({ color: 0x6b80a8, alpha: 0.30, width: 1 });
+  container.addChild(outerBezel);
 
-  // ── Top shine strip: bright reflection at top of cell ──────────────────
+  const inset = new Graphics();
+  inset.roundRect(pad, pad, inner, inner, r);
+  inset.fill({ color: 0x040c22, alpha: 0.55 });
+  container.addChild(inset);
+
+  const shadowTop = new Graphics();
+  shadowTop.roundRect(pad, pad, inner, 3, r);
+  shadowTop.fill({ color: 0x000000, alpha: 0.5 });
+  container.addChild(shadowTop);
+
+  const shadowLeft = new Graphics();
+  shadowLeft.roundRect(pad, pad, 3, inner, r);
+  shadowLeft.fill({ color: 0x000000, alpha: 0.35 });
+  container.addChild(shadowLeft);
+
+  const highlightBot = new Graphics();
+  highlightBot.roundRect(pad, pad + inner - 3, inner, 3, 0);
+  highlightBot.fill({ color: 0xffffff, alpha: 0.08 });
+  container.addChild(highlightBot);
+
+  const highlightRight = new Graphics();
+  highlightRight.roundRect(pad + inner - 3, pad, 3, inner, 0);
+  highlightRight.fill({ color: 0xffffff, alpha: 0.06 });
+  container.addChild(highlightRight);
+
   const shine = new Graphics();
-  shine.roundRect(pad + 3, pad + 3, size - pad * 2 - 6, (size - pad * 2) * 0.28, size * 0.07);
-  shine.fill({ color: 0xffffff, alpha: 0.1 });
+  shine.roundRect(pad + 4, pad + 3, inner - 8, inner * 0.38, r - 2);
+  shine.fill({ color: 0xffffff, alpha: 0.09 });
   container.addChild(shine);
 
-  // ── Bottom reflection: subtle gradient-ish dark at bottom ───────────────
-  const refl = new Graphics();
-  refl.roundRect(pad + 4, size - pad - (size - pad * 2) * 0.22, size - pad * 2 - 8, (size - pad * 2) * 0.22, size * 0.05);
-  refl.fill({ color: 0x000010, alpha: 0.28 });
-  container.addChild(refl);
+  const botDark = new Graphics();
+  botDark.roundRect(pad + 4, half + inner * 0.15, inner - 8, inner * 0.34, r - 4);
+  botDark.fill({ color: 0x000020, alpha: 0.3 });
+  container.addChild(botDark);
+
+  const gold = new Graphics();
+  gold.roundRect(pad, pad, inner, inner, r);
+  gold.stroke({ color: 0xfbbf24, alpha: 0.18, width: 1 });
+  container.addChild(gold);
 
   const tex = textureCache.get(symbol);
   if (tex) {
-    // PNG sprite — crisp, colourful, bigger than before
     const sprite = new Sprite(tex);
     sprite.anchor.set(0.5);
     sprite.x = half;
     sprite.y = half;
-    const fit = inner * 0.86; // was 0.74 — significantly larger
+    const fit = inner * 0.88;
     sprite.width = fit;
     sprite.height = fit;
     container.addChild(sprite);
@@ -96,7 +114,6 @@ export function createSymbolGraphic(symbol: GameSymbol, size: number): Container
   return container;
 }
 
-/** Fallback vector drawing when PNG isn't available */
 function _drawVector(container: Container, symbol: GameSymbol, size: number): void {
   const g = new Graphics();
   const half = size / 2;

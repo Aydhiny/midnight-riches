@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   getNotificationsAction,
   getUnreadCountAction,
@@ -36,6 +37,7 @@ function formatTimeAgo(date: Date): string {
 }
 
 export function NotificationBell() {
+  const t = useTranslations("notifications");
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationList, setNotificationList] = useState<Notification[]>([]);
@@ -139,20 +141,20 @@ export function NotificationBell() {
       {/* Dropdown panel */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-[var(--glass-border)] shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 sm:w-96"
-          style={{ background: "var(--nav-bg, #0f0520)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
+          className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-[var(--glass-border)] shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 sm:w-96 backdrop-blur-xl"
+          style={{ background: "var(--dropdown-bg, rgba(15,5,32,0.96))", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[var(--glass-border)] px-4 py-3">
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-              Notifications
+              {t("title")}
             </h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
                 className="text-xs font-medium text-amber-500 transition-colors hover:text-amber-400"
               >
-                Mark all as read
+                {t("markAllRead")}
               </button>
             )}
           </div>
@@ -165,7 +167,7 @@ export function NotificationBell() {
               </div>
             ) : notificationList.length === 0 ? (
               <div className="py-8 text-center text-sm text-[var(--text-muted)]">
-                No notifications yet
+                {t("empty")}
               </div>
             ) : (
               notificationList.map((notification) => (

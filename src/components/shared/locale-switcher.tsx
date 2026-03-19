@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronDown, Globe } from "lucide-react";
 import { setUserLocale, type Locale } from "@/i18n/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,8 +11,9 @@ const LOCALES: { value: Locale; label: string; flag: string }[] = [
   { value: "bs", label: "Bosanski", flag: "🇧🇦" },
 ];
 
-export function LocaleSwitcher() {
+export function LocaleSwitcher({ dropUp = false }: { dropUp?: boolean }) {
   const locale = useLocale();
+  const t = useTranslations("common");
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -57,8 +58,8 @@ export function LocaleSwitcher() {
         className={[
           "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all duration-150",
           open
-            ? "border-violet-500/40 bg-white/[0.09] text-white"
-            : "border-white/10 bg-white/[0.05] text-white/60 hover:bg-white/[0.09] hover:text-white/90 hover:border-white/20",
+            ? "border-violet-500/40 bg-[var(--glass-bg)] text-[var(--text-primary)]"
+            : "border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] hover:bg-[var(--bg-card-hover)] hover:text-[var(--text-primary)] hover:border-[var(--glass-border)]",
           isPending ? "opacity-50 cursor-wait" : "",
         ].join(" ")}
       >
@@ -73,28 +74,28 @@ export function LocaleSwitcher() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            initial={{ opacity: 0, scale: 0.95, y: dropUp ? 4 : -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            exit={{ opacity: 0, scale: 0.95, y: dropUp ? 4 : -4 }}
             transition={{ duration: 0.13, ease: "easeOut" }}
             role="listbox"
             aria-label="Select language"
-            className="absolute right-0 top-full mt-1.5 min-w-[148px] overflow-hidden rounded-xl border border-white/10 shadow-2xl z-[200]"
+            className={`absolute right-0 min-w-[148px] overflow-hidden rounded-xl border border-[var(--glass-border)] shadow-2xl z-[200] ${dropUp ? "bottom-full mb-1.5" : "top-full mt-1.5"}`}
             style={{
-              background: "rgba(8, 2, 22, 0.97)",
+              background: "var(--dropdown-bg)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
               boxShadow: [
                 "0 8px 32px rgba(0,0,0,0.65)",
-                "0 0 0 1px rgba(255,255,255,0.06)",
                 "0 0 24px rgba(124,58,237,0.12)",
+                "0 0 0 1px rgba(255,255,255,0.06)",
               ].join(", "),
             }}
           >
             {/* Header */}
-            <div className="px-3 py-1.5 border-b border-white/[0.06]">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/25">
-                Language
+            <div className="px-3 py-1.5 border-b border-[var(--glass-border)]">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                {t("language")}
               </p>
             </div>
 
@@ -111,8 +112,8 @@ export function LocaleSwitcher() {
                     className={[
                       "flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors",
                       isSelected
-                        ? "bg-violet-600/15 text-white"
-                        : "text-white/65 hover:bg-white/[0.06] hover:text-white",
+                        ? "bg-violet-600/15 text-[var(--text-primary)]"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]",
                     ].join(" ")}
                   >
                     <span className="text-base leading-none">{l.flag}</span>

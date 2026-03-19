@@ -19,7 +19,6 @@ const ALL_CHALLENGES: DailyChallenge[] = [
   { id: "win_streak", title: "Hot Streak", description: "Win 3 spins in a row", icon: "🔥", target: 3, rewardXp: 150, rewardCredits: 125, type: "wins" },
 ];
 
-// Get 3 daily challenges based on date (deterministic rotation)
 export function getDailyChallenges(date: string): DailyChallenge[] {
   const seed = date.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const indices: number[] = [];

@@ -2,7 +2,24 @@
 
 import { useRef, useEffect, useImperativeHandle, forwardRef, useCallback, useState } from "react";
 import { RendererManager } from "./renderer";
+import { useGameStore } from "@/store/game-store";
 import type { GameType, SpinResult, WinEvaluation, CascadeStep } from "@/types";
+
+const SHAKE_STYLE = `
+@keyframes slotShake {
+  0%,100% { transform: translateY(0px); }
+  20%      { transform: translateY(-2.5px); }
+  40%      { transform: translateY(2.5px); }
+  60%      { transform: translateY(-1.5px); }
+  80%      { transform: translateY(1.5px); }
+}
+@keyframes winGlow {
+  0%,100% { filter: drop-shadow(0 0 12px rgba(251,191,36,0.6)); }
+  50%     { filter: drop-shadow(0 0 28px rgba(251,191,36,1)) drop-shadow(0 0 8px rgba(255,215,0,0.8)); }
+}
+.slot-spinning { animation: slotShake 0.07s linear infinite; }
+.slot-win-glow  { animation: winGlow 0.5s ease-in-out 3; }
+`;
 
 export interface GameCanvasHandle {
   playSpinAnimation: (result: SpinResult) => Promise<void>;
@@ -10,6 +27,7 @@ export interface GameCanvasHandle {
   playCascadeSequence: (cascades: CascadeStep[]) => Promise<void>;
   setTurboMode: (turbo: boolean) => void;
   setWinAmount: (amount: number) => void;
+  flashWinGlow: () => void;
 }
 
 interface GameCanvasProps {
@@ -27,16 +45,14 @@ function getDimensions(gameType: GameType): { width: number; height: number } {
 
 export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
   function GameCanvas({ gameType }, ref) {
-    // Container div — PixiJS appends its own <canvas> here.
-    // We never reuse the same <canvas> element across inits, which avoids
-    // the "WebGL context already destroyed" bug in React Strict Mode.
     const containerRef = useRef<HTMLDivElement>(null);
     const managerRef = useRef<RendererManager | null>(null);
     const initDoneRef = useRef(false);
     const [isLoading, setIsLoading] = useState(true);
     const [dimensions, setDimensions] = useState(() => getDimensions(gameType));
+    const [showWinGlow, setShowWinGlow] = useState(false);
+    const { spinState } = useGameStore();
 
-    // ── Effect 1: one-time PixiJS init ──────────────────────────────────────
     useEffect(() => {
       const container = containerRef.current;
       if (!container) return;
@@ -68,7 +84,6 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // ── Effect 2: swap game type without recreating WebGL context ───────────
     useEffect(() => {
       if (!initDoneRef.current) return;
 
@@ -100,20 +115,28 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
     const playCascadeSequence = useCallback(async (c: CascadeStep[]) => { await managerRef.current?.playCascadeSequence(c); }, []);
     const setTurboMode       = useCallback((t: boolean)              => { managerRef.current?.setTurboMode(t); },              []);
     const setWinAmount       = useCallback((a: number)               => { managerRef.current?.setWinAmount(a); },              []);
+    const flashWinGlow       = useCallback(() => {
+      setShowWinGlow(true);
+      setTimeout(() => setShowWinGlow(false), 1600);
+    }, []);
 
     useImperativeHandle(ref, () => ({
-      playSpinAnimation, playWinAnimation, playCascadeSequence, setTurboMode, setWinAmount,
-    }), [playSpinAnimation, playWinAnimation, playCascadeSequence, setTurboMode, setWinAmount]);
+      playSpinAnimation, playWinAnimation, playCascadeSequence, setTurboMode, setWinAmount, flashWinGlow,
+    }), [playSpinAnimation, playWinAnimation, playCascadeSequence, setTurboMode, setWinAmount, flashWinGlow]);
+
+    const isSpinning = spinState === "animating";
 
     return (
       <div
         className="relative mx-auto"
         style={{ width: dimensions.width, height: dimensions.height }}
       >
-        {/* PixiJS appends its canvas here — no shared <canvas> element */}
+        <style>{SHAKE_STYLE}</style>
         <div
           ref={containerRef}
-          className="h-full w-full rounded-lg overflow-hidden"
+          className={`h-full w-full rounded-lg overflow-hidden transition-all duration-300 ${
+            isSpinning ? "slot-spinning" : showWinGlow ? "slot-win-glow" : ""
+          }`}
         />
         {isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/70 backdrop-blur-sm gap-3">

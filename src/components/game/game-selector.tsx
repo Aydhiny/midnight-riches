@@ -24,7 +24,7 @@ const GAME_VARIANTS: {
     subDesc: "Timeless fruit slots",
     accent: "border-amber-500/60 shadow-amber-500/20",
     bgGradient: "from-amber-950/80 to-yellow-900/50",
-    thumbnail: "/images/Cherry.png",   // uses cherry as hero symbol
+    thumbnail: "/images/classic-slots.jpg",
     badge: "🔥 HOT",
   },
   {

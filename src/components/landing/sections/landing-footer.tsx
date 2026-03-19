@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 
 function SocialIcon({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -18,35 +17,24 @@ function SocialIcon({ label, children }: { label: string; children: React.ReactN
 
 export function LandingFooter() {
   const t = useTranslations("landing.footer");
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
 
   return (
     <footer className="relative overflow-hidden">
-      {/* Subtle gradient background */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{
-          background: isDark
-            ? "linear-gradient(180deg, transparent 0%, rgba(6,1,15,0.96) 15%)"
-            : "linear-gradient(180deg, transparent 0%, rgba(245,240,255,0.96) 15%)",
-        }}
+        style={{ background: "var(--footer-bg)" }}
       />
 
-      {/* Top gradient border */}
       <div
         className="relative h-px w-full"
         style={{
-          background: isDark
-            ? "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), rgba(219,39,119,0.4), transparent)"
-            : "linear-gradient(90deg, transparent, rgba(139,92,246,0.3), rgba(219,39,119,0.2), transparent)",
-          boxShadow: isDark ? "0 0 20px rgba(139,92,246,0.3)" : "none",
+          background: "var(--footer-border-gradient)",
+          boxShadow: "var(--footer-border-shadow)",
         }}
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-10">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
-          {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -74,7 +62,6 @@ export function LandingFooter() {
             </div>
           </div>
 
-          {/* Games */}
           <div>
             <h4 className="mb-4 text-xs font-bold tracking-widest uppercase text-[var(--text-muted)]">
               {t("gamesTitle")}
@@ -90,7 +77,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Legal */}
           <div>
             <h4 className="mb-4 text-xs font-bold tracking-widest uppercase text-[var(--text-muted)]">
               {t("legalTitle")}
@@ -119,7 +105,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Support */}
           <div>
             <h4 className="mb-4 text-xs font-bold tracking-widest uppercase text-[var(--text-muted)]">
               {t("supportTitle")}
@@ -131,10 +116,8 @@ export function LandingFooter() {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="mt-10 h-px bg-gradient-to-r from-transparent via-[var(--glass-border)] to-transparent" />
 
-        {/* Bottom section */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500/20 border border-red-500/30 text-xs font-black text-red-400">
             18+
@@ -148,9 +131,7 @@ export function LandingFooter() {
         <p
           className="mt-3 text-center text-[11px] tracking-wider"
           style={{
-            background: isDark
-              ? "linear-gradient(90deg, rgba(139,92,246,0.7), rgba(219,39,119,0.7))"
-              : "linear-gradient(90deg, rgba(109,40,217,0.6), rgba(190,24,93,0.6))",
+            backgroundImage: "var(--footer-copyright-gradient)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",

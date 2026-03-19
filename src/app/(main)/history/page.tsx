@@ -30,35 +30,36 @@ interface RtpPoint {
 }
 
 function StatsCards({ stats }: { stats: GameStats }) {
+  const t = useTranslations("history");
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       <Card>
         <CardContent className="p-3 text-center">
-          <div className="text-xs text-purple-400">Total Spins</div>
-          <div className="text-lg font-bold text-white">{stats.totalSpins}</div>
+          <div className="text-xs text-[var(--text-secondary)]">{t("totalSpins")}</div>
+          <div className="text-lg font-bold text-[var(--text-primary)]">{stats.totalSpins}</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-3 text-center">
-          <div className="text-xs text-purple-400">Total Wagered</div>
-          <div className="text-lg font-bold text-white">{formatCurrency(stats.totalWagered)}</div>
+          <div className="text-xs text-[var(--text-secondary)]">{t("totalWagered")}</div>
+          <div className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(stats.totalWagered)}</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-3 text-center">
-          <div className="text-xs text-purple-400">Total Won</div>
+          <div className="text-xs text-[var(--text-secondary)]">{t("totalWon")}</div>
           <div className="text-lg font-bold text-emerald-400">{formatCurrency(stats.totalWon)}</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-3 text-center">
-          <div className="text-xs text-purple-400">RTP</div>
+          <div className="text-xs text-[var(--text-secondary)]">{t("rtp")}</div>
           <div className="text-lg font-bold text-yellow-400">{stats.rtp.toFixed(1)}%</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="p-3 text-center">
-          <div className="text-xs text-purple-400">Biggest Win</div>
+          <div className="text-xs text-[var(--text-secondary)]">{t("biggestWin")}</div>
           <div className="text-lg font-bold text-pink-400">{formatCurrency(stats.biggestWin)}</div>
         </CardContent>
       </Card>
@@ -67,6 +68,7 @@ function StatsCards({ stats }: { stats: GameStats }) {
 }
 
 function RtpChart({ data }: { data: RtpPoint[] }) {
+  const t = useTranslations("history");
   const [hovered, setHovered] = useState<number | null>(null);
   const [metric, setMetric] = useState<"rtp" | "win" | "bet">("rtp");
 
@@ -99,7 +101,6 @@ function RtpChart({ data }: { data: RtpPoint[] }) {
     "Z",
   ].join(" ");
 
-  // Y-axis gridlines (5 ticks)
   const ticks = 5;
   const yTicks = Array.from({ length: ticks + 1 }, (_, i) => minV + (i / ticks) * range);
 
@@ -116,7 +117,7 @@ function RtpChart({ data }: { data: RtpPoint[] }) {
       <CardHeader>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-sm font-bold text-[var(--text-primary)]">
-            Performance over last {data.length} sessions
+            {t("performanceOver", { count: data.length })}
           </CardTitle>
           <div className="flex gap-1.5">
             {(["rtp", "win", "bet"] as const).map((m) => (
@@ -129,7 +130,7 @@ function RtpChart({ data }: { data: RtpPoint[] }) {
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                {m === "rtp" ? "RTP %" : m === "win" ? "Win $" : "Bet $"}
+                {m === "rtp" ? t("rtpPercent") : m === "win" ? t("winBrief") : t("betBrief")}
               </button>
             ))}
           </div>
@@ -160,53 +161,46 @@ function RtpChart({ data }: { data: RtpPoint[] }) {
             </linearGradient>
           </defs>
 
-          {/* Y-axis grid + labels */}
           {yTicks.map((v, i) => {
             const y = toY(v);
             const label = metric === "rtp" ? `${v.toFixed(0)}%` : `$${v.toFixed(0)}`;
             return (
               <g key={i}>
-                <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-                <text x={PL - 6} y={y} fill="rgba(255,255,255,0.3)" fontSize="9" textAnchor="end" dominantBaseline="middle">
+                <line x1={PL} y1={y} x2={W - PR} y2={y} style={{ stroke: "var(--chart-grid)" }} strokeWidth="1" />
+                <text x={PL - 6} y={y} style={{ fill: "var(--chart-text)" }} fontSize="9" textAnchor="end" dominantBaseline="middle">
                   {label}
                 </text>
               </g>
             );
           })}
 
-          {/* RTP 96% target line */}
           {metric === "rtp" && (() => {
             const ty = toY(96);
             return (
               <g>
                 <line x1={PL} y1={ty} x2={W - PR} y2={ty} stroke="#7c3aed" strokeDasharray="5 3" strokeWidth="1" opacity="0.7" />
-                <text x={W - PR + 3} y={ty} fill="#9333ea" fontSize="9" dominantBaseline="middle">96%</text>
+                <text x={W - PR + 3} y={ty} fill="#9333ea" fontSize="9" dominantBaseline="middle">{t("targetRtp")}</text>
               </g>
             );
           })()}
 
-          {/* Area fill */}
           <path d={areaPath} fill="url(#areaGrad)" />
 
-          {/* Line */}
           <path d={linePath} fill="none" stroke="url(#lineGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-          {/* X-axis session markers */}
           {data.map((_, i) => {
             if (data.length > 20 && i % Math.ceil(data.length / 10) !== 0) return null;
             return (
-              <text key={i} x={toX(i)} y={H - PB + 14} fill="rgba(255,255,255,0.25)" fontSize="9" textAnchor="middle">
+              <text key={i} x={toX(i)} y={H - PB + 14} style={{ fill: "var(--chart-text-dim)" }} fontSize="9" textAnchor="middle">
                 {i + 1}
               </text>
             );
           })}
 
-          {/* Hover crosshair */}
           {hovered !== null && (
             <>
-              <line x1={hoveredX} y1={PT} x2={hoveredX} y2={PT + chartH} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
-              <circle cx={hoveredX} cy={hoveredY} r={5} fill={stroke} stroke="#0f0520" strokeWidth="2" />
-              {/* Tooltip */}
+              <line x1={hoveredX} y1={PT} x2={hoveredX} y2={PT + chartH} style={{ stroke: "var(--chart-grid)" }} strokeWidth="1" strokeDasharray="3 3" />
+              <circle cx={hoveredX} cy={hoveredY} r={5} fill={stroke} style={{ stroke: "var(--bg-primary)" }} strokeWidth="2" />
               {hoveredPoint && (() => {
                 const tipW = 130, tipH = 60;
                 const tipX = Math.min(hoveredX + 12, W - tipW - 4);
@@ -214,11 +208,11 @@ function RtpChart({ data }: { data: RtpPoint[] }) {
                 const dispV = metric === "rtp" ? `${hoveredV.toFixed(1)}%` : `$${hoveredV.toFixed(2)}`;
                 return (
                   <g>
-                    <rect x={tipX} y={tipY} width={tipW} height={tipH} rx="6" fill="#0d0020" stroke={stroke} strokeWidth="0.8" opacity="0.95" />
-                    <text x={tipX + 10} y={tipY + 16} fill="rgba(255,255,255,0.5)" fontSize="10">Session {hovered! + 1}</text>
+                    <rect x={tipX} y={tipY} width={tipW} height={tipH} rx="6" style={{ fill: "var(--chart-tooltip-bg)", stroke: stroke }} strokeWidth="0.8" opacity="0.95" />
+                    <text x={tipX + 10} y={tipY + 16} style={{ fill: "var(--chart-tooltip-text)" }} fontSize="10">#{hovered! + 1}</text>
                     <text x={tipX + 10} y={tipY + 34} fill={stroke} fontSize="14" fontWeight="bold">{dispV}</text>
-                    <text x={tipX + 10} y={tipY + 50} fill="rgba(255,255,255,0.35)" fontSize="9">
-                      Bet: ${hoveredPoint.bet.toFixed(2)} · Win: ${hoveredPoint.win.toFixed(2)}
+                    <text x={tipX + 10} y={tipY + 50} style={{ fill: "var(--chart-tooltip-dim)" }} fontSize="9">
+                      ${hoveredPoint.bet.toFixed(2)} · ${hoveredPoint.win.toFixed(2)}
                     </text>
                   </g>
                 );
@@ -227,16 +221,15 @@ function RtpChart({ data }: { data: RtpPoint[] }) {
           )}
         </svg>
 
-        {/* Legend */}
         <div className="flex items-center gap-4 mt-1 text-[11px] text-[var(--text-muted)]">
           <div className="flex items-center gap-1.5">
             <div className="h-0.5 w-6 rounded-full" style={{ background: stroke }} />
-            <span>{metric === "rtp" ? "RTP %" : metric === "win" ? "Win amount" : "Bet amount"}</span>
+            <span>{metric === "rtp" ? t("rtpPercent") : metric === "win" ? t("winAmountLabel") : t("betAmountLabel")}</span>
           </div>
           {metric === "rtp" && (
             <div className="flex items-center gap-1.5">
               <div className="h-0.5 w-6 rounded-full bg-violet-500 opacity-60" style={{ backgroundImage: "repeating-linear-gradient(90deg, #7c3aed 0 5px, transparent 5px 8px)" }} />
-              <span>Target RTP (96%)</span>
+              <span>{t("targetRtp")}</span>
             </div>
           )}
         </div>
@@ -338,38 +331,38 @@ export default function HistoryPage() {
                 </Button>
               ))}
               <Button variant="outline" size="sm" onClick={exportCsv} disabled={items.length === 0}>
-                Export CSV
+                {t("exportCsv")}
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="py-8 text-center text-purple-400">Loading...</div>
+            <div className="py-8 text-center text-[var(--text-secondary)]">{t("loading")}</div>
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-purple-400">{t("noHistory")}</div>
+            <div className="py-8 text-center text-[var(--text-secondary)]">{t("noHistory")}</div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-purple-500/20 text-purple-400">
+                    <tr className="border-b border-[var(--glass-border)] text-[var(--text-secondary)]">
                       <th className="pb-3 font-medium">{t("date")}</th>
-                      <th className="pb-3 font-medium">Game</th>
+                      <th className="pb-3 font-medium">{t("gameColumn")}</th>
                       <th className="pb-3 font-medium">{t("bet")}</th>
                       <th className="pb-3 font-medium">{t("outcome")}</th>
                       <th className="pb-3 text-right font-medium">{t("winAmount")}</th>
-                      <th className="pb-3 text-right font-medium">Net</th>
+                      <th className="pb-3 text-right font-medium">{t("net")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item) => {
                       const net = Number(item.winAmount) - Number(item.betAmount);
                       return (
-                        <tr key={item.id} className="border-b border-purple-500/10">
-                          <td className="py-3 text-purple-200">{formatDate(item.createdAt)}</td>
-                          <td className="py-3 text-purple-300 text-xs">{item.gameId ?? "classic"}</td>
-                          <td className="py-3 text-white">{formatCurrency(Number(item.betAmount))}</td>
+                        <tr key={item.id} className="border-b border-[var(--glass-border)]">
+                          <td className="py-3 text-[var(--text-secondary)]">{formatDate(item.createdAt)}</td>
+                          <td className="py-3 text-[var(--text-secondary)] text-xs">{item.gameId ?? "classic"}</td>
+                          <td className="py-3 text-[var(--text-primary)]">{formatCurrency(Number(item.betAmount))}</td>
                           <td className="py-3">
                             <span
                               className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -403,9 +396,9 @@ export default function HistoryPage() {
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
                 >
-                  Previous
+                  {t("previous")}
                 </Button>
-                <span className="text-sm text-purple-400">
+                <span className="text-sm text-[var(--text-secondary)]">
                   {page} / {totalPages}
                 </span>
                 <Button
@@ -414,7 +407,7 @@ export default function HistoryPage() {
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
                 >
-                  Next
+                  {t("next")}
                 </Button>
               </div>
             </>

@@ -21,7 +21,7 @@ export default function GameError({
         <CardContent className="p-8">
           <div className="text-5xl">🎰</div>
           <h2 className="mt-4 text-xl font-bold text-red-400">Game Error</h2>
-          <p className="mt-2 text-sm text-purple-300/70">
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
             The slot machine encountered an issue. Your balance is safe.
           </p>
           <Button onClick={reset} variant="gold" className="mt-6">

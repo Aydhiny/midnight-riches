@@ -44,6 +44,33 @@
   --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(139, 92, 246, 0.06);
   --nav-bg: rgba(253, 250, 255, 0.85);
   --nav-border: rgba(139, 92, 246, 0.1);
+  --auth-card-bg: rgba(255, 255, 255, 0.94);
+  --auth-card-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 8px 60px rgba(0, 0, 0, 0.08),
+    0 0 40px rgba(124, 58, 237, 0.05);
+  --cta-bg-radial: radial-gradient(ellipse 90% 70% at 50% 50%, rgba(167, 139, 250, 0.35) 0%, transparent 65%);
+  --cta-rose-bloom: radial-gradient(ellipse at 30% 80%, rgba(244, 114, 182, 0.25) 0%, transparent 60%);
+  --cta-gold-bloom: radial-gradient(ellipse at 70% 20%, rgba(245, 158, 11, 0.12) 0%, transparent 55%);
+  --cta-grain-opacity: 0.06;
+  --cta-suit-opacity: 0.04;
+  --cta-headline-gradient: linear-gradient(to right, #6d28d9, #7c3aed, #9d174d);
+  --footer-bg: linear-gradient(180deg, transparent 0%, rgba(245, 240, 255, 0.96) 15%);
+  --footer-border-gradient: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), rgba(219, 39, 119, 0.2), transparent);
+  --footer-border-shadow: none;
+  --footer-copyright-gradient: linear-gradient(90deg, rgba(109, 40, 217, 0.6), rgba(190, 24, 93, 0.6));
+  --dropdown-bg: rgba(255, 255, 255, 0.97);
+  --dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --chart-grid: rgba(0, 0, 0, 0.05);
+  --chart-text: rgba(0, 0, 0, 0.3);
+  --chart-text-dim: rgba(0, 0, 0, 0.18);
+  --chart-tooltip-bg: #faf8ff;
+  --chart-tooltip-text: rgba(0, 0, 0, 0.45);
+  --chart-tooltip-dim: rgba(0, 0, 0, 0.3);
+  --cookie-bg: rgba(255, 255, 255, 0.97);
+  --cookie-shadow: 0 8px 60px rgba(245, 158, 11, 0.08), 0 0 0 1px rgba(245, 158, 11, 0.05), 0 25px 50px rgba(0, 0, 0, 0.15);
+  --cookie-separator: rgba(0, 0, 0, 0.06);
+  --cookie-text: rgba(0, 0, 0, 0.75);
+  --cookie-text-dim: rgba(0, 0, 0, 0.4);
+  --hero-italic-gradient: linear-gradient(to bottom, #1a0533, #6d28d9, #7c3aed);
 }
 
 .dark {
@@ -65,6 +92,33 @@
   --glass-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
   --nav-bg: rgba(6, 1, 15, 0.85);
   --nav-border: rgba(255, 255, 255, 0.07);
+  --auth-card-bg: rgba(8, 2, 22, 0.90);
+  --auth-card-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 60px rgba(0, 0, 0, 0.55),
+    0 0 60px rgba(124, 58, 237, 0.08);
+  --cta-bg-radial: radial-gradient(ellipse 90% 70% at 50% 50%, rgba(124, 58, 237, 0.35) 0%, transparent 65%);
+  --cta-rose-bloom: radial-gradient(ellipse at 30% 80%, rgba(190, 24, 93, 0.25) 0%, transparent 60%);
+  --cta-gold-bloom: radial-gradient(ellipse at 70% 20%, rgba(245, 158, 11, 0.15) 0%, transparent 55%);
+  --cta-grain-opacity: 0.12;
+  --cta-suit-opacity: 0.06;
+  --cta-headline-gradient: linear-gradient(to right, #c4b5fd, #ede9fe, #fbcfe8);
+  --footer-bg: linear-gradient(180deg, transparent 0%, rgba(6, 1, 15, 0.96) 15%);
+  --footer-border-gradient: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), rgba(219, 39, 119, 0.4), transparent);
+  --footer-border-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  --footer-copyright-gradient: linear-gradient(90deg, rgba(139, 92, 246, 0.7), rgba(219, 39, 119, 0.7));
+  --dropdown-bg: rgba(8, 2, 22, 0.97);
+  --dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-text: rgba(255, 255, 255, 0.3);
+  --chart-text-dim: rgba(255, 255, 255, 0.25);
+  --chart-tooltip-bg: #0d0020;
+  --chart-tooltip-text: rgba(255, 255, 255, 0.5);
+  --chart-tooltip-dim: rgba(255, 255, 255, 0.35);
+  --cookie-bg: rgba(8, 2, 22, 0.97);
+  --cookie-shadow: 0 8px 60px rgba(245, 158, 11, 0.12), 0 0 0 1px rgba(245, 158, 11, 0.08), 0 25px 50px rgba(0, 0, 0, 0.6);
+  --cookie-separator: rgba(245, 158, 11, 0.1);
+  --cookie-text: rgba(255, 255, 255, 0.85);
+  --cookie-text-dim: rgba(255, 255, 255, 0.45);
+  --hero-italic-gradient: linear-gradient(to bottom, #ffffff, #e4e4e7, #a1a1aa);
 }
 
 /* ─── Smooth Scrolling ───────────────────────────────────── */

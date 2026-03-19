@@ -19,7 +19,6 @@ import { AnimatePresence, motion } from "framer-motion";
 
 type Tab = "profile" | "preferences" | "security";
 
-// ─── CustomSelect ────────────────────────────────────────────────────────────
 interface CustomSelectOption {
   value: string;
   label: string;
@@ -58,7 +57,6 @@ function CustomSelect({ value, onChange, options, variant = "default" }: CustomS
     ? "text-[var(--text-muted)]"
     : "text-red-400/60";
 
-  // Close on outside click
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -122,9 +120,7 @@ function CustomSelect({ value, onChange, options, variant = "default" }: CustomS
     </div>
   );
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
-// Simple toggle switch component
 function Toggle({
   checked,
   onChange,
@@ -168,7 +164,6 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-3xl space-y-6 p-4 pb-12">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("title")}</h1>
 
-      {/* Tab navigation */}
       <div className="flex gap-1 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1">
         {tabs.map((tb) => (
           <button
@@ -214,7 +209,6 @@ function ProfileTab({
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Limit to 2MB
     if (file.size > 2 * 1024 * 1024) {
       alert("Image must be under 2MB");
       return;
@@ -250,7 +244,6 @@ function ProfileTab({
           <CardTitle className="text-[var(--text-primary)]">Profile Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar upload */}
           <div className="flex items-center gap-5">
             <div className="relative shrink-0">
               <div className="h-20 w-20 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center overflow-hidden ring-2 ring-violet-500/30">
@@ -289,7 +282,6 @@ function ProfileTab({
             </div>
           </div>
 
-          {/* Fields */}
           <div className="grid gap-4">
             <div>
               <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Display Name</label>
@@ -327,7 +319,6 @@ function ProfileTab({
         </CardContent>
       </Card>
 
-      {/* Stats */}
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
         <CardHeader>
           <CardTitle className="text-[var(--text-primary)]">Player Stats</CardTitle>

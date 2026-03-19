@@ -14,27 +14,29 @@ interface JackpotWinner {
   timeAgo: string;
 }
 
-function generateFakeWinners(): JackpotWinner[] {
+function generateFakeWinners(games: string[], times: string[]): JackpotWinner[] {
   const names = [
     "Ke***l T.", "Ma***a S.", "Ah***d K.", "Le***a M.", "Ta***k B.",
     "Sa***a H.", "Am***a D.", "Iv***n P.", "Em***a K.", "Di***o M.",
-  ];
-  const games = ["Classic Slots", "5-Reel Deluxe", "Cascade Reels", "Megaways"];
-  const times = [
-    "2 min ago", "18 min ago", "1 hour ago", "3 hours ago", "5 hours ago",
-    "Yesterday", "Yesterday", "2 days ago", "3 days ago", "5 days ago",
   ];
   return names.map((name, i) => ({
     name,
     game: games[i % games.length],
     amount: Math.floor(Math.random() * 400000 + 5000),
-    timeAgo: times[i],
+    timeAgo: times[i] ?? times[times.length - 1],
   }));
 }
 
 export function JackpotHistorySection() {
   const t = useTranslations("landing.jackpotHistory");
-  const winners = useMemo(() => generateFakeWinners(), []);
+  const games = useMemo(() => [
+    t("games.classic"), t("games.fiveReel"), t("games.cascade"), t("games.megaways"),
+  ], [t]);
+  const times = useMemo(() => [
+    t("t0"), t("t1"), t("t2"), t("t3"), t("t4"),
+    t("t5"), t("t6"), t("t7"), t("t8"), t("t9"),
+  ], [t]);
+  const winners = useMemo(() => generateFakeWinners(games, times), [games, times]);
 
   return (
     <section className="py-20">

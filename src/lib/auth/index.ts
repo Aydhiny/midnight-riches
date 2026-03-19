@@ -1,21 +1,27 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
+import Discord from "next-auth/providers/discord";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
-import { users, wallets } from "@/lib/db/schema";
+import { users, accounts, sessions, verificationTokens, wallets } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { signInSchema } from "@/lib/validators";
 
-const ONE_DAY = 24 * 60 * 60;
-const THIRTY_DAYS = 30 * ONE_DAY;
+const THIRTY_DAYS = 30 * 24 * 60 * 60;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: DrizzleAdapter(db),
+  adapter: DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+  }),
   session: {
     strategy: "jwt",
-    maxAge: THIRTY_DAYS, // default max; actual expiry controlled via jwt callback
+    maxAge: THIRTY_DAYS,
   },
   pages: {
     signIn: "/auth/signin",
@@ -26,6 +32,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+      ? [GitHub({
+          clientId: process.env.AUTH_GITHUB_ID,
+          clientSecret: process.env.AUTH_GITHUB_SECRET,
+          allowDangerousEmailAccountLinking: true,
+        })]
+      : []),
+    ...(process.env.AUTH_DISCORD_ID && process.env.AUTH_DISCORD_SECRET
+      ? [Discord({
+          clientId: process.env.AUTH_DISCORD_ID,
+          clientSecret: process.env.AUTH_DISCORD_SECRET,
+          allowDangerousEmailAccountLinking: true,
+        })]
+      : []),
     Credentials({
       name: "credentials",
       credentials: {
@@ -46,15 +66,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
-        const rememberMe = (credentials as Record<string, unknown>)?.rememberMe === "true";
-
         return {
           id: user.id,
           email: user.email,
           name: user.name,
-          image: user.image,
-          rememberMe,
-        } as Record<string, unknown> & { id: string };
+        };
       },
     }),
   ],
@@ -62,10 +78,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // Set session expiry based on remember me preference
-        const rememberMe = (user as Record<string, unknown>).rememberMe === true;
-        token.maxAge = rememberMe ? THIRTY_DAYS : ONE_DAY;
-        token.exp = Math.floor(Date.now() / 1000) + (rememberMe ? THIRTY_DAYS : ONE_DAY);
+        delete token.picture;
       }
       return token;
     },

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { Shield, Zap, CheckCircle, Globe, Flame, Timer } from "lucide-react";
+import { Flame, Timer } from "lucide-react";
 import { useConversionTracker } from "@/lib/analytics/conversion";
 import { useHeroVariant } from "@/lib/analytics/ab";
 import { DemoSlot } from "./demo-slot";
@@ -41,8 +41,8 @@ function secsToNextQuarter(): number {
   return Math.max(1, quarter - totalSecs);
 }
 
-function useJackpot(initial: number) {
-  const [jackpot, setJackpot] = useState(initial);
+function useJackpot() {
+  const [jackpot, setJackpot] = useState(847293);
   const [flash, setFlash] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -62,6 +62,7 @@ function useJackpot(initial: number) {
   }, []);
 
   useEffect(() => {
+    setJackpot(847293 + Math.floor(Math.random() * 50000));
     scheduleNext();
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -80,9 +81,8 @@ export function HeroSection() {
   useEffect(() => setMounted(true), []);
   const isDark = mounted ? resolvedTheme === "dark" : true;
 
-  const { jackpot, flash } = useJackpot(847293 + Math.floor(Math.random() * 50000));
+  const { jackpot, flash } = useJackpot();
 
-  // Cycling last winner
   const [winnerIdx, setWinnerIdx] = useState(0);
   const [winnerVisible, setWinnerVisible] = useState(true);
   useEffect(() => {
@@ -96,9 +96,9 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
-  // Jackpot countdown
-  const [jackpotSecs, setJackpotSecs] = useState(secsToNextQuarter);
+  const [jackpotSecs, setJackpotSecs] = useState(0);
   useEffect(() => {
+    setJackpotSecs(secsToNextQuarter());
     const interval = setInterval(() => {
       setJackpotSecs((s) => (s <= 1 ? secsToNextQuarter() : s - 1));
     }, 1000);
@@ -109,17 +109,9 @@ export function HeroSection() {
   const secs = jackpotSecs % 60;
   const winner = RECENT_WINNERS[winnerIdx];
 
-  const trustBadges = [
-    { icon: Shield, label: t("trustSecure") },
-    { icon: Zap, label: t("trustInstant") },
-    { icon: CheckCircle, label: t("trustFair") },
-    { icon: Globe, label: t("trustMultilingual") },
-  ] as const;
-
   return (
     <section id="hero" className="relative flex min-h-screen items-center pt-16 overflow-hidden">
       <HeroBackground isDark={isDark} />
-      {/* Hide expensive visuals on mobile — keeps 60fps on low-end devices */}
       <div className="hidden md:contents">
         <BackgroundReel side="left" isDark={isDark} />
         <BackgroundReel side="right" isDark={isDark} />
@@ -128,13 +120,11 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 mx-auto grid w-full max-w-7xl gap-8 px-4 py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:py-0">
-        {/* ── Left — Copy ────────────────────────────────────── */}
         <div className="flex flex-col justify-center">
           <AnimatedContent delay={0} direction="vertical" distance={20}>
             <LiveBadge />
           </AnimatedContent>
 
-          {/* Main headline */}
           <AnimatedContent delay={0.12} direction="vertical" distance={20}>
             <h1
               className={[
@@ -149,37 +139,29 @@ export function HeroSection() {
             </h1>
           </AnimatedContent>
 
-          {/* "Start Now." — Cormorant Garamond bold italic, dominant */}
           <AnimatedContent delay={0.22} direction="vertical" distance={24}>
             <span
-              className={[
-                "leading-[0.88] inline-block",
-                "bg-clip-text text-transparent",
-                // Dark: white→zinc gradient; Light: deep violet gradient
-                // Using Tailwind dark: so the switch is pure-CSS — no JS flash
-                "bg-gradient-to-b",
-                "dark:from-white dark:via-zinc-200 dark:to-zinc-400",
-                "from-[#1a0533] via-[#4a1d8a] to-violet-600",
-              ].join(" ")}
+              className="leading-[0.88] inline-block"
               style={{
                 fontFamily: "var(--font-garamond)",
                 fontWeight: 700,
                 fontStyle: "italic",
                 fontSize: "clamp(4rem, 12vw, 8rem)",
                 letterSpacing: "-0.09em",
+                background: "var(--hero-italic-gradient)",
+                WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
             >
-              start now.
+              {t("heroItalic")}
             </span>
           </AnimatedContent>
 
-          {/* Subheadline */}
           <AnimatedContent delay={0.35} direction="vertical" distance={20}>
             <p className="mt-4 text-base md:text-lg text-[var(--text-secondary)] max-w-lg leading-relaxed">{t("subheadline")}</p>
           </AnimatedContent>
 
-          {/* Jackpot Display */}
           <AnimatedContent delay={0.45} direction="vertical" distance={20}>
             <GlassCard
               className="mt-6 inline-flex items-center gap-4 px-6 py-4 hover:shadow-[0_0_40px_rgba(255,215,0,0.2)] transition-all duration-300 cursor-default"
@@ -194,6 +176,7 @@ export function HeroSection() {
                   <span
                     className="text-3xl font-black tabular-nums text-amber-400 md:text-4xl"
                     style={flash ? { animation: "jackpotFlash 0.4s ease-out" } : undefined}
+                    suppressHydrationWarning
                   >
                     {jackpot.toLocaleString()}
                   </span>
@@ -203,7 +186,6 @@ export function HeroSection() {
             </GlassCard>
           </AnimatedContent>
 
-          {/* CTAs */}
           <AnimatedContent delay={0.55} direction="vertical" distance={20}>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <ClickSpark sparkColor="#FFD700" sparkCount={14} sparkRadius={20}>
@@ -229,21 +211,21 @@ export function HeroSection() {
             </div>
           </AnimatedContent>
 
-          {/* Urgency stack */}
           <AnimatedContent delay={0.65} direction="vertical" distance={16}>
             <div className="mt-5 flex flex-col gap-2">
               <GlassPill className="w-fit gap-2 text-[11px] text-[var(--text-secondary)]">
                 <Flame className="h-3.5 w-3.5 text-orange-400 shrink-0" />
                 <span>
-                  <strong className="text-orange-400">847</strong> people signed up in the last hour
+                  <strong className="text-orange-400">847</strong>{" "}
+                  {t("signupsLastHour")}
                 </span>
               </GlassPill>
 
               <GlassPill className="w-fit gap-2 text-[11px] text-[var(--text-secondary)]">
                 <Timer className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                 <span>
-                  Next jackpot draw in{" "}
-                  <strong className="text-amber-400 tabular-nums">
+                  {t("nextJackpotDraw")}{" "}
+                  <strong className="text-amber-400 tabular-nums" suppressHydrationWarning>
                     {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
                   </strong>
                 </span>
@@ -253,32 +235,21 @@ export function HeroSection() {
                 <GlassPill className="w-fit gap-2 text-[11px] text-[var(--text-secondary)]">
                   <span className="shrink-0">🏆</span>
                   <span>
-                    Last winner: <strong className="text-amber-400">{winner.name}</strong> won{" "}
-                    <strong className="text-amber-400">{winner.amount}</strong> credits —{" "}
-                    <span className="text-[var(--text-muted)]">{winner.mins} min ago</span>
+                    {t("lastWinner")}: <strong className="text-amber-400">{winner.name}</strong>{" "}
+                    {t("won")}{" "}
+                    <strong className="text-amber-400">{winner.amount}</strong> {t("heroCredits")} —{" "}
+                    <span className="text-[var(--text-muted)]">{winner.mins} {t("minAgo")}</span>
                   </span>
                 </GlassPill>
               </div>
             </div>
           </AnimatedContent>
 
-          {/* Trust badges */}
-          <AnimatedContent delay={0.78} direction="vertical" distance={15}>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {trustBadges.map((badge) => (
-                <GlassPill key={badge.label} className="text-[var(--text-muted)] text-[11px]">
-                  <badge.icon className="h-3.5 w-3.5" />
-                  <span>{badge.label}</span>
-                </GlassPill>
-              ))}
-            </div>
-          </AnimatedContent>
         </div>
 
-        {/* ── Right — Demo Slot ────────────────────────────────── */}
         <AnimatedContent delay={0.3} direction="horizontal" distance={40}>
           <div className="flex items-center justify-center">
-            <div className="w-full max-w-[380px]">
+            <div className="w-full max-w-[460px]">
               <DemoSlot />
             </div>
           </div>

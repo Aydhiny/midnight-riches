@@ -164,7 +164,7 @@ function PaymentMethodsSection() {
             >
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-14 items-center justify-center rounded bg-gray-100 dark:bg-gray-800 text-xs font-bold text-[var(--text-secondary)]">
+                  <div className="flex h-10 w-14 items-center justify-center rounded bg-[var(--glass-bg)] text-xs font-bold text-[var(--text-secondary)]">
                     {brandDisplayName(method.brand)}
                   </div>
                   <div>
@@ -229,12 +229,11 @@ export default function WalletPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-4">
-      {/* Balance Display */}
       <GlowCard
         className="p-8 text-center"
         glowColor="rgba(245, 200, 66, 0.2)"
       >
-        <div className="text-sm uppercase tracking-wider text-purple-700 dark:text-purple-400">
+        <div className="text-sm uppercase tracking-wider text-[var(--text-secondary)]">
           {t("balance")}
         </div>
         <div className="mt-2 text-5xl font-black text-amber-600 dark:text-yellow-400">
@@ -242,7 +241,6 @@ export default function WalletPage() {
         </div>
       </GlowCard>
 
-      {/* Daily Bonus */}
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
         <CardContent className="flex items-center justify-between p-6">
           <div>
@@ -264,10 +262,8 @@ export default function WalletPage() {
         </CardContent>
       </Card>
 
-      {/* Payment Methods */}
       <PaymentMethodsSection />
 
-      {/* Credit Bundles */}
       <div>
         <h2 className="mb-4 text-xl font-bold text-[var(--text-primary)]">{t("creditBundles")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

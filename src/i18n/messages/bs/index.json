@@ -17,6 +17,9 @@
     "wallet": "Novčanik",
     "history": "Historija",
     "settings": "Postavke",
+    "collectibles": "Kolekcija",
+    "betHistory": "Historija uloga",
+    "liveChat": "Ćaskanje uživo",
     "language": "Jezik",
     "theme": "Tema",
     "dark": "Tamna",
@@ -43,15 +46,33 @@
     "dailyChallenges": "Dnevni izazovi",
     "completed": "završeno",
     "howToPlay": "Kako igrati",
+    "howToPlayDesc": "Pravila i vodič kroz funkcije",
     "leaderboard": "Rang lista",
+    "leaderboardDesc": "Najbolji igrači ove sedmice",
     "provablyFair": "Dokazano poštena igra",
+    "provablyFairDesc": "Provjeri fer igru",
     "claimBonus": "Preuzmi dnevni bonus",
+    "claimBonusDesc": "50 besplatnih kredita danas",
     "liveSupport": "Podrška uživo",
+    "liveSupportDesc": "Podrška 24/7",
+    "collectiblesShop": "Radnja kolekcija",
+    "collectiblesDesc": "Teme, okviri i skinovi",
     "liveStats": "Statistike uživo",
     "playersOnline": "Igrači online",
     "biggestWin": "Najveći dobitak danas",
     "totalSpins": "Ukupno okretaja",
-    "jackpotPool": "Jackpot nagradni fond"
+    "jackpotPool": "Jackpot nagradni fond",
+    "online": "online",
+    "recentWins": "Nedavni dobici",
+    "activePlayers": "Aktivni igrači",
+    "music": "Muzika",
+    "soundFx": "Zvučni efekti",
+    "volume": "Glasnoća",
+    "muted": "Utišano",
+    "playing": "Reprodukuje se",
+    "enabled": "Uključeno",
+    "disabled": "Isključeno",
+    "noChallenges": "Nema dostupnih izazova"
   },
   "wallet": {
     "title": "Novčanik",
@@ -86,7 +107,25 @@
     "all": "Sve",
     "wins": "Dobici",
     "losses": "Gubici",
-    "bonuses": "Bonusi"
+    "bonuses": "Bonusi",
+    "totalSpins": "Ukupno okretaja",
+    "totalWagered": "Ukupno uloženo",
+    "totalWon": "Ukupno dobijeno",
+    "rtp": "RTP",
+    "biggestWin": "Najveći dobitak",
+    "performanceOver": "Performanse u zadnjih {count} sesija",
+    "net": "Neto",
+    "gameColumn": "Igra",
+    "exportCsv": "Izvezi CSV",
+    "previous": "Prethodno",
+    "next": "Sljedeće",
+    "rtpPercent": "RTP %",
+    "winBrief": "Dobitak $",
+    "betBrief": "Ulog $",
+    "targetRtp": "Ciljani RTP (96%)",
+    "winAmountLabel": "Iznos dobitka",
+    "betAmountLabel": "Iznos uloga",
+    "loading": "Učitavanje..."
   },
   "settings": {
     "title": "Postavke",
@@ -141,6 +180,11 @@
       "advancedDesc": "Alati za odgovorno igranje"
     }
   },
+  "notifications": {
+    "title": "Obavještenja",
+    "markAllRead": "Označi sve kao pročitano",
+    "empty": "Još nema obavještenja"
+  },
   "landing": {
     "nav": {
       "brand": "Midnight Riches",
@@ -160,12 +204,19 @@
       "subheadline": "Dobij 500 besplatnih kredita odmah. Bez depozita.",
       "currentJackpot": "Trenutni Jackpot",
       "credits": "kredita",
+      "heroItalic": "sreća vas čeka.",
       "primaryCta": "Preuzmi 500 Besplatnih Kredita",
       "secondaryCta": "Pogledaj Kako Funkcioniše",
       "trustSecure": "Sigurno",
       "trustInstant": "Instant Krediti",
       "trustFair": "Fer Igra Certificirana",
-      "trustMultilingual": "Višejezično"
+      "trustMultilingual": "Višejezično",
+      "signupsLastHour": "osoba se prijavilo u posljednjem satu",
+      "nextJackpotDraw": "Sljedeće izvlačenje za",
+      "lastWinner": "Zadnji dobitnik",
+      "won": "osvoji",
+      "heroCredits": "kredita",
+      "minAgo": "min prije"
     },
     "demo": {
       "demoMode": "DEMO REŽIM",
@@ -203,7 +254,11 @@
       "howBonusesWork": "Kako funkcionišu bonusi?",
       "howBonusesWorkText": "Krediti dobrodošlice se dodaju odmah pri registraciji. Bonus na depozit se aktivira pri prvoj kupovini. Dnevni bonus se može preuzeti jednom u 24 sata. Bonus za prvi dobitak se automatski primjenjuje. Svi bonusi podliježu pravilima fer igre.",
       "cta": "Preuzmi Prije Isteka",
-      "finePrint": "Samo u zabavne svrhe. Igraj odgovorno. Samo 18+."
+      "finePrint": "Samo u zabavne svrhe. Igraj odgovorno. Samo 18+.",
+      "claimYour": "Preuzmi Svoje",
+      "welcomePackage": "Paket Dobrodošlice",
+      "whatsIncluded": "Šta je uključeno",
+      "offerExpires": "Ponuda ističe u ponoć UTC. Ne propustite svoju šansu."
     },
     "games": {
       "headline": "Izaberi Svoju Igru",
@@ -248,7 +303,41 @@
       "player": "Igrač",
       "game": "Igra",
       "amount": "Iznos",
-      "when": "Kada"
+      "when": "Kada",
+      "games": {
+        "classic": "Klasični Slotovi",
+        "fiveReel": "5-Reel Deluxe",
+        "cascade": "Cascade Reels",
+        "megaways": "Megaways"
+      },
+      "t0": "Prije 2 min",
+      "t1": "Prije 18 min",
+      "t2": "Prije 1 sat",
+      "t3": "Prije 3 sata",
+      "t4": "Prije 5 sati",
+      "t5": "Juče",
+      "t6": "Juče",
+      "t7": "Prije 2 dana",
+      "t8": "Prije 3 dana",
+      "t9": "Prije 5 dana"
+    },
+    "jackpotModal": {
+      "tooltip": "🎰 Trenutni Jackpot",
+      "progressiveJackpot": "Progresivni Jackpot",
+      "credits": "KREDITA",
+      "freeCredits": "{credits} besplatnih kredita za početak — bez kartice.",
+      "cta": "🎰 Preuzmi Moje Besplatne Kredite",
+      "dismiss": "Ne hvala, propuštam {amount} kredita",
+      "hook0Title": "Sve Ovo Može Biti Vaše.",
+      "hook0Sub": "Jedna vrtnja vas dijeli od dobitka koji mijenja život.",
+      "hook1Title": "🚨 Jackpot Uzbuna!",
+      "hook1Sub": "Neko je skoro uzeo ovaj jackpot. Sada ste vi na redu!",
+      "hook2Title": "Vi Ste Odabrani.",
+      "hook2Sub": "Dobili ste besplatne kredite danas. Ova ponuda uskoro ističe.",
+      "hook3Title": "⏰ Svaka Sekunda Računa!",
+      "hook3Sub": "Ovaj jackpot raste svake sekunde. Ne čekajte!",
+      "hook4Title": "Jeste Li Dovoljno Hrabri?",
+      "hook4Sub": "Većina igrača ovo propušta. Dobitnici nikad ne propuštaju."
     },
     "testimonials": {
       "headline": "Šta Kažu Igrači",
@@ -346,6 +435,31 @@
         "title": "Odgovorno Kockanje",
         "description": "Naša posvećenost sigurnoj i odgovornoj igri."
       }
+    }
+  },
+  "cookies": {
+    "title": "Bacite Kocku za Svoju Privatnost?",
+    "description": "Izaberite kolačiće koji vam odgovaraju — neophodni ostaju uvijek.",
+    "privacyPolicy": "Politika Privatnosti",
+    "terms": "Uslovi",
+    "alwaysOn": "Uvijek aktivno",
+    "options": "Opcije",
+    "hide": "Sakrij",
+    "saveChoices": "Sačuvaj izbore",
+    "fold": "Samo Neophodni",
+    "allIn": "Sve Prihvati",
+    "agreeText": "Nastavkom prihvatate naše",
+    "and": "i",
+    "ageWarning": "Morate imati 18+ za igranje.",
+    "categories": {
+      "necessary": "neophodni",
+      "analytics": "analitika",
+      "marketing": "marketing",
+      "preferences": "postavke",
+      "necessaryDesc": "Neophodni za funkcionisanje stranice. Ne mogu se deaktivirati.",
+      "analyticsDesc": "Pomažu nam razumjeti kako igrači koriste aplikaciju.",
+      "marketingDesc": "Koriste se za personalizirane bonus ponude i promocije.",
+      "preferencesDesc": "Pamte vaše postavke igre, jezik i temu."
     }
   }
 }

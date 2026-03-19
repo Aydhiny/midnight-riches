@@ -13,7 +13,6 @@ import { ControlPanel } from "./control-panel";
 import { WinModal } from "./win-modal";
 import { BonusModal } from "./bonus-modal";
 
-// ─── Sound helpers ────────────────────────────────────────────────────────────
 function createAudio(src: string, volume = 0.5): HTMLAudioElement | null {
   if (typeof window === "undefined") return null;
   const audio = new Audio(src);
@@ -21,7 +20,6 @@ function createAudio(src: string, volume = 0.5): HTMLAudioElement | null {
   return audio;
 }
 
-/** Returns true when SFX is not explicitly disabled in localStorage */
 function isSfxEnabled(): boolean {
   if (typeof window === "undefined") return true;
   return localStorage.getItem("mr_sfx_enabled") !== "false";
@@ -63,17 +61,10 @@ function stopSound(audio: HTMLAudioElement | null) {
   audio.currentTime = 0;
 }
 
-/**
- * Play the correct win stinger based on totalWin amount and auto-stop it.
- *  > 100  → mega-win.mp3 (stops after 4 s)
- *  > 25   → super-win.mp3 (stops after 3 s)
- *  any win→ (no extra sound; jackpot.mp3 only triggers via WinModal path)
- */
 function playWinSound(totalWin: number, totalBet: number) {
   if (!isSfxEnabled()) return;
 
   if (totalWin > 100) {
-    // Mega win — also play jackpot stab for the biggest tier
     const mega = getMegaWinAudio();
     const jackpot = getJackpotAudio();
     playSound(mega);
@@ -85,9 +76,7 @@ function playWinSound(totalWin: number, totalBet: number) {
     playSound(sup);
     setTimeout(() => stopSound(sup), 3000);
   }
-  // Small wins produce no extra stinger (spin sound already finished)
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function SlotMachine() {
   const canvasRef          = useRef<GameCanvasHandle>(null);
@@ -146,16 +135,15 @@ export function SlotMachine() {
     setBonus(response.bonus);
     syncFromServer(response.balance);
 
-    // Play spin sound (looping) immediately before animation starts
     playSound(getSpinAudio());
 
     await canvasRef.current?.playSpinAnimation(response.result);
 
-    // Stop spin sound as soon as animation ends
     stopSound(getSpinAudio());
 
     if (response.result.totalWin > 0 && response.result.wins) {
       canvasRef.current?.setWinAmount(response.result.totalWin);
+      canvasRef.current?.flashWinGlow();
       await canvasRef.current?.playWinAnimation(response.result.wins);
     }
 
@@ -166,12 +154,10 @@ export function SlotMachine() {
     setLastWin(response.result.wins ?? null);
     setLastWinAmount(response.result.totalWin);
 
-    // ── Win sounds (tiered) ───────────────────────────────────────────────
     if (response.result.totalWin > 0) {
       playWinSound(response.result.totalWin, totalBet);
     }
 
-    // Show big-win modal for wins >= 10× bet (unchanged threshold)
     if (response.result.totalWin >= totalBet * 10) {
       setShowWinModal(true);
     }
@@ -182,7 +168,6 @@ export function SlotMachine() {
 
     setSpinState("result");
 
-    // Non-blocking achievement + challenge checks
     Promise.all([
       checkAchievementsAction({
         totalWin:       response.result.totalWin,
@@ -204,7 +189,7 @@ export function SlotMachine() {
       if (challengeResult.completedChallenges.length > 0) {
         showChallengeCompleteToast("Daily Challenge", 50);
       }
-    }).catch(() => {}); // Silent fail — non-critical path
+    }).catch(() => {});
 
     setTimeout(() => {
       setSpinState("idle");

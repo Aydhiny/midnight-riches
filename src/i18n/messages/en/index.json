@@ -17,6 +17,9 @@
     "wallet": "Wallet",
     "history": "History",
     "settings": "Settings",
+    "collectibles": "Collectibles",
+    "betHistory": "Bet History",
+    "liveChat": "Live Chat",
     "language": "Language",
     "theme": "Theme",
     "dark": "Dark",
@@ -43,15 +46,33 @@
     "dailyChallenges": "Daily Challenges",
     "completed": "completed",
     "howToPlay": "How to Play",
+    "howToPlayDesc": "Rules & features guide",
     "leaderboard": "Leaderboard",
+    "leaderboardDesc": "Top players this week",
     "provablyFair": "Provably Fair",
+    "provablyFairDesc": "Verify game fairness",
     "claimBonus": "Claim Daily Bonus",
+    "claimBonusDesc": "50 free credits today",
     "liveSupport": "Live Support",
+    "liveSupportDesc": "24/7 chat assistance",
+    "collectiblesShop": "Collectibles Shop",
+    "collectiblesDesc": "Themes, frames & skins",
     "liveStats": "Live Stats",
     "playersOnline": "Players Online",
     "biggestWin": "Biggest Win Today",
     "totalSpins": "Total Spins",
-    "jackpotPool": "Jackpot Pool"
+    "jackpotPool": "Jackpot Pool",
+    "online": "online",
+    "recentWins": "Recent Wins",
+    "activePlayers": "Active Players",
+    "music": "Music",
+    "soundFx": "Sound FX",
+    "volume": "Volume",
+    "muted": "Muted",
+    "playing": "Playing",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "noChallenges": "No challenges available"
   },
   "wallet": {
     "title": "Wallet",
@@ -86,7 +107,25 @@
     "all": "All",
     "wins": "Wins",
     "losses": "Losses",
-    "bonuses": "Bonuses"
+    "bonuses": "Bonuses",
+    "totalSpins": "Total Spins",
+    "totalWagered": "Total Wagered",
+    "totalWon": "Total Won",
+    "rtp": "RTP",
+    "biggestWin": "Biggest Win",
+    "performanceOver": "Performance over last {count} sessions",
+    "net": "Net",
+    "gameColumn": "Game",
+    "exportCsv": "Export CSV",
+    "previous": "Previous",
+    "next": "Next",
+    "rtpPercent": "RTP %",
+    "winBrief": "Win $",
+    "betBrief": "Bet $",
+    "targetRtp": "Target RTP (96%)",
+    "winAmountLabel": "Win amount",
+    "betAmountLabel": "Bet amount",
+    "loading": "Loading..."
   },
   "settings": {
     "title": "Settings",
@@ -141,6 +180,11 @@
       "advancedDesc": "Responsible gaming tools"
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications yet"
+  },
   "landing": {
     "nav": {
       "brand": "Midnight Riches",
@@ -160,12 +204,19 @@
       "subheadline": "Get 500 free credits instantly. No deposit required.",
       "currentJackpot": "Current Jackpot",
       "credits": "credits",
+      "heroItalic": "fortune awaits.",
       "primaryCta": "Claim 500 Free Credits",
       "secondaryCta": "Watch How It Works",
       "trustSecure": "Secure",
       "trustInstant": "Instant Credits",
       "trustFair": "Fair Play Certified",
-      "trustMultilingual": "Multilingual"
+      "trustMultilingual": "Multilingual",
+      "signupsLastHour": "people signed up in the last hour",
+      "nextJackpotDraw": "Next jackpot draw in",
+      "lastWinner": "Last winner",
+      "won": "won",
+      "heroCredits": "credits",
+      "minAgo": "min ago"
     },
     "demo": {
       "demoMode": "DEMO MODE",
@@ -203,7 +254,11 @@
       "howBonusesWork": "How do bonuses work?",
       "howBonusesWorkText": "Welcome credits are added to your account immediately on signup. Deposit bonuses are matched when you purchase your first credit bundle. Daily login bonuses can be claimed once every 24 hours. First win bonus is applied automatically to your first winning spin. All bonuses are subject to fair play terms.",
       "cta": "Claim Before Timer Expires",
-      "finePrint": "For entertainment purposes only. Play responsibly. 18+ only."
+      "finePrint": "For entertainment purposes only. Play responsibly. 18+ only.",
+      "claimYour": "Claim Your",
+      "welcomePackage": "Welcome Package",
+      "whatsIncluded": "What's included",
+      "offerExpires": "Offer expires at midnight UTC. Don't miss your window."
     },
     "games": {
       "headline": "Choose Your Game",
@@ -248,7 +303,41 @@
       "player": "Player",
       "game": "Game",
       "amount": "Amount",
-      "when": "When"
+      "when": "When",
+      "games": {
+        "classic": "Classic Slots",
+        "fiveReel": "5-Reel Deluxe",
+        "cascade": "Cascade Reels",
+        "megaways": "Megaways"
+      },
+      "t0": "2 min ago",
+      "t1": "18 min ago",
+      "t2": "1 hour ago",
+      "t3": "3 hours ago",
+      "t4": "5 hours ago",
+      "t5": "Yesterday",
+      "t6": "Yesterday",
+      "t7": "2 days ago",
+      "t8": "3 days ago",
+      "t9": "5 days ago"
+    },
+    "jackpotModal": {
+      "tooltip": "🎰 Current Jackpot",
+      "progressiveJackpot": "Progressive Jackpot",
+      "credits": "CREDITS",
+      "freeCredits": "{credits} free credits to start — no card needed.",
+      "cta": "🎰 Claim My Free Credits & Play",
+      "dismiss": "No thanks, I'll pass on {amount} credits",
+      "hook0Title": "This Could All Be Yours.",
+      "hook0Sub": "One spin separates you from a life-changing win.",
+      "hook1Title": "🚨 Jackpot Alert!",
+      "hook1Sub": "Someone almost took this jackpot. You're up next!",
+      "hook2Title": "You Were Selected.",
+      "hook2Sub": "You've been granted free credits today. This offer expires soon.",
+      "hook3Title": "⏰ Every Second Counts!",
+      "hook3Sub": "This jackpot grows every second someone doesn't claim it.",
+      "hook4Title": "Are You Brave Enough?",
+      "hook4Sub": "Most players pass this up. The winners never do."
     },
     "testimonials": {
       "headline": "What Players Say",
@@ -329,6 +418,7 @@
     },
     "legal": {
       "backToHome": "Back to Home",
+
       "lastUpdated": "Last updated",
       "terms": {
         "title": "Terms of Service",
@@ -346,6 +436,31 @@
         "title": "Responsible Gaming",
         "description": "Our commitment to safe, responsible play."
       }
+    }
+  },
+  "cookies": {
+    "title": "Roll the Dice on Your Privacy?",
+    "description": "Pick which cookies deal you in — required ones stay in the deck.",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms",
+    "alwaysOn": "Always on",
+    "options": "Options",
+    "hide": "Hide",
+    "saveChoices": "Save choices",
+    "fold": "Necessary Only",
+    "allIn": "All In",
+    "agreeText": "By continuing you agree to our",
+    "and": "and",
+    "ageWarning": "You must be 18+ to play.",
+    "categories": {
+      "necessary": "necessary",
+      "analytics": "analytics",
+      "marketing": "marketing",
+      "preferences": "preferences",
+      "necessaryDesc": "Essential for the website to function. Cannot be disabled.",
+      "analyticsDesc": "Help us understand how players use the app to improve it.",
+      "marketingDesc": "Used to deliver personalised bonus offers and promotions.",
+      "preferencesDesc": "Remember your game settings, language and theme choices."
     }
   }
 }

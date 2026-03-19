@@ -12,7 +12,7 @@ interface ReelSpinAnimationProps {
 export function ReelSpinAnimation({ reels, isSpinning }: ReelSpinAnimationProps) {
   return (
     <motion.div
-      className="flex items-center gap-2"
+      className="flex items-center gap-3"
       layout
     >
       {reels.map((symbols, index) => (

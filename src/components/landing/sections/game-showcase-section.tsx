@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { type LucideIcon, Star, Zap, Layers, Shuffle } from "lucide-react";
@@ -8,149 +9,128 @@ import ScrollReveal from "@/components/ui/scroll-reveal";
 import { useConversionTracker } from "@/lib/analytics/conversion";
 import { motion } from "framer-motion";
 
-// Left/right floating symbols decorating the section edges
-const LEFT_SYMBOLS = [
-  { src: "/images/Cherry.png",     top: "8%",  size: 72, rotate: -22, opacity: 0.55, delay: 0    },
-  { src: "/images/Lemon.png",      top: "26%", size: 58, rotate:  14, opacity: 0.45, delay: 0.6  },
-  { src: "/images/Watermelon.png", top: "44%", size: 80, rotate:  -8, opacity: 0.52, delay: 1.2  },
-  { src: "/images/Orange.png",     top: "62%", size: 62, rotate:  28, opacity: 0.46, delay: 1.8  },
-  { src: "/images/Bell.png",       top: "79%", size: 68, rotate: -15, opacity: 0.50, delay: 2.4  },
-  { src: "/images/Grape.png",      top: "92%", size: 54, rotate:  10, opacity: 0.40, delay: 3.0  },
-];
-const RIGHT_SYMBOLS = [
-  { src: "/images/Star.png",       top: "5%",  size: 68, rotate:  32, opacity: 0.50, delay: 0.3  },
-  { src: "/images/Diamond.png",    top: "22%", size: 60, rotate: -20, opacity: 0.46, delay: 0.9  },
-  { src: "/images/Seven.png",      top: "40%", size: 76, rotate:  10, opacity: 0.53, delay: 1.5  },
-  { src: "/images/Wild.png",       top: "58%", size: 64, rotate: -28, opacity: 0.46, delay: 2.1  },
-  { src: "/images/Bar.png",        top: "75%", size: 70, rotate:  18, opacity: 0.48, delay: 2.7  },
-  { src: "/images/Cherry.png",     top: "90%", size: 52, rotate:  -6, opacity: 0.38, delay: 3.3  },
-];
+// ── Keyframes injected once ───────────────────────────────────────────────────
+const SHOWCASE_CSS = `
+  @keyframes neon-pulse {
+    0%, 100% { opacity: 0.55; }
+    50%       { opacity: 1;    }
+  }
+  @keyframes badge-glow {
+    0%, 100% { box-shadow: 0 0 6px currentColor; }
+    50%       { box-shadow: 0 0 14px currentColor, 0 0 28px currentColor; }
+  }
+`;
 
+// ── Game data ─────────────────────────────────────────────────────────────────
 const GAMES: {
   id: string;
   glowColor: string;
   glowRgb: string;
-  stats: string[];
-  features: string[];
   icon: LucideIcon;
   rtp: string;
   thumbnail: string;
+  basePlayers: number;
   badge?: { label: string; color: string };
-  description: string;
 }[] = [
   {
     id: "classic",
     glowColor: "#f59e0b",
     glowRgb: "245,158,11",
-    stats: ["3×3 Grid", "5 Paylines", "100× Max Win"],
-    features: ["Wild", "Scatter", "Free Spins"],
     icon: Star,
     rtp: "96.5%",
-    thumbnail: "/images/Cherry.png",
+    thumbnail: "/images/classic-slots.jpg",
+    basePlayers: 248,
     badge: { label: "🔥 HOT", color: "bg-orange-500/30 text-orange-300 border-orange-400/40" },
-    description: "Timeless fruit slots with classic 3-reel action",
   },
   {
     id: "fiveReel",
     glowColor: "#8b5cf6",
     glowRgb: "139,92,246",
-    stats: ["5×3 Grid", "20 Paylines", "200× Max Win"],
-    features: ["Wild", "Expanding Wild", "Free Spins"],
     icon: Zap,
     rtp: "97.1%",
     thumbnail: "/images/five-reel-deluxe.png",
-    description: "Premium 5-reel action with expanding wilds & multipliers",
+    basePlayers: 182,
   },
   {
     id: "cascade",
     glowColor: "#10b981",
     glowRgb: "16,185,129",
-    stats: ["5×5 Grid", "Chain Wins", "10× Multiplier"],
-    features: ["Cascade", "Wild", "Multiplier"],
     icon: Layers,
     rtp: "97.3%",
     thumbnail: "/images/cascading-reels.png",
+    basePlayers: 94,
     badge: { label: "✨ NEW", color: "bg-emerald-500/30 text-emerald-300 border-emerald-400/40" },
-    description: "Symbols explode & cascade — chain wins multiply your payout",
   },
   {
     id: "megaways",
     glowColor: "#ec4899",
     glowRgb: "236,72,153",
-    stats: ["6 Reels", "117,649 Ways", "500× Max Win"],
-    features: ["Megaways", "Free Spins", "Expanding Reels"],
     icon: Shuffle,
     rtp: "96.8%",
     thumbnail: "/images/megaways.jpg",
-    description: "Max volatility — up to 117,649 ways to win on every spin",
+    basePlayers: 319,
   },
 ];
 
+// ── Section ───────────────────────────────────────────────────────────────────
 export function GameShowcaseSection() {
   const t = useTranslations("landing.games");
   const { track } = useConversionTracker();
 
   return (
-    <section id="games" className="relative py-24 md:py-32 overflow-x-hidden">
-      {/* Edge floating symbols */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        {LEFT_SYMBOLS.map((s, i) => (
-          <motion.img
-            key={`l-${i}`}
-            src={s.src}
-            alt=""
-            className="absolute select-none object-contain"
-            style={{
-              top: s.top,
-              left: 0,
-              width: s.size,
-              height: s.size,
-              opacity: s.opacity,
-              transform: `rotate(${s.rotate}deg) translateX(-18%)`,
-              filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.4))",
-            }}
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 4 + i * 0.5, repeat: Infinity, delay: s.delay, ease: "easeInOut" }}
-          />
-        ))}
-        {RIGHT_SYMBOLS.map((s, i) => (
-          <motion.img
-            key={`r-${i}`}
-            src={s.src}
-            alt=""
-            className="absolute select-none object-contain"
-            style={{
-              top: s.top,
-              right: 0,
-              width: s.size,
-              height: s.size,
-              opacity: s.opacity,
-              transform: `rotate(${s.rotate}deg) translateX(18%)`,
-              filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.4))",
-            }}
-            animate={{ y: [0, -14, 0] }}
-            transition={{ duration: 4.5 + i * 0.4, repeat: Infinity, delay: s.delay + 0.2, ease: "easeInOut" }}
-          />
-        ))}
-      </div>
+    <section id="games" className="relative py-20 md:py-28">
+      <style>{SHOWCASE_CSS}</style>
 
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
+      {/* Ambient background bloom */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 50% at 50% 50%, rgba(124,58,237,0.07) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
           <SectionHeadline sub={t("subheadline")}>{t("headline")}</SectionHeadline>
         </ScrollReveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 xl:grid-cols-4">
           {GAMES.map((game, i) => (
             <ScrollReveal key={game.id} delay={i * 0.08}>
-              <GameCard game={game} onPlay={() => track("cta_click", { section: "games", game: game.id })} t={t} />
+              <GameCard
+                game={game}
+                onPlay={() => track("cta_click", { section: "games", game: game.id })}
+                t={t}
+              />
             </ScrollReveal>
           ))}
         </div>
+
+        {/* Bottom ticker line */}
+        <ScrollReveal delay={0.35}>
+          <div className="mt-8 flex items-center justify-center gap-6 text-[10px] text-[var(--text-muted)] uppercase tracking-widest">
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live multiplayer
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Instant payouts
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
+              Provably fair
+            </span>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
 }
 
+// ── Card ──────────────────────────────────────────────────────────────────────
 function GameCard({
   game,
   onPlay,
@@ -160,126 +140,135 @@ function GameCard({
   onPlay: () => void;
   t: ReturnType<typeof useTranslations>;
 }) {
+  // Fluctuating live player count
+  const [players, setPlayers] = useState(game.basePlayers);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPlayers((p) => Math.max(10, p + Math.floor(Math.random() * 7) - 3));
+    }, 3500 + Math.random() * 2000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <motion.div
-      className="group relative h-full min-h-[400px] cursor-pointer overflow-hidden rounded-2xl"
-      whileHover={{ scale: 1.02, y: -4 }}
-      transition={{ type: "spring", stiffness: 300, damping: 24 }}
-      style={{
-        boxShadow: `0 0 0 1px rgba(${game.glowRgb},0.25)`,
-      }}
+      className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-2xl"
+      whileHover={{ scale: 1.03, y: -4 }}
+      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+      style={{ boxShadow: `0 0 0 1px rgba(${game.glowRgb},0.2)` }}
     >
-      {/* Animated glow border on hover */}
+      {/* Hover neon border overlay */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
-          boxShadow: `0 0 32px 2px rgba(${game.glowRgb},0.35), inset 0 0 32px 2px rgba(${game.glowRgb},0.08)`,
+          boxShadow: `0 0 0 1.5px rgba(${game.glowRgb},0.9), 0 0 28px 2px rgba(${game.glowRgb},0.35), inset 0 0 24px 1px rgba(${game.glowRgb},0.06)`,
         }}
       />
 
-      {/* Thumbnail background — fills full card */}
+      {/* Always-on subtle neon edge (pulsing) */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl"
+        style={{
+          boxShadow: `0 0 0 1px rgba(${game.glowRgb},0.35)`,
+          animation: "neon-pulse 3s ease-in-out infinite",
+        }}
+      />
+
+      {/* Background image + gradients */}
       <div className="absolute inset-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={game.thumbnail}
-          alt={game.id}
-          className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-          style={{ filter: "brightness(0.55) saturate(1.3)" }}
+          alt={t(`${game.id}.name`)}
+          className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-110"
+          style={{ filter: "brightness(0.45) saturate(1.5)" }}
         />
-        {/* Gradient overlay — top to bottom */}
+        {/* Dark gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(to bottom,
-              rgba(0,0,0,0.0) 0%,
-              rgba(0,0,0,0.3) 30%,
-              rgba(0,0,0,0.82) 70%,
-              rgba(0,0,0,0.96) 100%)`,
+            background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 35%, rgba(0,0,0,0.90) 100%)",
           }}
         />
-        {/* Color tint from game's glow color */}
+        {/* Color bloom on hover */}
         <div
-          className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500"
-          style={{ background: `radial-gradient(ellipse at 50% 0%, rgba(${game.glowRgb},0.6) 0%, transparent 70%)` }}
+          className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
+          style={{
+            background: `radial-gradient(ellipse at 50% 0%, rgba(${game.glowRgb},0.7) 0%, transparent 65%)`,
+          }}
         />
       </div>
 
-      {/* Badge */}
+      {/* Top-right: badge */}
       {game.badge && (
-        <div className="absolute right-3 top-3 z-10">
-          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold backdrop-blur-sm ${game.badge.color}`}>
+        <div className="absolute right-2.5 top-2.5 z-10">
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[9px] font-bold backdrop-blur-sm ${game.badge.color}`}
+            style={{ animation: "badge-glow 2.5s ease-in-out infinite" }}
+          >
             {game.badge.label}
           </span>
         </div>
       )}
 
-      {/* RTP pill — top left */}
-      <div className="absolute left-3 top-3 z-10">
-        <span className="rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[10px] font-bold text-emerald-400 backdrop-blur-sm">
+      {/* Top-left: RTP chip */}
+      <div className="absolute left-2.5 top-2.5 z-10">
+        <span className="rounded-full border border-white/15 bg-black/40 px-2 py-0.5 text-[9px] font-bold text-emerald-400 backdrop-blur-sm">
           {game.rtp} RTP
         </span>
       </div>
 
-      {/* Content — pinned to bottom */}
-      <div className="absolute inset-x-0 bottom-0 z-10 p-5">
-        {/* Game name + icon */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-xl font-black text-white leading-tight">
+      {/* Bottom content */}
+      <div className="absolute inset-x-0 bottom-0 z-10 p-3.5">
+        {/* Live player count */}
+        <div className="mb-2 flex items-center gap-1">
+          <span className="relative flex h-1.5 w-1.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
+          <span className="text-[9px] font-semibold text-emerald-400">
+            {players.toLocaleString()} playing now
+          </span>
+        </div>
+
+        {/* Title row */}
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <h3 className="text-sm font-black text-white leading-tight">
             {t(`${game.id}.name`)}
           </h3>
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ background: `rgba(${game.glowRgb},0.3)`, border: `1px solid rgba(${game.glowRgb},0.5)` }}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+            style={{
+              background: `rgba(${game.glowRgb},0.25)`,
+              border: `1px solid rgba(${game.glowRgb},0.55)`,
+              boxShadow: `0 0 8px rgba(${game.glowRgb},0.35)`,
+            }}
           >
-            <game.icon className="h-4.5 w-4.5 text-white" style={{ color: game.glowColor }} />
+            <game.icon className="h-3 w-3" style={{ color: game.glowColor }} />
           </div>
         </div>
 
-        {/* Description */}
-        <p className="mt-1.5 text-xs text-white/60 leading-snug line-clamp-2">
-          {game.description}
-        </p>
-
-        {/* Stat pills */}
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {game.stats.map((stat) => (
-            <span
-              key={stat}
-              className="rounded-full border border-white/15 bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/80 backdrop-blur-sm"
-            >
-              {stat}
-            </span>
-          ))}
-        </div>
-
-        {/* Feature tags */}
-        <div className="mt-2 flex flex-wrap gap-1">
-          {game.features.map((feat) => (
-            <span
-              key={feat}
-              className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-              style={{
-                background: `rgba(${game.glowRgb},0.2)`,
-                color: game.glowColor,
-                border: `1px solid rgba(${game.glowRgb},0.3)`,
-              }}
-            >
-              {feat}
-            </span>
-          ))}
-        </div>
-
-        {/* Play button — slides up on hover */}
+        {/* Play button */}
         <Link
           href="/game"
           onClick={onPlay}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold text-white transition-all duration-300 group-hover:opacity-100 opacity-80"
+          className="relative flex w-full items-center justify-center gap-1.5 overflow-hidden rounded-xl py-2.5 text-xs font-black text-white transition-all duration-200 group-hover:brightness-115 active:scale-95"
           style={{
-            background: `linear-gradient(135deg, rgba(${game.glowRgb},0.8), rgba(${game.glowRgb},0.5))`,
-            border: `1px solid rgba(${game.glowRgb},0.5)`,
+            background: `linear-gradient(135deg, rgba(${game.glowRgb},0.85), rgba(${game.glowRgb},0.55))`,
+            border: `1px solid rgba(${game.glowRgb},0.6)`,
+            boxShadow: `0 0 12px rgba(${game.glowRgb},0.25), inset 0 1px 0 rgba(255,255,255,0.12)`,
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          {/* Inner shimmer on hover */}
+          <span
+            className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+            }}
+          />
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M8 5v14l11-7z"/>
+          </svg>
           {t("playNow")}
         </Link>
       </div>

@@ -33,17 +33,15 @@ async function getClientIp(): Promise<string> {
 
 export async function signUpAction(data: { name: string; email: string; password: string }): Promise<AuthResponse> {
   try {
-    // Rate limit: max 3 sign-ups per IP per hour
     const ip = await getClientIp();
     const ipRateLimit = checkRateLimit(`signup-ip:${ip}`, {
       maxRequests: 3,
-      windowMs: 3_600_000, // 1 hour
+      windowMs: 3_600_000,
     });
     if (!ipRateLimit.success) {
       return { success: false, error: "Too many sign-up attempts. Please try again later.", code: "RATE_LIMITED" };
     }
 
-    // Also rate limit per email to prevent enumeration
     const emailRateLimit = checkRateLimit(`signup-email:${data.email}`, {
       maxRequests: 3,
       windowMs: 3_600_000,
@@ -97,16 +95,14 @@ export async function signUpAction(data: { name: string; email: string; password
 
 export async function signInAction(data: { email: string; password: string }): Promise<AuthResponse> {
   try {
-    // Rate limit: max 5 attempts per email per 15 minutes
     const rateLimitResult = checkRateLimit(`signin:${data.email}`, {
       maxRequests: 5,
-      windowMs: 900_000, // 15 minutes
+      windowMs: 900_000,
     });
     if (!rateLimitResult.success) {
       return { success: false, error: "Too many sign-in attempts. Please try again in 15 minutes.", code: "RATE_LIMITED" };
     }
 
-    // Validate input
     const parsed = signInSchema.safeParse(data);
     if (!parsed.success) {
       return { success: false, error: "Invalid input", code: "VALIDATION_ERROR" };

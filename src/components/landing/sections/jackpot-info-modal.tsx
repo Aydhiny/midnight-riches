@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { X, Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useConversionTracker } from "@/lib/analytics/conversion";
 
 const FRUITS = ["🍒", "🍋", "🍊", "🍇", "🍎", "⭐", "💎", "👑", "🔮", "🍓"];
@@ -65,27 +66,40 @@ function FruitRain() {
 }
 
 const JACKPOT_BASE = 847293;
+const HOOK_COUNT = 5;
 
 export function JackpotInfoModal() {
+  const t = useTranslations("landing.jackpotModal");
   const [open, setOpen] = useState(false);
   const [jackpot, setJackpot] = useState(JACKPOT_BASE + Math.floor(Math.random() * 50000));
+  const [hookIndex, setHookIndex] = useState(0);
   const { track } = useConversionTracker();
 
   // Jackpot ticks even when modal is closed
   useEffect(() => {
-    const t = setInterval(
+    const interval = setInterval(
       () => {
         setJackpot((prev) => prev + Math.floor(Math.random() * 120) + 40);
       },
       2500 + Math.random() * 3000,
     );
-    return () => clearInterval(t);
+    return () => clearInterval(interval);
   }, []);
 
   function handleOpen() {
     setOpen(true);
+    setHookIndex((prev) => (prev + 1) % HOOK_COUNT);
     track("signup_modal_open", {});
   }
+
+  const HOOKS = [
+    { title: t("hook0Title"), sub: t("hook0Sub") },
+    { title: t("hook1Title"), sub: t("hook1Sub") },
+    { title: t("hook2Title"), sub: t("hook2Sub") },
+    { title: t("hook3Title"), sub: t("hook3Sub") },
+    { title: t("hook4Title"), sub: t("hook4Sub") },
+  ];
+  const { title: hookTitle, sub: hookSub } = HOOKS[hookIndex];
 
   return (
     <>
@@ -116,7 +130,7 @@ export function JackpotInfoModal() {
           className="absolute bottom-full mb-2 whitespace-nowrap rounded-lg px-2.5 py-1 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
           style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}
         >
-          🎰 Current Jackpot
+          {t("tooltip")}
         </span>
       </button>
 
@@ -135,7 +149,7 @@ export function JackpotInfoModal() {
             className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl text-center"
             style={{
               animation: "modal-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
-              background: "linear-gradient(160deg, rgba(20,5,50,0.97) 0%, rgba(10,2,30,0.99) 100%)",
+              background: "linear-gradient(160deg, rgba(20,5,50,0.98) 0%, rgba(10,2,30,0.99) 100%)",
               border: "1px solid rgba(251,191,36,0.3)",
               boxShadow: "0 0 60px rgba(251,191,36,0.2), 0 0 120px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.08)",
             }}
@@ -168,7 +182,9 @@ export function JackpotInfoModal() {
               {/* Trophy emoji */}
               <div className="text-5xl mb-2 drop-shadow-lg">🏆</div>
 
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-400/70 mb-1">Progressive Jackpot</p>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-400/70 mb-1">
+                {t("progressiveJackpot")}
+              </p>
 
               {/* Jackpot number */}
               <div
@@ -183,18 +199,18 @@ export function JackpotInfoModal() {
               >
                 {jackpot.toLocaleString()}
               </div>
-              <p className="text-xs text-amber-400/50 tracking-widest mb-5">CREDITS</p>
+              <p className="text-xs text-amber-400/50 tracking-widest mb-5">{t("credits")}</p>
 
-              {/* Hook text */}
+              {/* Hook text — rotates on each open */}
               <p
                 className="text-xl md:text-2xl font-black text-white mb-1 leading-snug"
                 style={{ fontFamily: "var(--font-garamond)", fontStyle: "italic" }}
               >
-                This Could All Be Yours.
+                {hookTitle}
               </p>
-              <p className="text-sm text-white/50 mb-6 max-w-xs mx-auto">
-                One spin separates you from a life-changing win.
-                <strong className="text-amber-400"> 500 free credits</strong> to start — no card needed.
+              <p className="text-sm text-white/55 mb-6 max-w-xs mx-auto">
+                {hookSub}
+                {" "}<strong className="text-amber-400">{t("freeCredits", { credits: 500 })}</strong>
               </p>
 
               {/* CTA */}
@@ -210,11 +226,11 @@ export function JackpotInfoModal() {
                   boxShadow: "0 4px 20px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
                 }}
               >
-                🎰 Claim My Free Credits & Play
+                {t("cta")}
               </Link>
 
               <button onClick={() => setOpen(false)} className="mt-3 text-xs text-white/30 hover:text-white/50 transition-colors">
-                No thanks, I&apos;ll pass on {jackpot.toLocaleString()} credits
+                {t("dismiss", { amount: jackpot.toLocaleString() })}
               </button>
             </div>
           </div>

@@ -7,8 +7,8 @@ import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Gamepad2, Wallet, History, Settings, Bell, LogOut,
-  ChevronDown, Zap, Menu, X, User, ShoppingBag,
+  Gamepad2, Wallet, History, Settings, LogOut,
+  ChevronDown, Zap, Menu, X, ShoppingBag,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -17,10 +17,10 @@ import { useWalletStore } from "@/store/wallet-store";
 import { formatCurrency } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { href: "/game",     label: "Game",         icon: Gamepad2    },
-  { href: "/wallet",   label: "Wallet",       icon: Wallet      },
-  { href: "/history",  label: "History",      icon: History     },
-  { href: "/shop",     label: "Collectibles", icon: ShoppingBag },
+  { href: "/game",    key: "game",         icon: Gamepad2    },
+  { href: "/wallet",  key: "wallet",       icon: Wallet      },
+  { href: "/history", key: "history",      icon: History     },
+  { href: "/shop",    key: "collectibles", icon: ShoppingBag },
 ] as const;
 
 export function Navbar() {
@@ -32,7 +32,6 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
 
-  // Close avatar dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
@@ -47,12 +46,10 @@ export function Navbar() {
     pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[var(--nav-bg)] backdrop-blur-xl">
-      {/* Subtle top accent line */}
+    <nav className="sticky top-0 z-50 border-b border-[var(--nav-border)] bg-[var(--nav-bg)] backdrop-blur-xl">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
 
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        {/* ── Left: Logo ──────────────────────────────────── */}
         <Link href={session?.user ? "/game" : "/"} className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Logo" className="h-6 w-6" />
@@ -64,27 +61,25 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* ── Center: Nav links (desktop) ─────────────────── */}
         {session?.user && (
           <div className="hidden md:flex items-center gap-0.5">
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+            {NAV_ITEMS.map(({ href, key, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
                 className={[
                   "relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150",
                   isActive(href)
-                    ? "text-white bg-white/[0.08]"
-                    : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]",
+                    ? "text-[var(--text-primary)] bg-[var(--glass-bg)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--glass-bg)]",
                 ].join(" ")}
               >
                 <Icon className="h-3.5 w-3.5 shrink-0" />
-                {label}
-                {/* Active underline */}
+                {t(key)}
                 {isActive(href) && (
                   <motion.span
                     layoutId="nav-active"
-                    className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-violet-400"
+                    className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-violet-500"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
@@ -93,11 +88,9 @@ export function Navbar() {
           </div>
         )}
 
-        {/* ── Right: Actions ──────────────────────────────── */}
         <div className="flex items-center gap-1.5">
           {session?.user ? (
             <>
-              {/* Balance pill */}
               <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5">
                 <Zap className="h-3 w-3 text-amber-400 shrink-0" />
                 <span className="text-sm font-bold text-amber-400 tabular-nums">
@@ -105,16 +98,13 @@ export function Navbar() {
                 </span>
               </div>
 
-              {/* Notifications */}
               <NotificationBell />
 
-              {/* Avatar + dropdown */}
               <div ref={avatarRef} className="relative">
                 <button
                   onClick={() => setAvatarOpen((o) => !o)}
-                  className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.05] px-2 py-1.5 transition-all hover:bg-white/[0.09] hover:border-white/20"
+                  className="flex items-center gap-1.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-2 py-1.5 transition-all hover:bg-[var(--bg-card-hover)]"
                 >
-                  {/* Avatar circle */}
                   <div className="relative h-7 w-7 rounded-full overflow-hidden bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center shrink-0">
                     {session.user.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -130,17 +120,16 @@ export function Navbar() {
                     )}
                     <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-[var(--nav-bg)]" />
                   </div>
-                  <span className="hidden sm:block text-xs font-medium text-white/70 max-w-[80px] truncate">
+                  <span className="hidden sm:block text-xs font-medium text-[var(--text-secondary)] max-w-[80px] truncate">
                     {session.user.name?.split(" ")[0] ?? "Player"}
                   </span>
                   <ChevronDown
-                    className={`hidden sm:block h-3 w-3 text-white/40 transition-transform duration-200 ${
+                    className={`hidden sm:block h-3 w-3 text-[var(--text-muted)] transition-transform duration-200 ${
                       avatarOpen ? "rotate-180" : ""
                     }`}
                   />
                 </button>
 
-                {/* Dropdown */}
                 <AnimatePresence>
                   {avatarOpen && (
                     <motion.div
@@ -148,20 +137,18 @@ export function Navbar() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -6 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-white/10 shadow-xl overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-[var(--glass-border)] shadow-xl"
                       style={{
-                        background: "rgba(8,2,22,0.97)",
+                        background: "var(--dropdown-bg)",
                         backdropFilter: "blur(20px)",
-                        boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)",
+                        boxShadow: "var(--dropdown-shadow)",
                       }}
                     >
-                      {/* User info header */}
-                      <div className="px-4 py-3 border-b border-white/[0.06]">
-                        <p className="text-sm font-semibold text-white truncate">
+                      <div className="px-4 py-3 border-b border-[var(--glass-border)]">
+                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
                           {session.user.name ?? "Player"}
                         </p>
-                        <p className="text-xs text-white/40 truncate">{session.user.email}</p>
-                        {/* Balance in dropdown for mobile */}
+                        <p className="text-xs text-[var(--text-muted)] truncate">{session.user.email}</p>
                         <div className="mt-2 flex items-center gap-1.5 sm:hidden">
                           <Zap className="h-3 w-3 text-amber-400" />
                           <span className="text-sm font-bold text-amber-400">
@@ -170,39 +157,23 @@ export function Navbar() {
                         </div>
                       </div>
 
-                      {/* Menu items */}
                       <div className="py-1.5">
-                        <DropdownLink
-                          href="/settings"
-                          icon={Settings}
-                          label="Settings"
-                          onClick={() => setAvatarOpen(false)}
-                        />
-                        <DropdownLink
-                          href="/wallet"
-                          icon={Wallet}
-                          label="Wallet"
-                          onClick={() => setAvatarOpen(false)}
-                        />
-                        <DropdownLink
-                          href="/history"
-                          icon={History}
-                          label="Bet History"
-                          onClick={() => setAvatarOpen(false)}
-                        />
+                        <DropdownLink href="/settings" icon={Settings} label={t("settings")} onClick={() => setAvatarOpen(false)} />
+                        <DropdownLink href="/wallet" icon={Wallet} label={t("wallet")} onClick={() => setAvatarOpen(false)} />
+                        <DropdownLink href="/history" icon={History} label={t("betHistory")} onClick={() => setAvatarOpen(false)} />
                       </div>
 
-                      <div className="border-t border-white/[0.06] py-1.5">
+                      <div className="border-t border-[var(--glass-border)] py-1.5">
                         <div className="flex items-center gap-2 px-3 py-1.5">
-                          <LocaleSwitcher />
+                          <LocaleSwitcher dropUp />
                           <ThemeToggle />
                         </div>
                         <button
                           onClick={() => { setAvatarOpen(false); signOut({ callbackUrl: "/" }); }}
-                          className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
                         >
                           <LogOut className="h-4 w-4" />
-                          Sign out
+                          {t("signOut")}
                         </button>
                       </div>
                     </motion.div>
@@ -210,9 +181,8 @@ export function Navbar() {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile menu button */}
               <button
-                className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-white/60 hover:text-white transition-colors"
+                className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                 onClick={() => setMobileOpen((o) => !o)}
               >
                 {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -224,7 +194,7 @@ export function Navbar() {
               <ThemeToggle />
               <Link
                 href="/auth/signin"
-                className="rounded-lg border border-white/15 bg-white/[0.05] px-4 py-1.5 text-sm font-medium text-white/70 hover:bg-white/[0.09] hover:text-white transition-all"
+                className="rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)] hover:text-[var(--text-primary)] transition-all"
               >
                 {t("signIn")}
               </Link>
@@ -233,7 +203,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile navigation drawer */}
       <AnimatePresence>
         {mobileOpen && session?.user && (
           <motion.div
@@ -241,10 +210,10 @@ export function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden border-t border-white/[0.06]"
+            className="md:hidden overflow-hidden border-t border-[var(--glass-border)]"
           >
             <div className="px-4 py-3 space-y-1">
-              {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+              {NAV_ITEMS.map(({ href, key, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
@@ -252,25 +221,24 @@ export function Navbar() {
                   className={[
                     "flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
                     isActive(href)
-                      ? "bg-violet-600/20 text-white border border-violet-500/30"
-                      : "text-white/60 hover:text-white hover:bg-white/[0.05]",
+                      ? "bg-violet-500/15 text-[var(--text-primary)] border border-violet-500/25"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]",
                   ].join(" ")}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  {label}
+                  {t(key)}
                 </Link>
               ))}
-              {/* Balance in mobile menu */}
               <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-2.5 mt-2">
                 <Zap className="h-4 w-4 text-amber-400" />
                 <span className="text-sm font-bold text-amber-400">{formatCurrency(balance, currency)}</span>
               </div>
               <button
                 onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }}
-                className="flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+                className="flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {t("signOut")}
               </button>
             </div>
           </motion.div>
@@ -295,9 +263,9 @@ function DropdownLink({
     <Link
       href={href}
       onClick={onClick}
-      className="flex items-center gap-2.5 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/[0.05] transition-colors"
+      className="flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-colors"
     >
-      <Icon className="h-4 w-4 text-white/40" />
+      <Icon className="h-4 w-4 text-[var(--text-muted)]" />
       {label}
     </Link>
   );

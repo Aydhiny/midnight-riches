@@ -9,7 +9,7 @@ export default function NotFound() {
         <CardContent className="p-8">
           <div className="text-6xl">🎰</div>
           <h2 className="mt-4 text-6xl font-black text-yellow-400">404</h2>
-          <p className="mt-2 text-purple-300/70">
+          <p className="mt-2 text-[var(--text-muted)]">
             This page hit the jackpot of not existing.
           </p>
           <div className="mt-6">

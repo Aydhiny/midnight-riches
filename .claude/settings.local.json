@@ -50,7 +50,19 @@
       "Bash(cat src/app/\\\\\\(main\\\\\\)/settings/page.tsx)",
       "Bash(find C:UserProgrammingmidnight-richessrccomponentsui -type f -name *.tsx -o -name *.ts)",
       "Bash(grep -E \"\\\\.tsx$|\\\\.ts$\")",
-      "Bash(grep -r \"Select\\\\|Dropdown\\\\|select\\\\|dropdown\" C:UserProgrammingmidnight-richessrc --include=*.tsx --include=*.ts)"
+      "Bash(grep -r \"Select\\\\|Dropdown\\\\|select\\\\|dropdown\" C:UserProgrammingmidnight-richessrc --include=*.tsx --include=*.ts)",
+      "Bash(find C:UserProgrammingmidnight-riches -type f -name *.css)",
+      "Bash(grep -r \"text-white\\\\|text-purple\\\\|bg-gray\\\\|bg-slate\\\\|text-gray\\\\|border-white\\\\|border-purple\" /c/User/Programming/midnight-riches/src --include=*.tsx)",
+      "Bash(grep -v \"//\")",
+      "Bash(grep -rn \"text-white\\\\|text-purple\\\\|bg-gray\\\\|bg-slate\\\\|text-gray\\\\|border-white\\\\|border-purple\" /c/User/Programming/midnight-riches/src --include=*.tsx)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js\\)$\")",
+      "Bash(node -e \"const http = require\\(''http''\\); console.log\\(''Default maxHeaderSize:'', http.maxHeaderSize\\);\")",
+      "Bash(git -C /C/User/Programming/midnight-riches/.claude/worktrees/agent-a5325fff status)",
+      "Bash(git -C /C/User/Programming/midnight-riches/.claude/worktrees/agent-a5325fff log --oneline -5)",
+      "Bash(git -C /C/User/Programming/midnight-riches/.claude/worktrees/agent-a44c4bf4 status)",
+      "Bash(git -C /C/User/Programming/midnight-riches/.claude/worktrees/agent-a44c4bf4 log --oneline -5)",
+      "Bash(ls -la \"C:\\\\User\\\\Programming\\\\midnight-riches\\\\public\\\\images\"\" 2>/dev/null || echo \"Directory does not exist or is empty \")",
+      "Bash(find /c/User/Programming/midnight-riches/public -name favicon* -o -name *.ico)"
     ]
   }
 }

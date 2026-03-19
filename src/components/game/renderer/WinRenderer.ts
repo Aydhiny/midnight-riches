@@ -39,24 +39,32 @@ export class WinRenderer {
     this.clear();
     this.active = true;
 
+    const flash = new Graphics();
+    flash.circle(canvasWidth / 2, canvasHeight / 2, Math.max(canvasWidth, canvasHeight));
+    flash.fill({ color: 0xffd700, alpha: 0.12 });
+    this.container.addChild(flash);
+
     const particles = new Container();
     this.container.addChild(particles);
 
-    for (let i = 0; i < 50; i++) {
+    const colors = [0xffd700, 0xfbbf24, 0xf59e0b, 0xffffff, 0xfde68a];
+    for (let i = 0; i < 70; i++) {
       const p = new Graphics();
-      p.circle(0, 0, 2 + Math.random() * 4);
-      p.fill(0xfbbf24);
-      p.x = canvasWidth / 2 + (Math.random() - 0.5) * canvasWidth;
-      p.y = canvasHeight / 2 + (Math.random() - 0.5) * canvasHeight;
-      p.alpha = 0.8;
+      const r = 2 + Math.random() * 5;
+      p.circle(0, 0, r);
+      p.fill(colors[Math.floor(Math.random() * colors.length)]);
+      p.x = canvasWidth / 2 + (Math.random() - 0.5) * canvasWidth * 1.1;
+      p.y = canvasHeight / 2 + (Math.random() - 0.5) * canvasHeight * 1.1;
+      p.alpha = 0.9;
       particles.addChild(p);
     }
 
     const label = this.createWinLabel(amount, canvasWidth, canvasHeight);
     this.container.addChild(label);
 
-    await this.animatePulse(2000);
+    await this.animatePulse(2200);
     particles.destroy({ children: true });
+    try { flash.destroy(); } catch { /* ok */ }
     label.destroy();
     this.active = false;
   }
@@ -108,22 +116,41 @@ export class WinRenderer {
     offsetX: number,
     offsetY: number
   ): void {
-    const g = new Graphics();
-    g.setStrokeStyle({ width: 3, color: 0xfbbf24 });
+    const pad = symbolSize * 0.05;
 
+    for (const [col, row] of line.positions) {
+      const cx = offsetX + col * symbolSize;
+      const cy = offsetY + row * symbolSize;
+
+      const halo = new Graphics();
+      halo.roundRect(cx + pad, cy + pad, symbolSize - pad * 2, symbolSize - pad * 2, symbolSize * 0.1);
+      halo.fill({ color: 0xffd700, alpha: 0.18 });
+      halo.stroke({ color: 0xffd700, alpha: 0.85, width: 2.5 });
+      this.container.addChild(halo);
+
+      const shimmer = new Graphics();
+      shimmer.roundRect(cx + pad + 3, cy + pad + 3, symbolSize - pad * 2 - 6, (symbolSize - pad * 2) * 0.4, symbolSize * 0.07);
+      shimmer.fill({ color: 0xffffff, alpha: 0.15 });
+      this.container.addChild(shimmer);
+    }
+
+    const g = new Graphics();
+    g.setStrokeStyle({ width: 5, color: 0x000000, alpha: 0.4 });
     const points = line.positions.map(([col, row]) => ({
       x: offsetX + col * symbolSize + symbolSize / 2,
       y: offsetY + row * symbolSize + symbolSize / 2,
     }));
-
     if (points.length > 0) {
       g.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        g.lineTo(points[i].x, points[i].y);
-      }
+      for (let i = 1; i < points.length; i++) g.lineTo(points[i].x, points[i].y);
       g.stroke();
     }
-
+    g.setStrokeStyle({ width: 3, color: 0xffd700 });
+    if (points.length > 0) {
+      g.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) g.lineTo(points[i].x, points[i].y);
+      g.stroke();
+    }
     this.container.addChild(g);
   }
 

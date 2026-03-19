@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { ArrowLeft } from "lucide-react";
 import { DailyChallengesWidget } from "@/components/game/daily-challenges-widget";
 import { seedCommunityWinsAction } from "@/server/actions/seed-notifications";
 
@@ -17,7 +20,6 @@ const SlotMachine = dynamic(
   }
 );
 
-// ─── Ambient fruit decorations ────────────────────────────────────────────────
 const KEYFRAMES_FLOAT = `
   @keyframes floatUp {
     0%, 100% { transform: translateY(0px) rotate(var(--rot)); }
@@ -28,29 +30,27 @@ const KEYFRAMES_FLOAT = `
 function AmbientFruits() {
   // Left column — appear at the outer LEFT screen edge, overlapping the left sidebar
   const left = [
-    { src: "/images/Cherry.png",     top: "5%",  size: 92,  rotate: -22, opacity: 0.72, dur: 5.0, delay: 0   },
-    { src: "/images/Lemon.png",      top: "20%", size: 70,  rotate:  15, opacity: 0.60, dur: 4.4, delay: 0.7 },
-    { src: "/images/Watermelon.png", top: "36%", size: 100, rotate:  -8, opacity: 0.66, dur: 5.6, delay: 1.4 },
-    { src: "/images/Orange.png",     top: "53%", size: 76,  rotate:  26, opacity: 0.60, dur: 4.8, delay: 2.1 },
-    { src: "/images/Bell.png",       top: "69%", size: 84,  rotate: -18, opacity: 0.64, dur: 5.2, delay: 2.8 },
-    { src: "/images/Grape.png",      top: "84%", size: 64,  rotate:  12, opacity: 0.54, dur: 4.6, delay: 3.5 },
+    { src: "/images/Cherry.png",     top: "5%",  size: 130, rotate: -22, opacity: 0.78, dur: 5.0, delay: 0   },
+    { src: "/images/Lemon.png",      top: "20%", size: 108, rotate:  15, opacity: 0.68, dur: 4.4, delay: 0.7 },
+    { src: "/images/Watermelon.png", top: "38%", size: 140, rotate:  -8, opacity: 0.72, dur: 5.6, delay: 1.4 },
+    { src: "/images/Orange.png",     top: "55%", size: 116, rotate:  26, opacity: 0.66, dur: 4.8, delay: 2.1 },
+    { src: "/images/Bell.png",       top: "70%", size: 124, rotate: -18, opacity: 0.70, dur: 5.2, delay: 2.8 },
+    { src: "/images/Grape.png",      top: "85%", size: 100, rotate:  12, opacity: 0.62, dur: 4.6, delay: 3.5 },
   ];
   // Right column — appear at the outer RIGHT screen edge, overlapping the right sidebar
   const right = [
-    { src: "/images/Star.png",       top: "7%",  size: 86,  rotate:  30, opacity: 0.68, dur: 4.8, delay: 0.4 },
-    { src: "/images/Diamond.png",    top: "22%", size: 70,  rotate: -20, opacity: 0.60, dur: 5.4, delay: 1.1 },
-    { src: "/images/Seven.png",      top: "39%", size: 94,  rotate:  10, opacity: 0.68, dur: 5.0, delay: 1.8 },
-    { src: "/images/Wild.png",       top: "56%", size: 78,  rotate: -26, opacity: 0.60, dur: 4.6, delay: 2.5 },
-    { src: "/images/Bar.png",        top: "72%", size: 82,  rotate:  20, opacity: 0.62, dur: 5.2, delay: 3.2 },
-    { src: "/images/Cherry.png",     top: "87%", size: 60,  rotate:  -6, opacity: 0.52, dur: 4.4, delay: 3.9 },
+    { src: "/images/Star.png",       top: "7%",  size: 120, rotate:  30, opacity: 0.74, dur: 4.8, delay: 0.4 },
+    { src: "/images/Diamond.png",    top: "22%", size: 108, rotate: -20, opacity: 0.68, dur: 5.4, delay: 1.1 },
+    { src: "/images/Seven.png",      top: "40%", size: 134, rotate:  10, opacity: 0.74, dur: 5.0, delay: 1.8 },
+    { src: "/images/Wild.png",       top: "57%", size: 118, rotate: -26, opacity: 0.66, dur: 4.6, delay: 2.5 },
+    { src: "/images/Bar.png",        top: "73%", size: 120, rotate:  20, opacity: 0.68, dur: 5.2, delay: 3.2 },
+    { src: "/images/Cherry.png",     top: "87%", size: 96,  rotate:  -6, opacity: 0.60, dur: 4.4, delay: 3.9 },
   ];
 
   return (
-    // z-[5] so fruits render OVER the sidebars — visible at screen edges
     <div className="pointer-events-none fixed inset-y-16 left-0 right-0 z-[5] overflow-hidden" aria-hidden>
       <style>{KEYFRAMES_FLOAT}</style>
       {left.map((f, i) => (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           key={`l${i}`}
           src={f.src}
@@ -62,7 +62,6 @@ function AmbientFruits() {
             width: f.size,
             height: f.size,
             opacity: f.opacity,
-            // Half-peeking from left edge: shift left by ~45% of width
             transform: `translateX(-45%) rotate(${f.rotate}deg)`,
             filter: `blur(0.8px) drop-shadow(0 6px 16px rgba(0,0,0,0.6))`,
             ["--rot" as string]: `${f.rotate}deg`,
@@ -71,7 +70,6 @@ function AmbientFruits() {
         />
       ))}
       {right.map((f, i) => (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           key={`r${i}`}
           src={f.src}
@@ -83,7 +81,6 @@ function AmbientFruits() {
             width: f.size,
             height: f.size,
             opacity: f.opacity,
-            // Half-peeking from right edge: shift right by ~45% of width
             transform: `translateX(45%) rotate(${f.rotate}deg)`,
             filter: `blur(0.8px) drop-shadow(0 6px 16px rgba(0,0,0,0.6))`,
             ["--rot" as string]: `${f.rotate}deg`,
@@ -95,11 +92,12 @@ function AmbientFruits() {
   );
 }
 
-// ─── GameMusicAutoStart ───────────────────────────────────────────────────────
 function GameMusicAutoStart() {
   useEffect(() => {
     const muted = localStorage.getItem("mr_music_muted");
     if (muted === "true") return;
+
+    window.dispatchEvent(new CustomEvent("mr:autoplay-music"));
 
     function onFirstInteraction() {
       window.dispatchEvent(new CustomEvent("mr:autoplay-music"));
@@ -116,7 +114,6 @@ function GameMusicAutoStart() {
   return null;
 }
 
-// ─── LiveChat ─────────────────────────────────────────────────────────────────
 const BOT_MESSAGES = [
   "Casey just hit 3x Cherry! Lucky! 🍒",
   "@MidnightRiches is rigged I swear 😂",
@@ -146,7 +143,6 @@ const BOT_NAMES = [
   "Rowan Z.", "Chris B.", "Sam T.", "Dana L.", "Morgan P.",
 ];
 
-// Gradient combos for bot avatars (from / to Tailwind colours)
 const AVATAR_GRADIENTS = [
   "from-violet-500 to-purple-700",
   "from-pink-500 to-rose-700",
@@ -159,7 +155,6 @@ const AVATAR_GRADIENTS = [
   "from-cyan-500 to-sky-700",
 ];
 
-// Mirrored live-wins data for the mini-strip
 const GAMES = ["Classic Fruits", "Five Reel Deluxe", "Cascade Crush", "Mega Ways"];
 const WIN_NAMES = [
   "Alex K.", "Jordan M.", "Sam L.", "Riley P.", "Morgan T.",
@@ -197,7 +192,6 @@ function generateInitialWins(): WinEntry[] {
   return Array.from({ length: 3 }, randomWinEntry);
 }
 
-// ─── Chat message types ───────────────────────────────────────────────────────
 interface ChatMessage {
   id: string;
   isBot: boolean;
@@ -242,11 +236,13 @@ function generateInitialMessages(): ChatMessage[] {
 }
 
 function LiveChat() {
+  const tc = useTranslations("common");
+  const tg = useTranslations("game");
   const [messages,       setMessages]       = useState<ChatMessage[]>(() => generateInitialMessages());
   const [inputVal,       setInputVal]       = useState("");
   const [winsExpanded,   setWinsExpanded]   = useState(true);
   const [recentWins,     setRecentWins]     = useState<WinEntry[]>(() => generateInitialWins());
-  const [tsVersion,      setTsVersion]      = useState(0); // bumped every second to rerender timestamps
+  const [tsVersion,      setTsVersion]      = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const botTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -315,21 +311,19 @@ function LiveChat() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 border-b border-[var(--glass-border)] px-3 py-2.5 shrink-0">
         <div className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
         </div>
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-          Live Chat
+          {tc("liveChat")}
         </span>
         <span className="ml-auto text-[9px] text-[var(--text-muted)]">
           {BOT_NAMES.length + 1} online
         </span>
       </div>
 
-      {/* ── Recent Wins strip (collapsible) ─────────────────────────────── */}
       <div className="shrink-0 border-b border-[var(--glass-border)]">
         <button
           onClick={() => setWinsExpanded((v) => !v)}
@@ -337,7 +331,7 @@ function LiveChat() {
           aria-expanded={winsExpanded}
         >
           <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-            Recent Wins
+            {tg("recentWins")}
           </span>
           <svg
             width="10" height="10" viewBox="0 0 24 24" fill="none"
@@ -375,8 +369,6 @@ function LiveChat() {
         )}
       </div>
 
-      {/* ── Messages list ───────────────────────────────────────────────── */}
-      {/* tsVersion is read so React re-renders timestamps */}
       <div
         data-ts={tsVersion}
         className="flex-1 overflow-y-auto px-2 py-1.5 space-y-1.5"
@@ -422,7 +414,6 @@ function LiveChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ── Input bar ───────────────────────────────────────────────────── */}
       <div className="shrink-0 border-t border-[var(--glass-border)] px-2 py-2">
         <div className="flex items-center gap-1.5">
           <input
@@ -442,7 +433,6 @@ function LiveChat() {
             aria-label="Send message"
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white transition-all hover:bg-violet-500 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {/* Arrow-right send icon */}
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
               aria-hidden
@@ -456,9 +446,6 @@ function LiveChat() {
     </div>
   );
 }
-
-// ─── Right-sidebar button ─────────────────────────────────────────────────────
-import Link from "next/link";
 
 function SidebarButton({ icon, label, sub, color, href }: { icon: string; label: string; sub: string; color: string; href?: string }) {
   const cls = "flex w-full items-center gap-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2.5 text-left backdrop-blur-md transition-all duration-200 hover:bg-white/[0.06] hover:-translate-y-px active:translate-y-0";
@@ -480,6 +467,8 @@ function SidebarButton({ icon, label, sub, color, href }: { icon: string; label:
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function GamePage() {
+  const t  = useTranslations("game");
+  const tc = useTranslations("common");
   const seededRef = useRef(false);
 
   useEffect(() => {
@@ -489,25 +478,30 @@ export default function GamePage() {
   }, []);
 
   return (
-    <div className="-mx-4 -my-8 relative flex h-[calc(100vh-56px)] overflow-hidden bg-[var(--bg-primary)]">
-      {/* Ambient fruit blurs on screen edges */}
-      <AmbientFruits />
+    <div className="-mx-4 -mb-8 -mt-6 relative flex h-[calc(100vh-56px)] overflow-hidden bg-[var(--bg-primary)]">
+      <div className="hidden lg:block"><AmbientFruits /></div>
 
-      {/* Left Panel — Live Chat */}
       <aside className="relative hidden w-56 shrink-0 border-r border-[var(--glass-border)] bg-[var(--glass-bg)]/40 lg:flex lg:flex-col overflow-hidden p-2">
         <LiveChat />
       </aside>
 
-      {/* Center Panel — Game (scrollable so tall layouts don't clip) */}
-      <div className="relative flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 py-4"
+      <div className="relative z-[10] flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 pt-4 pb-4"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.3) transparent" }}
       >
-        <div className="flex w-full max-w-3xl flex-col items-center gap-3 min-h-full justify-center">
+        <div className="w-full max-w-4xl mb-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            {tc("home")}
+          </Link>
+        </div>
+        <div className="flex w-full max-w-4xl flex-col items-center gap-3">
           <SlotMachine />
         </div>
       </div>
 
-      {/* Right Panel — Sidebar (thin styled scrollbar) */}
       <aside
         className="relative hidden w-[268px] shrink-0 flex-col gap-2.5 overflow-y-auto border-l border-[var(--glass-border)] bg-[var(--glass-bg)]/40 p-3 lg:flex"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.25) transparent" }}
@@ -521,25 +515,24 @@ export default function GamePage() {
 
         <DailyChallengesWidget />
 
-        <SidebarButton icon="🛍️" label="Collectibles Shop" sub="Themes, frames & skins" color="bg-fuchsia-500/20" href="/shop" />
-        <SidebarButton icon="❓" label="How to Play"       sub="Rules & features guide"  color="bg-violet-500/20" />
-        <SidebarButton icon="🏆" label="Leaderboard"       sub="Top players this week"   color="bg-amber-500/20"  />
-        <SidebarButton icon="✅" label="Provably Fair"     sub="Verify game fairness"    color="bg-emerald-500/20"/>
-        <SidebarButton icon="🎁" label="Claim Daily Bonus"  sub="50 free credits today"  color="bg-pink-500/20"   />
-        <SidebarButton icon="💬" label="Live Support"      sub="24/7 chat assistance"    color="bg-sky-500/20"    />
+        <SidebarButton icon="🛍️" label={t("collectiblesShop")} sub={t("collectiblesDesc")} color="bg-fuchsia-500/20" href="/shop" />
+        <SidebarButton icon="❓" label={t("howToPlay")}       sub={t("howToPlayDesc")}    color="bg-violet-500/20" />
+        <SidebarButton icon="🏆" label={t("leaderboard")}    sub={t("leaderboardDesc")}  color="bg-amber-500/20"  />
+        <SidebarButton icon="✅" label={t("provablyFair")}   sub={t("provablyFairDesc")} color="bg-emerald-500/20"/>
+        <SidebarButton icon="🎁" label={t("claimBonus")}     sub={t("claimBonusDesc")}   color="bg-pink-500/20"   />
+        <SidebarButton icon="💬" label={t("liveSupport")}    sub={t("liveSupportDesc")}  color="bg-sky-500/20"    />
 
-        {/* Live Quick Stats */}
         <div className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 backdrop-blur-md">
           <div className="mb-2.5 flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Live Stats</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">{t("liveStats")}</div>
           </div>
           <div className="space-y-2">
             {[
-              { label: "Players Online",    value: "1,284",   accent: "text-emerald-400" },
-              { label: "Biggest Win Today", value: "47,500 cr", accent: "text-amber-400"  },
-              { label: "Total Spins",       value: "93,104",  accent: "text-violet-400"  },
-              { label: "Jackpot Pool",      value: "$12,482", accent: "text-yellow-300"  },
+              { label: t("playersOnline"), value: "1,284",     accent: "text-emerald-400" },
+              { label: t("biggestWin"),    value: "47,500 cr", accent: "text-amber-400"   },
+              { label: t("totalSpins"),    value: "93,104",    accent: "text-violet-400"  },
+              { label: t("jackpotPool"),   value: "$12,482",   accent: "text-yellow-300"  },
             ].map(({ label, value, accent }) => (
               <div key={label} className="flex items-center justify-between">
                 <span className="text-[11px] text-[var(--text-secondary)]">{label}</span>
@@ -550,7 +543,6 @@ export default function GamePage() {
         </div>
       </aside>
 
-      {/* Auto-start music on first interaction */}
       <GameMusicAutoStart />
 
     </div>

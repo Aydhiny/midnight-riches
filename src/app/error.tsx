@@ -21,11 +21,11 @@ export default function Error({
         <CardContent className="p-8">
           <div className="text-6xl">💥</div>
           <h2 className="mt-4 text-2xl font-bold text-red-400">Something went wrong</h2>
-          <p className="mt-2 text-sm text-purple-300/70">
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
             An unexpected error occurred. Please try again.
           </p>
           {error.digest && (
-            <p className="mt-1 font-mono text-xs text-purple-500/50">
+            <p className="mt-1 font-mono text-xs text-[var(--text-muted)]">
               Error ID: {error.digest}
             </p>
           )}

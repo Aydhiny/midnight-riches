@@ -25,7 +25,7 @@ export function GlowCard({ className, glowColor = "rgba(139, 92, 246, 0.3)", chi
     <div
       ref={cardRef}
       className={cn(
-        "relative overflow-hidden rounded-xl border border-purple-500/20 bg-black/60 backdrop-blur-sm",
+        "relative overflow-hidden rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-sm",
         className
       )}
       onMouseMove={handleMouseMove}
