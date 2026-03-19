@@ -103,7 +103,6 @@ export function MusicPlayer() {
   const t = useTranslations("game");
   const audioRef          = useRef<HTMLAudioElement | null>(null);
   const pendingAutoPlay   = useRef(false);
-  const isFirstSwitch     = useRef(true);
 
   const [muted,           setMuted]           = useState(false);
   const [volume,          setVolume]          = useState(0.18);

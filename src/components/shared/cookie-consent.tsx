@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, BarChart2, Megaphone, Cookie, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -89,7 +90,14 @@ export function CookieConsent() {
 
       <AnimatePresence>
         {visible && (
-          <div className="fixed inset-0 z-[9999] flex items-end justify-center px-4 pb-6">
+          <motion.div
+            key="cookie-consent-overlay"
+            className="fixed inset-0 z-[9999] flex items-end justify-center px-4 pb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <div
               className="absolute inset-0 pointer-events-none"
               style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}
@@ -115,9 +123,9 @@ export function CookieConsent() {
                   className="flex items-center justify-center gap-5 border-b py-3"
                   style={{ borderColor: "var(--cookie-separator)" }}
                 >
-                  <img src="/images/Cherry.png" alt="" width={32} height={32} className="spin-slow opacity-80 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]" />
-                  <img src="/images/Seven.png" alt="" width={32} height={32} className="spin-slow-med opacity-80 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
-                  <img src="/images/Diamond.png" alt="" width={32} height={32} className="spin-slow-rev opacity-80 drop-shadow-[0_0_6px_rgba(139,92,246,0.5)]" />
+                  <Image src="/images/Cherry.png" alt="" width={32} height={32} className="spin-slow opacity-80 drop-shadow-[0_0_6px_rgba(239,68,68,0.5)]" />
+                  <Image src="/images/Seven.png" alt="" width={32} height={32} className="spin-slow-med opacity-80 drop-shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                  <Image src="/images/Diamond.png" alt="" width={32} height={32} className="spin-slow-rev opacity-80 drop-shadow-[0_0_6px_rgba(139,92,246,0.5)]" />
                 </div>
 
                 <div className="px-5 pb-5 pt-4">
@@ -233,7 +241,7 @@ export function CookieConsent() {
                 </div>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

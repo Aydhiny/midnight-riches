@@ -20,75 +20,73 @@ const SlotMachine = dynamic(
   }
 );
 
-const KEYFRAMES_FLOAT = `
-  @keyframes floatUp {
-    0%, 100% { transform: translateY(0px) rotate(var(--rot)); }
-    50%       { transform: translateY(-18px) rotate(var(--rot)); }
-  }
-`;
+// ── Iconic scrolling reel columns — same visual as hero section ───────────────
+const REEL_IMAGES_LEFT  = [
+  "/images/Cherry.png", "/images/Lemon.png", "/images/Bell.png",
+  "/images/Watermelon.png", "/images/Orange.png", "/images/Grape.png",
+  "/images/Star.png", "/images/Wild.png",
+];
+const REEL_IMAGES_RIGHT = [
+  "/images/Diamond.png", "/images/Seven.png", "/images/Bar.png",
+  "/images/Star.png", "/images/Cherry.png", "/images/Bell.png",
+  "/images/Watermelon.png", "/images/Lemon.png",
+];
 
 function AmbientFruits() {
-  // Left column — appear at the outer LEFT screen edge, overlapping the left sidebar
-  const left = [
-    { src: "/images/Cherry.png",     top: "5%",  size: 130, rotate: -22, opacity: 0.78, dur: 5.0, delay: 0   },
-    { src: "/images/Lemon.png",      top: "20%", size: 108, rotate:  15, opacity: 0.68, dur: 4.4, delay: 0.7 },
-    { src: "/images/Watermelon.png", top: "38%", size: 140, rotate:  -8, opacity: 0.72, dur: 5.6, delay: 1.4 },
-    { src: "/images/Orange.png",     top: "55%", size: 116, rotate:  26, opacity: 0.66, dur: 4.8, delay: 2.1 },
-    { src: "/images/Bell.png",       top: "70%", size: 124, rotate: -18, opacity: 0.70, dur: 5.2, delay: 2.8 },
-    { src: "/images/Grape.png",      top: "85%", size: 100, rotate:  12, opacity: 0.62, dur: 4.6, delay: 3.5 },
-  ];
-  // Right column — appear at the outer RIGHT screen edge, overlapping the right sidebar
-  const right = [
-    { src: "/images/Star.png",       top: "7%",  size: 120, rotate:  30, opacity: 0.74, dur: 4.8, delay: 0.4 },
-    { src: "/images/Diamond.png",    top: "22%", size: 108, rotate: -20, opacity: 0.68, dur: 5.4, delay: 1.1 },
-    { src: "/images/Seven.png",      top: "40%", size: 134, rotate:  10, opacity: 0.74, dur: 5.0, delay: 1.8 },
-    { src: "/images/Wild.png",       top: "57%", size: 118, rotate: -26, opacity: 0.66, dur: 4.6, delay: 2.5 },
-    { src: "/images/Bar.png",        top: "73%", size: 120, rotate:  20, opacity: 0.68, dur: 5.2, delay: 3.2 },
-    { src: "/images/Cherry.png",     top: "87%", size: 96,  rotate:  -6, opacity: 0.60, dur: 4.4, delay: 3.9 },
-  ];
+  const leftDoubled  = [...REEL_IMAGES_LEFT,  ...REEL_IMAGES_LEFT];
+  const rightDoubled = [...REEL_IMAGES_RIGHT, ...REEL_IMAGES_RIGHT];
 
   return (
-    <div className="pointer-events-none fixed inset-y-16 left-0 right-0 z-[5] overflow-hidden" aria-hidden>
-      <style>{KEYFRAMES_FLOAT}</style>
-      {left.map((f, i) => (
-        <img
-          key={`l${i}`}
-          src={f.src}
-          alt=""
-          className="absolute select-none object-contain"
-          style={{
-            top: f.top,
-            left: 0,
-            width: f.size,
-            height: f.size,
-            opacity: f.opacity,
-            transform: `translateX(-45%) rotate(${f.rotate}deg)`,
-            filter: `blur(0.8px) drop-shadow(0 6px 16px rgba(0,0,0,0.6))`,
-            ["--rot" as string]: `${f.rotate}deg`,
-            animation: `floatUp ${f.dur}s ease-in-out ${f.delay}s infinite`,
-          }}
-        />
-      ))}
-      {right.map((f, i) => (
-        <img
-          key={`r${i}`}
-          src={f.src}
-          alt=""
-          className="absolute select-none object-contain"
-          style={{
-            top: f.top,
-            right: 0,
-            width: f.size,
-            height: f.size,
-            opacity: f.opacity,
-            transform: `translateX(45%) rotate(${f.rotate}deg)`,
-            filter: `blur(0.8px) drop-shadow(0 6px 16px rgba(0,0,0,0.6))`,
-            ["--rot" as string]: `${f.rotate}deg`,
-            animation: `floatUp ${f.dur}s ease-in-out ${f.delay}s infinite`,
-          }}
-        />
-      ))}
-    </div>
+    <>
+      {/* Left reel — scrolls down slowly */}
+      <div
+        className="pointer-events-none fixed z-[5] select-none overflow-hidden"
+        aria-hidden
+        style={{ top: 56, bottom: 0, left: 0, width: "5rem", opacity: 0.07, filter: "blur(1.5px)", transform: "translateX(-30%)" }}
+      >
+        <div className="flex flex-col gap-5" style={{ animation: "reel-scroll 22s linear infinite" }}>
+          {leftDoubled.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={i} src={src} alt="" width={72} height={72} className="object-contain shrink-0" />
+          ))}
+        </div>
+      </div>
+
+      {/* Right reel — scrolls at slightly different speed */}
+      <div
+        className="pointer-events-none fixed z-[5] select-none overflow-hidden"
+        aria-hidden
+        style={{ top: 56, bottom: 0, right: 0, width: "5rem", opacity: 0.07, filter: "blur(1.5px)", transform: "translateX(30%)" }}
+      >
+        <div className="flex flex-col gap-5" style={{ animation: "reel-scroll 17s linear infinite" }}>
+          {rightDoubled.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={i} src={src} alt="" width={72} height={72} className="object-contain shrink-0" />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Desktop-only mouse spotlight ──────────────────────────────────────────────
+function GameSpotlight() {
+  const [pos, setPos] = useState({ x: -9999, y: -9999 });
+
+  useEffect(() => {
+    function onMove(e: MouseEvent) { setPos({ x: e.clientX, y: e.clientY }); }
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 z-[4] hidden lg:block"
+      aria-hidden
+      style={{
+        background: `radial-gradient(450px circle at ${pos.x}px ${pos.y}px, rgba(124,58,237,0.055) 0%, transparent 65%)`,
+      }}
+    />
   );
 }
 
@@ -480,6 +478,7 @@ export default function GamePage() {
   return (
     <div className="-mx-4 -mb-8 -mt-6 relative flex h-[calc(100vh-56px)] overflow-hidden bg-[var(--bg-primary)]">
       <div className="hidden lg:block"><AmbientFruits /></div>
+      <GameSpotlight />
 
       <aside className="relative hidden w-56 shrink-0 border-r border-[var(--glass-border)] bg-[var(--glass-bg)]/40 lg:flex lg:flex-col overflow-hidden p-2">
         <LiveChat />

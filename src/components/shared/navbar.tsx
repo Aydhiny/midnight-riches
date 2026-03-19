@@ -50,9 +50,13 @@ export function Navbar() {
       <div className="h-px w-full bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
 
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <Link href={session?.user ? "/game" : "/"} className="flex items-center gap-2 shrink-0">
+        <Link href={session?.user ? "/game" : "/"} className="flex items-center gap-2.5 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Logo" className="h-6 w-6" />
+          <img
+            src="/images/midnight-riches-logo.png"
+            alt="Midnight Riches"
+            className="h-8 w-8 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]"
+          />
           <span className="hidden sm:block text-[15px] font-bold tracking-tight text-[var(--text-primary)]">
             Midnight{" "}
             <span style={{ fontFamily: "var(--font-garamond)", fontWeight: 400, fontStyle: "italic" }}>

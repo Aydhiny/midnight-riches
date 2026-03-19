@@ -61,7 +61,7 @@ function stopSound(audio: HTMLAudioElement | null) {
   audio.currentTime = 0;
 }
 
-function playWinSound(totalWin: number, totalBet: number) {
+function playWinSound(totalWin: number, _totalBet: number) {
   if (!isSfxEnabled()) return;
 
   if (totalWin > 100) {
@@ -208,6 +208,20 @@ export function SlotMachine() {
     setLastWin,
     setBonus,
   ]);
+
+  // ── Spacebar hotkey ──────────────────────────────────────────────────────
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.code !== "Space") return;
+      // Don't fire when typing in an input/textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      e.preventDefault();
+      executeSpin();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [executeSpin]);
 
   useEffect(() => {
     if (!autoSpin || spinState !== "idle") return;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -110,7 +111,13 @@ export default function SignUpPage() {
           }}
         >
           <div className="mb-7 text-center">
-            <img src="/logo.svg" alt="Midnight Riches" className="mx-auto mb-3 h-10 w-10" />
+            <Image
+              src="/images/midnight-riches-logo.png"
+              alt="Midnight Riches"
+              width={56}
+              height={56}
+              className="mx-auto mb-3 object-contain drop-shadow-[0_0_12px_rgba(251,191,36,0.5)]"
+            />
             <h1 className="text-2xl font-black text-[var(--text-primary)]">
               {t("signUpTitle")}
             </h1>

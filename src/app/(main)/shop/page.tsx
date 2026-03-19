@@ -9,7 +9,7 @@ import { ArrowLeft, Zap } from "lucide-react";
 
 function useShopSfx() {
   const sfxEnabled = useIsSfxEnabled();
-  const play = useCallback((src: string, volume = 0.55) => {
+  const play = useCallback((src: string, _volume = 0.55) => {
     if (!sfxEnabled) return;
     try { new Audio(src).play().catch(() => {}); } catch {}
   }, [sfxEnabled]);

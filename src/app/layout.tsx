@@ -86,8 +86,9 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     icons: {
-      icon: "/logo.svg",
-      apple: "/logo.svg",
+      icon: "/images/midnight-riches-logo.png",
+      apple: "/images/midnight-riches-logo.png",
+      shortcut: "/images/midnight-riches-logo.png",
     },
     manifest: "/site.webmanifest",
   };

@@ -38,7 +38,13 @@ export function LandingFooter() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.svg" alt="Midnight Riches" width={28} height={28} className="rounded-lg" />
+              <img
+                src="/images/midnight-riches-logo.png"
+                alt="Midnight Riches"
+                width={36}
+                height={36}
+                className="object-contain drop-shadow-[0_0_8px_rgba(251,191,36,0.35)]"
+              />
               <span className="text-lg font-bold text-[var(--text-primary)]">
                 Midnight{" "}
                 <span style={{ fontFamily: "var(--font-garamond)", fontWeight: 400, fontStyle: "italic" }}>
