@@ -233,6 +233,30 @@ export function MusicPlayer() {
     window.dispatchEvent(new StorageEvent("storage", { key: "mr_sfx_enabled", newValue: String(sfxEnabled) }));
   }, [sfxEnabled]);
 
+  // ── Listen for SFX changes from Settings page ─────────────────────────────
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key === "mr_sfx_enabled") {
+        const sfxOn = e.newValue !== "false";
+        setSfxEnabled(sfxOn);
+        // When sound effects are disabled, mute background music too
+        if (!sfxOn) {
+          setMuted(true);
+          if (audioRef.current) audioRef.current.muted = true;
+        } else {
+          // Restore music when sound effects re-enabled (user can mute again if they want)
+          setMuted(false);
+          if (audioRef.current) {
+            audioRef.current.muted = false;
+            audioRef.current.play().catch(() => {});
+          }
+        }
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   // ── Handle autoplay event ─────────────────────────────────────────────────
   useEffect(() => {
     function handleAutoPlay() {

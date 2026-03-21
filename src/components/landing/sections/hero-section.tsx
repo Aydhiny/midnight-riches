@@ -14,7 +14,6 @@ import { LiveBadge } from "./live-badge";
 import AnimatedContent from "@/components/ui/animated-content";
 import ClickSpark from "@/components/ui/click-spark";
 import ShinyButton from "@/components/ui/shiny-button";
-import StarBorder from "@/components/ui/star-border";
 import { GlassCard, GlassPill, PulsingDot } from "../ui/glass";
 
 const BackgroundReel = dynamic(() => import("../visuals/background-reel").then((m) => ({ default: m.BackgroundReel })), { ssr: false });
@@ -194,20 +193,17 @@ export function HeroSection() {
                 </Link>
               </ClickSpark>
 
-              <StarBorder
-                as="a"
+              <a
                 href="#how-it-works"
-                color="#7c3aed"
-                speed="4s"
                 onClick={(e: React.MouseEvent) => {
                   e.preventDefault();
                   track("cta_click", { section: "hero", button: "secondary" });
                   document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="text-sm font-medium text-[var(--text-secondary)]"
+                className="inline-flex items-center gap-2 rounded-2xl border px-6 py-3 text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border-violet-300 bg-white text-violet-700 shadow-sm hover:bg-violet-50 hover:border-violet-400 hover:text-violet-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-[var(--text-secondary)] dark:shadow-none dark:hover:bg-white/[0.08] dark:hover:border-violet-500/40 dark:hover:text-violet-300"
               >
                 {t("secondaryCta")}
-              </StarBorder>
+              </a>
             </div>
           </AnimatedContent>
 

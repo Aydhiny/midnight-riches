@@ -66,7 +66,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
-        // Block sign-in until email is verified (credentials only — OAuth users are pre-verified)
         if (!user.emailVerified) {
           throw new Error("EmailNotVerified");
         }
@@ -80,16 +79,48 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name ?? undefined;
+        // Don't store base64 images in JWT (4 KB cookie limit)
+        if (user.image && !user.image.startsWith("data:")) {
+          token.image = user.image;
+        }
         delete token.picture;
+        // Fetch role from DB on first sign-in
+        if (user.id) {
+          const dbUser = await db.query.users.findFirst({
+            where: eq(users.id, user.id),
+            columns: { role: true },
+          });
+          if (dbUser) token.role = dbUser.role;
+        }
+      }
+      // Backfill role for sessions created before role was added to JWT
+      if (!token.role && token.id) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.id, token.id as string),
+          columns: { role: true },
+        });
+        if (dbUser) token.role = dbUser.role;
+      }
+      // Handle updateSession() calls from the client
+      if (trigger === "update" && session) {
+        if (session.name !== undefined) token.name = session.name;
+        // Only persist URL-based images in the JWT, not base64
+        if (session.image !== undefined && !session.image.startsWith("data:")) {
+          token.image = session.image;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
+      if (session.user) {
+        if (token.id)    session.user.id    = token.id    as string;
+        if (token.name)  session.user.name  = token.name  as string;
+        if (token.image) session.user.image = token.image as string;
+        if (token.role)  session.user.role  = token.role  as string;
       }
       return session;
     },

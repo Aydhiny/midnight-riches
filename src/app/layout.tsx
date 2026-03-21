@@ -43,8 +43,16 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: t("description"),
     keywords: [
-      "slot machine", "fruit slots", "free slots", "online casino", "free credits",
-      "megaways", "classic slots", "provably fair", "midnight riches", "casino game",
+      "slot machine",
+      "fruit slots",
+      "free slots",
+      "online casino",
+      "free credits",
+      "megaways",
+      "classic slots",
+      "provably fair",
+      "midnight riches",
+      "casino game",
     ],
     authors: [{ name: "Midnight Riches" }],
     creator: "Midnight Riches",
@@ -99,11 +107,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html
-      lang={locale}
-      suppressHydrationWarning
-      className={`${jakartaSans.variable} ${cormorant.variable} ${bebasNeue.variable}`}
-    >
+    <html lang={locale} suppressHydrationWarning className={`${jakartaSans.variable} ${cormorant.variable} ${bebasNeue.variable}`}>
       <head>
         <link rel="alternate" hrefLang="en" href={`${BASE_URL}/en`} />
         <link rel="alternate" hrefLang="bs" href={`${BASE_URL}/bs`} />
@@ -111,10 +115,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-screen antialiased" style={{ fontFamily: "var(--font-sans)" }}>
         <NextIntlClientProvider messages={messages}>
+          <CookieConsent />
           <SessionProvider>
             <ThemeProvider>{children}</ThemeProvider>
           </SessionProvider>
-          <CookieConsent />
         </NextIntlClientProvider>
       </body>
     </html>

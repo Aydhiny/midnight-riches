@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { getStatsAction } from "@/server/actions/stats";
 import { ArrowLeft, TrendingUp, Zap, Trophy, BarChart3, Target, Award } from "lucide-react";
 
@@ -24,16 +25,16 @@ function StatCardSkeleton() {
   );
 }
 
-function RtpMeter({ rtp }: { rtp: number }) {
+function RtpMeter({ rtp, t }: { rtp: number; t: (key: string) => string }) {
   const clamped = Math.min(Math.max(rtp, 0), 150);
   const pct     = (clamped / 150) * 100;
   const color   = rtp >= 96 ? "#22c55e" : rtp >= 85 ? "#f59e0b" : "#ef4444";
-  const label   = rtp >= 96 ? "Excellent" : rtp >= 85 ? "Average" : "Below Average";
+  const label   = rtp >= 96 ? t("excellent") : rtp >= 85 ? t("average") : t("belowAverage");
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-[var(--text-muted)]">Your RTP</span>
+        <span className="text-[var(--text-muted)]">{t("yourRtp")}</span>
         <span className="font-bold tabular-nums" style={{ color }}>{rtp.toFixed(1)}%</span>
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/8">
@@ -63,16 +64,15 @@ function AnimatedNumber({ value, prefix = "", suffix = "", decimals = 0 }: {
   const [displayed, setDisplayed] = useState(0);
 
   useEffect(() => {
-    const start  = Date.now();
+    const start    = Date.now();
     const duration = 1000;
-    const from = 0;
-    const to = value;
+    const from     = 0;
+    const to       = value;
 
     function update() {
-      const elapsed = Date.now() - start;
+      const elapsed  = Date.now() - start;
       const progress = Math.min(elapsed / duration, 1);
-      // ease out expo
-      const eased = 1 - Math.pow(1 - progress, 4);
+      const eased    = 1 - Math.pow(1 - progress, 4);
       setDisplayed(from + (to - from) * eased);
       if (progress < 1) requestAnimationFrame(update);
     }
@@ -87,61 +87,62 @@ function AnimatedNumber({ value, prefix = "", suffix = "", decimals = 0 }: {
   return <>{prefix}{formatted}{suffix}</>;
 }
 
-const STAT_CARDS = [
-  {
-    key: "totalSpins" as const,
-    label: "Total Spins",
-    icon: Zap,
-    color: "#f59e0b",
-    glow: "rgba(245,158,11,0.25)",
-    bg: "rgba(245,158,11,0.08)",
-    border: "rgba(245,158,11,0.2)",
-    prefix: "",
-    suffix: "",
-    decimals: 0,
-  },
-  {
-    key: "totalWon" as const,
-    label: "Total Won",
-    icon: Trophy,
-    color: "#22c55e",
-    glow: "rgba(34,197,94,0.2)",
-    bg: "rgba(34,197,94,0.08)",
-    border: "rgba(34,197,94,0.2)",
-    prefix: "$",
-    suffix: "",
-    decimals: 2,
-  },
-  {
-    key: "totalWagered" as const,
-    label: "Total Wagered",
-    icon: BarChart3,
-    color: "#7c3aed",
-    glow: "rgba(124,58,237,0.2)",
-    bg: "rgba(124,58,237,0.08)",
-    border: "rgba(124,58,237,0.2)",
-    prefix: "$",
-    suffix: "",
-    decimals: 2,
-  },
-  {
-    key: "biggestWin" as const,
-    label: "Biggest Win",
-    icon: Award,
-    color: "#ec4899",
-    glow: "rgba(236,72,153,0.2)",
-    bg: "rgba(236,72,153,0.08)",
-    border: "rgba(236,72,153,0.2)",
-    prefix: "$",
-    suffix: "",
-    decimals: 2,
-  },
-];
-
 export default function StatsPage() {
+  const t = useTranslations("stats");
   const [stats, setStats]     = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
+
+  const STAT_CARDS = [
+    {
+      key: "totalSpins" as const,
+      label: t("totalSpins"),
+      icon: Zap,
+      color: "#f59e0b",
+      glow: "rgba(245,158,11,0.25)",
+      bg: "rgba(245,158,11,0.08)",
+      border: "rgba(245,158,11,0.2)",
+      prefix: "",
+      suffix: "",
+      decimals: 0,
+    },
+    {
+      key: "totalWon" as const,
+      label: t("totalWon"),
+      icon: Trophy,
+      color: "#22c55e",
+      glow: "rgba(34,197,94,0.2)",
+      bg: "rgba(34,197,94,0.08)",
+      border: "rgba(34,197,94,0.2)",
+      prefix: "$",
+      suffix: "",
+      decimals: 2,
+    },
+    {
+      key: "totalWagered" as const,
+      label: t("totalWagered"),
+      icon: BarChart3,
+      color: "#7c3aed",
+      glow: "rgba(124,58,237,0.2)",
+      bg: "rgba(124,58,237,0.08)",
+      border: "rgba(124,58,237,0.2)",
+      prefix: "$",
+      suffix: "",
+      decimals: 2,
+    },
+    {
+      key: "biggestWin" as const,
+      label: t("biggestWin"),
+      icon: Award,
+      color: "#ec4899",
+      glow: "rgba(236,72,153,0.2)",
+      bg: "rgba(236,72,153,0.08)",
+      border: "rgba(236,72,153,0.2)",
+      prefix: "$",
+      suffix: "",
+      decimals: 2,
+    },
+  ];
 
   useEffect(() => {
     getStatsAction().then((res) => {
@@ -157,7 +158,7 @@ export default function StatsPage() {
       : 0
     : 0;
 
-  const netPnl = stats ? stats.totalWon - stats.totalWagered : 0;
+  const netPnl       = stats ? stats.totalWon - stats.totalWagered : 0;
   const isProfitable = netPnl >= 0;
 
   return (
@@ -177,7 +178,7 @@ export default function StatsPage() {
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Game
+        {t("backToGame")}
       </Link>
 
       {/* Header */}
@@ -185,7 +186,7 @@ export default function StatsPage() {
         <div className="mb-1 flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-amber-400" />
           <span className="text-xs font-bold uppercase tracking-widest text-amber-400/70">
-            Player Statistics
+            {t("badge")}
           </span>
         </div>
         <h1
@@ -197,10 +198,10 @@ export default function StatsPage() {
             backgroundClip: "text",
           }}
         >
-          Your Stats
+          {t("title")}
         </h1>
         <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Your complete gameplay history at a glance.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -215,7 +216,7 @@ export default function StatsPage() {
         {loading
           ? Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
           : STAT_CARDS.map((card, i) => {
-              const Icon = card.icon;
+              const Icon  = card.icon;
               const value = stats?.[card.key] ?? 0;
               return (
                 <motion.div
@@ -240,14 +241,12 @@ export default function StatsPage() {
                     className="text-3xl font-black tabular-nums leading-none"
                     style={{ color: card.color }}
                   >
-                    {loading ? "—" : (
-                      <AnimatedNumber
-                        value={value}
-                        prefix={card.prefix}
-                        suffix={card.suffix}
-                        decimals={card.decimals}
-                      />
-                    )}
+                    <AnimatedNumber
+                      value={value}
+                      prefix={card.prefix}
+                      suffix={card.suffix}
+                      decimals={card.decimals}
+                    />
                   </div>
                   <div className="mt-1.5 text-xs text-[var(--text-muted)]">{card.label}</div>
                 </motion.div>
@@ -267,7 +266,7 @@ export default function StatsPage() {
           <div className="mb-4 flex items-center gap-2">
             <Target className="h-4 w-4 text-violet-400" />
             <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-              Return to Player
+              {t("returnToPlayer")}
             </span>
           </div>
           {loading ? (
@@ -281,10 +280,10 @@ export default function StatsPage() {
               </div>
             </div>
           ) : (
-            <RtpMeter rtp={stats?.rtp ?? 0} />
+            <RtpMeter rtp={stats?.rtp ?? 0} t={t} />
           )}
           <p className="mt-4 text-xs text-[var(--text-muted)]">
-            The house edge is ~4%. An RTP of 96%+ means you are running well.
+            {t("houseEdgeNote")}
           </p>
         </motion.div>
 
@@ -298,7 +297,7 @@ export default function StatsPage() {
           <div className="mb-4 flex items-center gap-2">
             <TrendingUp className={`h-4 w-4 ${isProfitable ? "text-emerald-400" : "text-red-400"}`} />
             <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">
-              Net Profit / Loss
+              {t("netProfitLoss")}
             </span>
           </div>
 
@@ -317,9 +316,7 @@ export default function StatsPage() {
                 <AnimatedNumber value={netPnl} prefix="$" decimals={2} />
               </div>
               <p className="mt-1 text-xs text-[var(--text-muted)]">
-                {isProfitable
-                  ? "You are ahead of the house. Keep going!"
-                  : "Everyone has a rough streak. Good luck on the next one."}
+                {isProfitable ? t("aheadOfHouse") : t("roughStreak")}
               </p>
 
               {/* Win rate pill */}
@@ -329,11 +326,11 @@ export default function StatsPage() {
                   style={{ background: isProfitable ? "#22c55e" : "#f59e0b" }}
                 />
                 <span className="text-xs text-[var(--text-secondary)]">
-                  Win rate:{" "}
+                  {t("winRate")}{" "}
                   <span className="font-bold text-[var(--text-primary)]">
-                    {stats?.totalSpins ?? 0 > 0
+                    {(stats?.totalSpins ?? 0) > 0
                       ? `${winRate.toFixed(1)}%`
-                      : "N/A"}
+                      : t("notApplicable")}
                   </span>
                 </span>
               </div>
@@ -351,10 +348,8 @@ export default function StatsPage() {
           className="mt-8 flex flex-col items-center gap-3 py-12 text-center"
         >
           <span className="text-5xl opacity-40">🎰</span>
-          <p className="font-semibold text-[var(--text-secondary)]">No spins yet</p>
-          <p className="text-sm text-[var(--text-muted)]">
-            Head to the game and start spinning to see your stats here.
-          </p>
+          <p className="font-semibold text-[var(--text-secondary)]">{t("noSpinsYet")}</p>
+          <p className="text-sm text-[var(--text-muted)]">{t("noSpinsDesc")}</p>
           <Link
             href="/game"
             className="mt-2 rounded-xl px-5 py-2.5 text-sm font-bold text-black transition-all hover:opacity-90"
@@ -363,7 +358,7 @@ export default function StatsPage() {
               boxShadow: "0 0 20px rgba(245,158,11,0.35)",
             }}
           >
-            🎰 Play Now
+            🎰 {t("playNow")}
           </Link>
         </motion.div>
       )}
