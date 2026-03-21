@@ -9,7 +9,7 @@ import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signInSchema } from "@/lib/validators";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 function SignInForm() {
   const t = useTranslations("auth");
@@ -28,6 +28,8 @@ function SignInForm() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  const isVerified = searchParams.get("verified") === "1";
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -122,6 +124,13 @@ function SignInForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isVerified && (
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-400 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                Email verified! You can now sign in.
+              </div>
+            )}
+
             {error && (
               <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-500">
                 {error}

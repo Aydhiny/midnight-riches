@@ -36,10 +36,10 @@ interface GameCanvasProps {
 
 function getDimensions(gameType: GameType): { width: number; height: number } {
   switch (gameType) {
-    case "classic":   return { width: 392, height: 380 };
-    case "five-reel": return { width: 472, height: 340 };
-    case "cascade":   return { width: 396, height: 420 };
-    case "megaways":  return { width: 420, height: 436 };
+    case "classic":   return { width: 482, height: 530 };
+    case "five-reel": return { width: 600, height: 440 };
+    case "cascade":   return { width: 500, height: 540 };
+    case "megaways":  return { width: 464, height: 560 };
   }
 }
 
@@ -128,8 +128,8 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
 
     return (
       <div
-        className="relative mx-auto"
-        style={{ width: dimensions.width, height: dimensions.height }}
+        className="relative mx-auto w-full"
+        style={{ maxWidth: dimensions.width, aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
       >
         <style>{SHAKE_STYLE}</style>
         <div

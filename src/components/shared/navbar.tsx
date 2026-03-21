@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   Gamepad2, Wallet, History, Settings, LogOut,
-  ChevronDown, Menu, X, ShoppingBag, BarChart3,
+  ChevronDown, Menu, X, ShoppingBag, BarChart3, LayoutDashboard,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -172,6 +172,9 @@ export function Navbar() {
                         <DropdownLink href="/wallet" icon={Wallet} label={t("wallet")} onClick={() => setAvatarOpen(false)} />
                         <DropdownLink href="/history" icon={History} label={t("betHistory")} onClick={() => setAvatarOpen(false)} />
                         <DropdownLink href="/stats" icon={BarChart3} label="My Stats" onClick={() => setAvatarOpen(false)} />
+                        {session.user.role === "admin" && (
+                          <DropdownLink href="/admin" icon={LayoutDashboard} label="Admin Dashboard" onClick={() => setAvatarOpen(false)} />
+                        )}
                       </div>
 
                       <div className="border-t border-[var(--glass-border)] py-1.5">
