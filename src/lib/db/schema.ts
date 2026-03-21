@@ -90,7 +90,7 @@ export const transactions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     type: text("type")
-      .$type<"deposit" | "withdrawal" | "bet" | "win" | "bonus" | "jackpot" | "purchase">()
+      .$type<"deposit" | "withdrawal" | "bet" | "win" | "bonus" | "jackpot" | "purchase" | "gamble">()
       .notNull(),
     amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
     metadata: jsonb("metadata"),

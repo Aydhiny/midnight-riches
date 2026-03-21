@@ -1,4 +1,4 @@
-import { Application } from "pixi.js";
+import { Application, Assets, Sprite } from "pixi.js";
 import type { SpinResult, WinEvaluation, CascadeStep, GameType, GameSymbol } from "@/types";
 import { ReelRenderer } from "./ReelRenderer";
 import { WinRenderer } from "./WinRenderer";
@@ -26,6 +26,7 @@ export class RendererManager {
   private reelRenderers: ReelRenderer[] = [];
   private winRenderer: WinRenderer | null = null;
   private cabinetRenderer: CabinetRenderer | null = null;
+  private bgSprite: Sprite | null = null;
   private currentConfig: RendererConfig | null = null;
   private gameType: GameType = "classic";
   private initialized = false;
@@ -75,9 +76,20 @@ export class RendererManager {
     app.canvas.style.borderRadius = "8px";
     container.appendChild(app.canvas);
 
-    // Pre-load PNG symbol textures (module-level cache — no-op after first load)
-    await preloadSymbolTextures();
+    // Pre-load PNG symbol textures + background (parallel, cached after first load)
+    const [, bgTexture] = await Promise.all([
+      preloadSymbolTextures(),
+      Assets.load("/images/slot-pattern-background.avif").catch(() => null),
+    ]);
     if (this.app !== app) return;
+
+    // ── Background sprite (z = 0, behind everything) ──────────────────────────
+    if (bgTexture) {
+      this.bgSprite = new Sprite(bgTexture);
+      this.bgSprite.width  = width;
+      this.bgSprite.height = height;
+      this.app.stage.addChild(this.bgSprite);
+    }
 
     this.cabinetRenderer = new CabinetRenderer(width, height);
     this.app.stage.addChild(this.cabinetRenderer.container);
@@ -139,8 +151,18 @@ export class RendererManager {
     await raf();
     this.app.renderer.resize(width, height);
 
-    // ── Phase 3: rebuild cabinet + win renderer ───────────────────────────────
+    // ── Phase 3: rebuild background sprite + cabinet + win renderer ──────────
     await raf();
+
+    // Background sprite — texture is already cached by Assets after init()
+    try {
+      const bgTex = await Assets.load("/images/slot-pattern-background.avif");
+      this.bgSprite = new Sprite(bgTex);
+      this.bgSprite.width  = width;
+      this.bgSprite.height = height;
+      this.app.stage.addChild(this.bgSprite);
+    } catch { /* background is optional */ }
+
     this.cabinetRenderer = new CabinetRenderer(width, height);
     this.app.stage.addChild(this.cabinetRenderer.container);
     this.winRenderer = new WinRenderer();
@@ -194,20 +216,41 @@ export class RendererManager {
     if (!this.reelRenderers.length) return;
     this.winRenderer?.clear();
 
-    const promises = this.reelRenderers.map((reel) =>
-      reel.startSpin(this.turboMode)
-    );
+    // All reels start spinning simultaneously
+    const promises = this.reelRenderers.map((reel) => reel.startSpin(this.turboMode));
 
-    const reelStopDelay = this.turboMode ? 0 : 200;
+    if (this.turboMode) {
+      // Turbo: stop all reels instantly
+      for (let i = 0; i < this.reelRenderers.length; i++) {
+        const symbols = result.reels[i] ?? [];
+        this.reelRenderers[i].stopSpin(symbols, true);
+      }
+    } else {
+      // Cinematic stagger: reel 0 stops at baseDelay, each subsequent reel
+      // adds reelStopGap, last reel gets anticipation effect.
+      const baseDelay   = 700;  // ms before first reel stops
+      const reelStopGap = 340;  // ms between each reel stopping
+      const spinStart   = Date.now();
+      const total       = this.reelRenderers.length;
 
-    for (let i = 0; i < this.reelRenderers.length; i++) {
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          const symbols = result.reels[i] ?? [];
-          this.reelRenderers[i].stopSpin(symbols, this.turboMode);
-          resolve();
-        }, i * reelStopDelay);
-      });
+      for (let i = 0; i < total; i++) {
+        const isLastReel   = i === total - 1;
+        const isSecondLast = i === total - 2;
+        // Apply anticipation to the last reel when there are ≥3 reels
+        const useAnticipation = isLastReel && total >= 3;
+        // Give second-to-last a slightly longer pause too for tension
+        const extraPause = isSecondLast && total >= 4 ? 80 : 0;
+        const targetTime = spinStart + baseDelay + i * reelStopGap + extraPause;
+
+        await new Promise<void>((resolve) => {
+          const remaining = Math.max(0, targetTime - Date.now());
+          setTimeout(() => {
+            const symbols = result.reels[i] ?? [];
+            this.reelRenderers[i].stopSpin(symbols, false, useAnticipation);
+            resolve();
+          }, remaining);
+        });
+      }
     }
 
     await Promise.all(promises);
@@ -231,7 +274,7 @@ export class RendererManager {
         this.currentConfig.height
       );
     } else {
-      await this.winRenderer.playWinAnimation(wins, symbolSize, offsetX, offsetY);
+      await this.winRenderer.playWinAnimation(wins, symbolSize, offsetX, offsetY, this.currentConfig.width);
     }
   }
 
@@ -285,6 +328,9 @@ export class RendererManager {
 
     try { this.cabinetRenderer?.destroy(); } catch { /* ignore */ }
     this.cabinetRenderer = null;
+
+    try { this.bgSprite?.destroy(); } catch { /* ignore */ }
+    this.bgSprite = null;
 
     // Remove PixiJS canvas from our container before destroying the app.
     // This prevents the "destroyed WebGL context" bug — each new init()

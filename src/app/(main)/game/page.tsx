@@ -238,16 +238,22 @@ function generateInitialMessages(): ChatMessage[] {
 function LiveChat() {
   const tc = useTranslations("common");
   const tg = useTranslations("game");
-  const [messages,       setMessages]       = useState<ChatMessage[]>(() => generateInitialMessages());
+  const [messages,       setMessages]       = useState<ChatMessage[]>([]);
   const [inputVal,       setInputVal]       = useState("");
   const [winsExpanded,   setWinsExpanded]   = useState(true);
-  const [recentWins,     setRecentWins]     = useState<WinEntry[]>(() => generateInitialWins());
+  const [recentWins,     setRecentWins]     = useState<WinEntry[]>([]);
   const [tsVersion,      setTsVersion]      = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const botTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const winsTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef       = useRef<HTMLInputElement>(null);
+
+  // Populate random initial data on client only (avoids SSR/client mismatch)
+  useEffect(() => {
+    setMessages(generateInitialMessages());
+    setRecentWins(generateInitialWins());
+  }, []);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {

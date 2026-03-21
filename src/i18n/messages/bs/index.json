@@ -99,6 +99,40 @@
       "themes": "Teme i vizuali",
       "browseShop": "Radnja kolekcija",
       "browseShopDesc": "Teme, zvučni paketi i više"
+    },
+    "controlPanel": {
+      "betPerLine": "ULOG / LINIJA",
+      "totalBet": "UKUPNI ULOG",
+      "lines": "LINIJE",
+      "maxBet": "MAX",
+      "autoSpin": "AUTO",
+      "spinning": "VRTI SE",
+      "freeSpin": "BESPL. OKRETAJ ({count} preost.)",
+      "spin": "VRTI",
+      "spinsRemaining": "{count} okretaja preostalo",
+      "stop": "zaustavi"
+    },
+    "winModal": {
+      "bigWin": "VELIKI DOBITAK",
+      "superWin": "SUPER DOBITAK",
+      "megaWin": "MEGA DOBITAK",
+      "xBet": "{ratio}x vašeg uloga",
+      "continue": "Nastavi"
+    },
+    "bonusModal": {
+      "title": "BONUS RUNDA!",
+      "freeSpins": "Besplatna Okretanja",
+      "multiplier": "Množitelj",
+      "start": "Počni Besplatna Okretanja"
+    },
+    "cabinet": {
+      "balance": "STANJE",
+      "win": "DOBITAK",
+      "freeSpins": "BES. OKRETANJA",
+      "totalBet": "UKUPNI ULOG",
+      "bonusWin": "BONUS DOBITAK",
+      "megaWin": "MEGA DOBITAK!",
+      "bigWin": "VELIKI DOBITAK!"
     }
   },
   "wallet": {
@@ -650,6 +684,29 @@
       "epic": "Epsko",
       "legendary": "Legendarno"
     }
+  },
+  "gamble": {
+    "title": "Duplo ili Ništa",
+    "chooseCard": "Izaberite kartu — crvena ili crna",
+    "revealing": "Otkrivanje karte...",
+    "currentWin": "Na stolu",
+    "newWin": "Novi dobitak",
+    "lost": "Izgubljeno",
+    "red": "Crvena",
+    "black": "Crna",
+    "yourPick": "Vaš izbor",
+    "drawn": "Izvučena",
+    "drawing": "Izvlačenje karte...",
+    "youWon": "Pobijedili ste! Dobitak udvostručen!",
+    "youLost": "Ghala! Dobitak izgubljen.",
+    "lostDesc": "Originalni dobitak je oduzet nazad.",
+    "gambleAgainHint": "Preostalo {rounds} runda",
+    "maxRoundsReached": "Dostignut maksimum rundi — bravo!",
+    "doubled": "Udvostručeno",
+    "collectAndLeave": "Uzmi {amount} kr i idi",
+    "doubleAgain": "Udvostručiti ponovo → {amount} kr",
+    "collectWin": "Uzmi {amount} kr",
+    "close": "Zatvori"
   },
   "checkEmail": {
     "title": "Provjerite Inbox",

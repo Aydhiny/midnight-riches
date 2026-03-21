@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatCurrency } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface WinModalProps {
   amount: number;
@@ -11,6 +11,7 @@ interface WinModalProps {
 }
 
 export function WinModal({ amount, betAmount, isVisible, onClose }: WinModalProps) {
+  const t = useTranslations("game.winModal");
   const [displayAmount, setDisplayAmount] = useState(0);
 
   useEffect(() => {
@@ -37,7 +38,8 @@ export function WinModal({ amount, betAmount, isVisible, onClose }: WinModalProp
   if (!isVisible) return null;
 
   const ratio = betAmount > 0 ? amount / betAmount : 0;
-  const tier = ratio >= 100 ? "MEGA WIN" : ratio >= 50 ? "SUPER WIN" : "BIG WIN";
+  const tier =
+    ratio >= 100 ? t("megaWin") : ratio >= 50 ? t("superWin") : t("bigWin");
   const tierColor =
     ratio >= 100
       ? "text-yellow-300"
@@ -50,14 +52,14 @@ export function WinModal({ amount, betAmount, isVisible, onClose }: WinModalProp
       <div className="animate-in zoom-in-95 relative rounded-2xl border border-yellow-500/50 bg-gradient-to-b from-purple-900 to-black p-8 text-center shadow-2xl shadow-yellow-500/20">
         <div className={`text-4xl font-black ${tierColor}`}>{tier}!</div>
         <div className="mt-4 text-5xl font-black text-yellow-400">
-          {formatCurrency(displayAmount)}
+          {displayAmount.toFixed(2)} cr
         </div>
-        <div className="mt-2 text-sm text-purple-400">{ratio.toFixed(0)}x your bet</div>
+        <div className="mt-2 text-sm text-purple-400">{t("xBet", { ratio: ratio.toFixed(0) })}</div>
         <button
           onClick={onClose}
           className="mt-6 rounded-lg bg-yellow-600 px-6 py-2 font-bold text-black transition-colors hover:bg-yellow-500"
         >
-          Continue
+          {t("continue")}
         </button>
       </div>
     </div>

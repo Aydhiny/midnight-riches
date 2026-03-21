@@ -129,7 +129,14 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(
     return (
       <div
         className="relative mx-auto w-full"
-        style={{ maxWidth: dimensions.width, aspectRatio: `${dimensions.width} / ${dimensions.height}` }}
+        style={{
+          maxWidth: dimensions.width,
+          aspectRatio: `${dimensions.width} / ${dimensions.height}`,
+          backgroundImage: "url('/images/slot-pattern-background.avif')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          borderRadius: "8px",
+        }}
       >
         <style>{SHAKE_STYLE}</style>
         <div

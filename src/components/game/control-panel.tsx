@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useGameStore } from "@/store/game-store";
 import { useWalletStore } from "@/store/wallet-store";
 import { DENOMINATIONS } from "@/lib/game/engines/shared";
@@ -75,6 +76,7 @@ function CabinetButton({
 }
 
 export function ControlPanel({ onSpin, disabled }: ControlPanelProps) {
+  const t = useTranslations("game.controlPanel");
   const {
     betPerLine, totalBet, bonus, spinState, autoSpin, turboMode, gameType,
     setBetPerLine, setAutoSpin, setTurboMode,
@@ -101,7 +103,7 @@ export function ControlPanel({ onSpin, disabled }: ControlPanelProps) {
   const startAutoSpin = useCallback((count: number) => {
     const config: AutoSpinConfig = {
       totalSpins: count, remainingSpins: count, stopOnWin: false,
-      stopOnBonus: true, stopOnBalanceBelow: totalBet, stopOnWinAbove: totalBet * 50,
+      stopOnBonus: false, stopOnBalanceBelow: totalBet, stopOnWinAbove: totalBet * 50,
     };
     setAutoSpin(config);
   }, [totalBet, setAutoSpin]);
@@ -122,8 +124,8 @@ export function ControlPanel({ onSpin, disabled }: ControlPanelProps) {
             <ChevronLeft className="h-3.5 w-3.5" />
           </CabinetButton>
           <div className="min-w-[72px] text-center px-1">
-            <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">BET / LINE</div>
-            <div className="text-sm font-black text-amber-400 tabular-nums">${betPerLine.toFixed(2)}</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">{t("betPerLine")}</div>
+            <div className="text-sm font-black text-amber-400 tabular-nums">{betPerLine.toFixed(2)} cr</div>
           </div>
           <CabinetButton onClick={incrementBet} disabled={isSpinning || currentIndex >= DENOMINATIONS.length - 1} className="h-7 w-7 text-sm flex items-center justify-center">
             <ChevronRight className="h-3.5 w-3.5" />
@@ -132,21 +134,21 @@ export function ControlPanel({ onSpin, disabled }: ControlPanelProps) {
 
         {/* Total bet pill */}
         <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-1.5 text-center">
-          <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">TOTAL BET</div>
-          <div className="text-sm font-black text-amber-400 tabular-nums">${totalBet.toFixed(2)}</div>
+          <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">{t("totalBet")}</div>
+          <div className="text-sm font-black text-amber-400 tabular-nums">{totalBet.toFixed(2)} cr</div>
         </div>
 
         {/* Lines (where applicable) */}
         {showLines && (
           <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-1.5 text-center">
-            <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">LINES</div>
+            <div className="text-[9px] font-bold uppercase tracking-widest text-white/30">{t("lines")}</div>
             <div className="text-sm font-black text-violet-400">{gameType === "classic" ? 5 : 20}</div>
           </div>
         )}
 
         {/* Max bet */}
         <CabinetButton onClick={setMaxBet} disabled={isSpinning} className="px-3 py-2 text-xs">
-          MAX
+          {t("maxBet")}
         </CabinetButton>
       </div>
 
@@ -173,11 +175,11 @@ export function ControlPanel({ onSpin, disabled }: ControlPanelProps) {
             {isSpinning
               ? <span className="flex items-center justify-center gap-2">
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  SPINNING
+                  {t("spinning")}
                 </span>
               : bonus.isActive
-              ? `FREE SPIN (${bonus.spinsRemaining} left)`
-              : "SPIN"}
+              ? t("freeSpin", { count: bonus.spinsRemaining })
+              : t("spin")}
           </span>
         </CabinetButton>
 
@@ -198,12 +200,12 @@ export function ControlPanel({ onSpin, disabled }: ControlPanelProps) {
 
       {/* Auto-spin row */}
       <div className="mt-2.5 flex items-center gap-1.5">
-        <span className="text-[9px] font-bold uppercase tracking-wider text-white/25 mr-1 shrink-0">AUTO</span>
+        <span className="text-[9px] font-bold uppercase tracking-wider text-white/25 mr-1 shrink-0">{t("autoSpin")}</span>
         {autoSpin ? (
           <div className="flex-1 rounded-lg bg-black/30 border border-red-500/20 px-3 py-1.5 text-center">
             <span className="text-xs font-bold text-red-400">
-              {autoSpin.remainingSpins} spins remaining —{" "}
-              <button onClick={() => setAutoSpin(null)} className="ml-1.5 text-red-300 hover:text-red-200 underline underline-offset-2">stop</button>
+              {t("spinsRemaining", { count: autoSpin.remainingSpins })} —{" "}
+              <button onClick={() => setAutoSpin(null)} className="ml-1.5 text-red-300 hover:text-red-200 underline underline-offset-2">{t("stop")}</button>
             </span>
           </div>
         ) : (

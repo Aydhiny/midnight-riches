@@ -98,6 +98,40 @@
       "themes": "Themes & Visuals",
       "browseShop": "Collectibles Shop",
       "browseShopDesc": "Reel themes, sound packs & more"
+    },
+    "controlPanel": {
+      "betPerLine": "BET / LINE",
+      "totalBet": "TOTAL BET",
+      "lines": "LINES",
+      "maxBet": "MAX",
+      "autoSpin": "AUTO",
+      "spinning": "SPINNING",
+      "freeSpin": "FREE SPIN ({count} left)",
+      "spin": "SPIN",
+      "spinsRemaining": "{count} spins remaining",
+      "stop": "stop"
+    },
+    "winModal": {
+      "bigWin": "BIG WIN",
+      "superWin": "SUPER WIN",
+      "megaWin": "MEGA WIN",
+      "xBet": "{ratio}x your bet",
+      "continue": "Continue"
+    },
+    "bonusModal": {
+      "title": "BONUS ROUND!",
+      "freeSpins": "Free Spins",
+      "multiplier": "Multiplier",
+      "start": "Start Free Spins"
+    },
+    "cabinet": {
+      "balance": "BALANCE",
+      "win": "WIN",
+      "freeSpins": "FREE SPINS",
+      "totalBet": "TOTAL BET",
+      "bonusWin": "BONUS WIN",
+      "megaWin": "MEGA WIN!",
+      "bigWin": "BIG WIN!"
     }
   },
   "wallet": {
@@ -650,6 +684,29 @@
       "epic": "Epic",
       "legendary": "Legendary"
     }
+  },
+  "gamble": {
+    "title": "Double or Nothing",
+    "chooseCard": "Pick a card — red or black",
+    "revealing": "Revealing your card...",
+    "currentWin": "On the table",
+    "newWin": "New win",
+    "lost": "Lost",
+    "red": "Red",
+    "black": "Black",
+    "yourPick": "Your pick",
+    "drawn": "Drawn",
+    "drawing": "Drawing card...",
+    "youWon": "You won! Win doubled!",
+    "youLost": "Bad luck! Win lost.",
+    "lostDesc": "The original win has been taken back.",
+    "gambleAgainHint": "{rounds} round(s) remaining",
+    "maxRoundsReached": "Maximum rounds reached — well played!",
+    "doubled": "Doubled",
+    "collectAndLeave": "Keep {amount} cr and leave",
+    "doubleAgain": "Double again → {amount} cr",
+    "collectWin": "Collect {amount} cr",
+    "close": "Close"
   },
   "checkEmail": {
     "title": "Check Your Inbox",

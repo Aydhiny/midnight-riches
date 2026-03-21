@@ -12,6 +12,9 @@ import { CabinetFrame } from "./cabinet-frame";
 import { ControlPanel } from "./control-panel";
 import { WinModal } from "./win-modal";
 import { BonusModal } from "./bonus-modal";
+import { GambleModal } from "./gamble-modal";
+
+// ── Audio helpers ─────────────────────────────────────────────────────────────
 
 function createAudio(src: string, volume = 0.5): HTMLAudioElement | null {
   if (typeof window === "undefined") return null;
@@ -61,26 +64,41 @@ function stopSound(audio: HTMLAudioElement | null) {
   audio.currentTime = 0;
 }
 
-function playWinSound(totalWin: number, _totalBet: number) {
-  if (!isSfxEnabled()) return;
+/** Stop every win sound so only one plays at a time. */
+function stopAllWinSounds() {
+  stopSound(jackpotAudio);
+  stopSound(megaWinAudio);
+  stopSound(superWinAudio);
+}
 
-  if (totalWin > 100) {
-    const mega = getMegaWinAudio();
-    const jackpot = getJackpotAudio();
-    playSound(mega);
-    playSound(jackpot);
-    setTimeout(() => stopSound(mega),    4000);
-    setTimeout(() => stopSound(jackpot), 4000);
-  } else if (totalWin > 25) {
-    const sup = getSuperWinAudio();
-    playSound(sup);
-    setTimeout(() => stopSound(sup), 3000);
+/**
+ * Play exactly one win sound based on win size.
+ * Stops any currently playing win sound first.
+ */
+function playWinSound(totalWin: number) {
+  if (!isSfxEnabled()) return;
+  stopAllWinSounds();
+
+  if (totalWin >= 200) {
+    const j = getJackpotAudio();
+    playSound(j);
+    setTimeout(() => stopSound(j), 5000);
+  } else if (totalWin >= 50) {
+    const m = getMegaWinAudio();
+    playSound(m);
+    setTimeout(() => stopSound(m), 4000);
+  } else if (totalWin >= 15) {
+    const s = getSuperWinAudio();
+    playSound(s);
+    setTimeout(() => stopSound(s), 3000);
   }
 }
 
+// ── SlotMachine component ─────────────────────────────────────────────────────
+
 export function SlotMachine() {
-  const canvasRef          = useRef<GameCanvasHandle>(null);
-  const autoSpinTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const canvasRef        = useRef<GameCanvasHandle>(null);
+  const autoSpinTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     gameType,
@@ -99,17 +117,26 @@ export function SlotMachine() {
 
   const { balance, optimisticDeduct, syncFromServer } = useWalletStore();
 
-  const [showWinModal,   setShowWinModal]   = useState(false);
-  const [showBonusModal, setShowBonusModal] = useState(false);
-  const [lastWinAmount,  setLastWinAmount]  = useState(0);
+  const [showWinModal,    setShowWinModal]    = useState(false);
+  const [showBonusModal,  setShowBonusModal]  = useState(false);
+  const [showGambleModal, setShowGambleModal] = useState(false);
+  const [lastWinAmount,   setLastWinAmount]   = useState(0);
 
   useEffect(() => {
     canvasRef.current?.setTurboMode(turboMode);
   }, [turboMode]);
 
+  // Stop all win sounds when a new spin starts so nothing bleeds into the next round
+  const clearWinSounds = useCallback(() => {
+    stopAllWinSounds();
+  }, []);
+
   const executeSpin = useCallback(async () => {
     if (spinState !== "idle") return;
     if (!bonus.isActive && balance < totalBet) return;
+
+    // Silence any lingering win sounds from previous spin
+    clearWinSounds();
 
     setSpinState("pending");
 
@@ -155,14 +182,23 @@ export function SlotMachine() {
     setLastWinAmount(response.result.totalWin);
 
     if (response.result.totalWin > 0) {
-      playWinSound(response.result.totalWin, totalBet);
+      playWinSound(response.result.totalWin);
     }
 
-    if (response.result.totalWin >= totalBet * 10) {
+    // Modals only show when NOT in auto-spin — don't interrupt the run
+    const isAutoSpinning = autoSpin !== null;
+
+    if (response.result.totalWin >= totalBet * 10 && !isAutoSpinning) {
       setShowWinModal(true);
     }
 
-    if (response.result.bonusTriggered && !bonus.isActive) {
+    // Gamble: only outside bonus free spins and outside auto-spin
+    if (response.result.totalWin > 0 && !bonus.isActive && !isAutoSpinning) {
+      setShowGambleModal(true);
+    }
+
+    // Bonus modal only outside auto-spin (auto-spin continues through free spins seamlessly)
+    if (response.result.bonusTriggered && !bonus.isActive && !isAutoSpinning) {
       setShowBonusModal(true);
     }
 
@@ -197,10 +233,12 @@ export function SlotMachine() {
   }, [
     spinState,
     bonus,
+    autoSpin,
     balance,
     totalBet,
     gameType,
     betPerLine,
+    clearWinSounds,
     optimisticDeduct,
     syncFromServer,
     setSpinState,
@@ -209,11 +247,10 @@ export function SlotMachine() {
     setBonus,
   ]);
 
-  // ── Spacebar hotkey ──────────────────────────────────────────────────────
+  // ── Spacebar hotkey ───────────────────────────────────────────────────────
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.code !== "Space") return;
-      // Don't fire when typing in an input/textarea
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       e.preventDefault();
@@ -223,8 +260,10 @@ export function SlotMachine() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [executeSpin]);
 
+  // ── Auto-spin driver ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!autoSpin || spinState !== "idle") return;
+
     if (autoSpin.remainingSpins <= 0) {
       setAutoSpin(null);
       return;
@@ -240,10 +279,8 @@ export function SlotMachine() {
       return;
     }
 
-    if (autoSpin.stopOnBonus && bonus.isActive) {
-      setAutoSpin(null);
-      return;
-    }
+    // Note: stopOnBonus is intentionally NOT checked here — spins continue
+    // through free-spin bonus rounds without interruption.
 
     autoSpinTimerRef.current = setTimeout(() => {
       setAutoSpin({
@@ -254,11 +291,9 @@ export function SlotMachine() {
     }, 500);
 
     return () => {
-      if (autoSpinTimerRef.current) {
-        clearTimeout(autoSpinTimerRef.current);
-      }
+      if (autoSpinTimerRef.current) clearTimeout(autoSpinTimerRef.current);
     };
-  }, [autoSpin, spinState, balance, lastWinAmount, bonus.isActive, executeSpin, setAutoSpin]);
+  }, [autoSpin, spinState, balance, lastWinAmount, executeSpin, setAutoSpin]);
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-2xl mx-auto">
@@ -277,6 +312,11 @@ export function SlotMachine() {
         bonus={bonus}
         isVisible={showBonusModal}
         onStart={() => setShowBonusModal(false)}
+      />
+      <GambleModal
+        winAmount={lastWinAmount}
+        isVisible={showGambleModal && !showWinModal && !showBonusModal}
+        onClose={() => setShowGambleModal(false)}
       />
     </div>
   );

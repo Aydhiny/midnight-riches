@@ -150,7 +150,7 @@ export class CabinetRenderer {
         this.currentWinDisplay += Math.sign(diff) * step;
       }
       this.winCounter.text = this.currentWinDisplay > 0
-        ? `✦ WIN $${this.currentWinDisplay.toFixed(2)} ✦`
+        ? `✦ WIN ${this.currentWinDisplay.toFixed(2)} cr ✦`
         : "";
     }
   }

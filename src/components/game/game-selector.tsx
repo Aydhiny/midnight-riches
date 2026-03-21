@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/store/game-store";
 import type { GameType } from "@/types";
@@ -58,6 +59,7 @@ const GAME_VARIANTS: {
 ];
 
 export function GameSelector() {
+  const t = useTranslations("game");
   const { gameType, spinState, setGameType } = useGameStore();
   const [switching, setSwitching] = useState<GameType | null>(null);
 
@@ -79,7 +81,7 @@ export function GameSelector() {
     <div className="w-full">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--text-muted)]">
-          Select Game
+          {t("selectGame")}
         </h3>
         {switching && (
           <span className="text-xs text-[var(--text-muted)] animate-pulse">Loading…</span>

@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { useGameStore } from "@/store/game-store";
 import { useWalletStore } from "@/store/wallet-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 /** Animated rolling number for win display */
-function RollingNumber({ value, prefix = "" }: { value: number; prefix?: string }) {
+function RollingNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
   const [display, setDisplay] = useState(value);
   const rafRef   = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
@@ -38,7 +39,7 @@ function RollingNumber({ value, prefix = "" }: { value: number; prefix?: string 
 
   return (
     <span className="tabular-nums">
-      {prefix}{display.toFixed(2)}
+      {display.toFixed(2)}{suffix}
     </span>
   );
 }
@@ -121,6 +122,7 @@ interface CabinetFrameProps {
 }
 
 export function CabinetFrame({ children }: CabinetFrameProps) {
+  const t = useTranslations("game.cabinet");
   const { lastResult, bonus, spinState } = useGameStore();
   const { balance } = useWalletStore();
 
@@ -252,15 +254,23 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
           </div>
 
           {/* Main reel area */}
-          <div className="flex-1 relative px-1.5 py-2.5">
+          <div
+            className="flex-1 relative px-1.5 py-2.5 flex items-center justify-center"
+            style={{
+              backgroundImage: "url('/images/slot-machine.avif')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
             <div
               className="relative rounded-xl overflow-hidden"
               style={{
                 boxShadow: [
-                  "inset 0 0 50px rgba(0,0,0,0.95)",
-                  "inset 0 0 90px rgba(0,20,60,0.7)",
-                  "inset 0 3px 10px rgba(0,0,0,0.9)",
-                  "inset 0 -3px 10px rgba(0,0,0,0.9)",
+                  "inset 0 0 50px rgba(0,0,0,0.6)",
+                  "inset 0 0 90px rgba(0,20,60,0.35)",
+                  "inset 0 3px 10px rgba(0,0,0,0.6)",
+                  "inset 0 -3px 10px rgba(0,0,0,0.6)",
                 ].join(", "),
               }}
             >
@@ -320,7 +330,7 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
                           filter: "drop-shadow(0 0 30px rgba(251,191,36,0.9)) drop-shadow(0 0 60px rgba(251,191,36,0.5))",
                         }}
                       >
-                        MEGA WIN!
+                        {t("megaWin")}
                       </div>
                       {/* Coin burst dots */}
                       {Array.from({ length: 8 }, (_, i) => (
@@ -363,7 +373,7 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
                         filter: "drop-shadow(0 0 20px rgba(251,191,36,0.8))",
                       }}
                     >
-                      BIG WIN!
+                      {t("bigWin")}
                     </div>
                   </motion.div>
                 )}
@@ -396,21 +406,21 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
         >
           {[
             {
-              label: "BALANCE",
+              label: t("balance"),
               value: balance,
               color: "#fbbf24",
               glow: "rgba(251,191,36,0.5)",
               raw: false,
             },
             {
-              label: bonus.isActive ? "FREE SPINS" : "WIN",
+              label: bonus.isActive ? t("freeSpins") : t("win"),
               value: bonus.isActive ? bonus.spinsRemaining : win,
               color: bonus.isActive ? "#f472b6" : win > 0 ? "#34d399" : "#34d39955",
               glow:  bonus.isActive ? "rgba(244,114,182,0.5)" : "rgba(52,211,153,0.35)",
               raw:   bonus.isActive,
             },
             {
-              label: bonus.isActive ? "BONUS WIN" : "TOTAL BET",
+              label: bonus.isActive ? t("bonusWin") : t("totalBet"),
               value: bonus.isActive ? bonus.totalBonusWin : 0,
               color: "#a78bfa",
               glow: "rgba(167,139,250,0.4)",
@@ -431,7 +441,7 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
                 {raw ? (
                   <span>{value as number}</span>
                 ) : (
-                  <RollingNumber value={value as number} prefix="$" />
+                  <RollingNumber value={value as number} suffix=" cr" />
                 )}
               </div>
             </div>
