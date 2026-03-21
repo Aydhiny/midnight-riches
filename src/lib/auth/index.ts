@@ -66,6 +66,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
+        // Block sign-in until email is verified (credentials only — OAuth users are pre-verified)
+        if (!user.emailVerified) {
+          throw new Error("EmailNotVerified");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -90,13 +95,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   events: {
+    /**
+     * Fires after every successful sign-in.
+     * OAuth providers (Google, GitHub, Discord) already verify the user's email,
+     * so we stamp emailVerified immediately — no email confirmation step needed.
+     */
+    async signIn({ user, account }) {
+      if (account?.provider && account.provider !== "credentials" && user.id) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.id, user.id),
+          columns: { emailVerified: true },
+        });
+        if (dbUser && !dbUser.emailVerified) {
+          await db
+            .update(users)
+            .set({ emailVerified: new Date() })
+            .where(eq(users.id, user.id));
+        }
+      }
+    },
+    /** Fires when a brand-new user row is created (OAuth first sign-in). */
     async createUser({ user }) {
       if (user.id) {
-        await db.insert(wallets).values({
-          userId: user.id,
-          balance: "1000.00",
-          currency: "USD",
-        });
+        // onConflictDoNothing guards against the rare double-fire edge case
+        await db
+          .insert(wallets)
+          .values({ userId: user.id, balance: "1000.00", currency: "USD" })
+          .onConflictDoNothing();
       }
     },
   },

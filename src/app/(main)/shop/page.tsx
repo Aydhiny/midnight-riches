@@ -8,6 +8,12 @@ import { useWalletStore } from "@/store/wallet-store";
 import { useIsSfxEnabled } from "@/components/game/music-player";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
+import {
+  getCollectibles,
+  getUserCollectibles,
+  purchaseCollectible,
+  equipCollectible,
+} from "@/server/actions/collectibles";
 
 function useShopSfx() {
   const sfxEnabled = useIsSfxEnabled();
@@ -25,8 +31,24 @@ type CollectibleType = "avatar_frame" | "reel_theme" | "symbol_skin" | "sound_pa
 type Rarity = "common" | "rare" | "epic" | "legendary";
 type FilterTab = "all" | CollectibleType;
 
-interface MockCollectible {
-  id: string;
+/** Visual config lives client-side keyed by item name. */
+const VISUAL_CONFIG: Record<string, { emoji: string; preview: [string, string] }> = {
+  "Golden Champion Frame":   { emoji: "👑", preview: ["#fbbf24", "#f59e0b"] },
+  "Neon Pulse Frame":        { emoji: "⚡", preview: ["#7c3aed", "#ec4899"] },
+  "Diamond VIP Frame":       { emoji: "💎", preview: ["#0c4a6e", "#38bdf8"] },
+  "Midnight Chrome Reels":   { emoji: "🌙", preview: ["#1e1b4b", "#312e81"] },
+  "Volcano Inferno Reels":   { emoji: "🌋", preview: ["#7f1d1d", "#ef4444"] },
+  "Pixel Fruit Skins":       { emoji: "🕹️", preview: ["#065f46", "#10b981"] },
+  "Crypto Symbol Pack":      { emoji: "₿",  preview: ["#78350f", "#f59e0b"] },
+  "Casino Lounge Music":     { emoji: "🎰", preview: ["#1e3a5f", "#3b82f6"] },
+  "Midnight Beats Pack":     { emoji: "🎶", preview: ["#14532d", "#22c55e"] },
+  "Funky Groove Music":      { emoji: "🎸", preview: ["#4c1d95", "#7c3aed"] },
+  "Smooth Sax Music":        { emoji: "🎷", preview: ["#1e3a5f", "#ec4899"] },
+};
+const DEFAULT_VISUAL = { emoji: "🎁", preview: ["#1e1b4b", "#312e81"] as [string, string] };
+
+interface DisplayCollectible {
+  id: string;            // DB UUID
   name: string;
   type: CollectibleType;
   rarity: Rarity;
@@ -36,21 +58,6 @@ interface MockCollectible {
   emoji: string;
   preview: [string, string];
 }
-
-const MOCK_COLLECTIBLES: MockCollectible[] = [
-  { id: "golden-frame",   name: "Golden Champion Frame",   type: "avatar_frame", rarity: "legendary", priceCredits: 500,  priceUsd: null, description: "Gilded gold border for true high rollers",                 emoji: "👑", preview: ["#fbbf24","#f59e0b"] },
-  { id: "neon-frame",     name: "Neon Pulse Frame",        type: "avatar_frame", rarity: "rare",      priceCredits: 150,  priceUsd: null, description: "Pulsing neon border that reacts to wins",                  emoji: "⚡", preview: ["#7c3aed","#ec4899"] },
-  { id: "midnight-theme", name: "Midnight Chrome Reels",   type: "reel_theme",   rarity: "epic",      priceCredits: null, priceUsd: 4.99, description: "Chrome metallic reels with deep space background",          emoji: "🌙", preview: ["#1e1b4b","#312e81"] },
-  { id: "volcano-theme",  name: "Volcano Inferno Reels",   type: "reel_theme",   rarity: "legendary", priceCredits: null, priceUsd: 7.99, description: "Fire and lava themed reels with particle effects",           emoji: "🌋", preview: ["#7f1d1d","#ef4444"] },
-  { id: "pixel-skins",    name: "Pixel Fruit Skins",       type: "symbol_skin",  rarity: "rare",      priceCredits: 200,  priceUsd: null, description: "8-bit pixel art versions of all fruit symbols",              emoji: "🕹️", preview: ["#065f46","#10b981"] },
-  { id: "crypto-skins",   name: "Crypto Symbol Pack",      type: "symbol_skin",  rarity: "epic",      priceCredits: 350,  priceUsd: null, description: "BTC, ETH and crypto icons replace classic symbols",          emoji: "₿",  preview: ["#78350f","#f59e0b"] },
-  { id: "jazz-sounds",    name: "Casino Lounge Music",     type: "sound_pack",   rarity: "common",    priceCredits: 75,   priceUsd: null, description: "The iconic Midnight Riches casino soundtrack",               emoji: "🎰", preview: ["#1e3a5f","#3b82f6"] },
-  { id: "retro-sounds",   name: "Midnight Beats Pack",     type: "sound_pack",   rarity: "rare",      priceCredits: 125,  priceUsd: null, description: "Enhanced beats and spin sounds for the ultimate vibe",       emoji: "🎶", preview: ["#14532d","#22c55e"] },
-  { id: "funky-track",    name: "Funky Groove Music",      type: "sound_pack",   rarity: "rare",      priceCredits: 200,  priceUsd: null, description: "Unlock the Funky Groove music track for the game player",    emoji: "🎸", preview: ["#4c1d95","#7c3aed"] },
-  { id: "saxophone-track",name: "Smooth Sax Music",        type: "sound_pack",   rarity: "epic",      priceCredits: 350,  priceUsd: null, description: "Unlock the Smooth Sax premium music track for the game",     emoji: "🎷", preview: ["#1e3a5f","#ec4899"] },
-  { id: "diamond-frame",  name: "Diamond VIP Frame",       type: "avatar_frame", rarity: "legendary", priceCredits: null, priceUsd: 9.99, description: "Exclusive diamond-studded avatar frame for VIP players only", emoji: "💎", preview: ["#0c4a6e","#38bdf8"] },
-];
-
 
 const RARITY_CONFIG: Record<Rarity, {
   label: string;
@@ -110,7 +117,7 @@ const SHOP_CSS = `
 function CollectibleCard({
   item, isOwned, isEquipped, onBuy, onEquip, isPending,
 }: {
-  item: MockCollectible; isOwned: boolean; isEquipped: boolean;
+  item: DisplayCollectible; isOwned: boolean; isEquipped: boolean;
   onBuy: (id: string) => void; onEquip: (id: string) => void; isPending: boolean;
 }) {
   const t = useTranslations("shop");
@@ -250,25 +257,56 @@ export default function ShopPage() {
   ];
 
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
+  const [items, setItems] = useState<DisplayCollectible[]>([]);
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const [equippedIds, setEquippedIds] = useState<Set<string>>(new Set());
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [, startTransition] = useTransition();
 
+  // Load collectibles + owned items from DB on mount
   useEffect(() => {
-    const saved = localStorage.getItem("mr_owned_collectibles");
-    if (saved) {
-      try { setOwnedIds(new Set(JSON.parse(saved) as string[])); } catch {}
+    async function load() {
+      const [collectiblesRes, userRes] = await Promise.all([
+        getCollectibles(),
+        getUserCollectibles(),
+      ]);
+
+      if (collectiblesRes.success) {
+        setItems(
+          collectiblesRes.data.map((c) => {
+            const vis = VISUAL_CONFIG[c.name] ?? DEFAULT_VISUAL;
+            return {
+              id: c.id,
+              name: c.name,
+              type: c.type,
+              rarity: c.rarity,
+              priceCredits: c.priceCredits ? parseFloat(c.priceCredits) : null,
+              priceUsd: c.priceUsd ? parseFloat(c.priceUsd) : null,
+              description: c.description ?? "",
+              emoji: vis.emoji,
+              preview: vis.preview,
+            };
+          })
+        );
+      }
+
+      if (userRes.success) {
+        setOwnedIds(new Set(userRes.data.map((c) => c.collectibleId)));
+        setEquippedIds(
+          new Set(userRes.data.filter((c) => c.equippedSlot !== null).map((c) => c.collectibleId))
+        );
+      }
+
+      setIsLoading(false);
     }
+    load();
   }, []);
-  useEffect(() => {
-    localStorage.setItem("mr_owned_collectibles", JSON.stringify([...ownedIds]));
-  }, [ownedIds]);
 
   const filteredItems = activeFilter === "all"
-    ? MOCK_COLLECTIBLES
-    : MOCK_COLLECTIBLES.filter((c) => c.type === activeFilter);
+    ? items
+    : items.filter((c) => c.type === activeFilter);
 
   function showToast(msg: string, ok: boolean) {
     setToast({ msg, ok });
@@ -276,34 +314,47 @@ export default function ShopPage() {
   }
 
   function handleBuy(id: string) {
-    const item = MOCK_COLLECTIBLES.find((c) => c.id === id);
+    const item = items.find((c) => c.id === id);
     if (!item) return;
-    if (item.priceCredits !== null) {
-      if (balance < item.priceCredits) { showToast(t("insufficient"), false); return; }
-      setBalance(balance - item.priceCredits);
+    if (item.priceCredits !== null && balance < item.priceCredits) {
+      showToast(t("insufficient"), false);
+      return;
     }
     setPendingId(id);
     startTransition(async () => {
-      await new Promise((r) => setTimeout(r, 600));
-      setOwnedIds((prev) => new Set(prev).add(id));
+      const result = await purchaseCollectible(id);
+      if (!result.success) {
+        showToast(result.error ?? "Purchase failed", false);
+      } else {
+        setOwnedIds((prev) => new Set(prev).add(id));
+        // Optimistically sync client wallet store; DB was already updated server-side
+        if (item.priceCredits !== null) setBalance(balance - item.priceCredits);
+        playPurchase();
+        showToast(t("addedToCollection", { name: item.name }), true);
+      }
       setPendingId(null);
-      playPurchase();
-      showToast(t("addedToCollection", { name: item.name }), true);
     });
   }
 
   function handleEquip(id: string) {
-    const item = MOCK_COLLECTIBLES.find((c) => c.id === id);
+    const item = items.find((c) => c.id === id);
     if (!item) return;
-    const sameType = MOCK_COLLECTIBLES.filter((c) => c.type === item.type).map((c) => c.id);
-    setEquippedIds((prev) => {
-      const next = new Set(prev);
-      sameType.forEach((sid) => next.delete(sid));
-      next.add(id);
-      return next;
+    startTransition(async () => {
+      const result = await equipCollectible(id, item.type);
+      if (!result.success) {
+        showToast(result.error ?? "Could not equip item", false);
+        return;
+      }
+      setEquippedIds((prev) => {
+        const next = new Set(prev);
+        // Unequip all items of the same type first
+        items.filter((c) => c.type === item.type).forEach((c) => next.delete(c.id));
+        next.add(id);
+        return next;
+      });
+      playEquip();
+      showToast(t("equipSuccess", { name: item.name }), true);
     });
-    playEquip();
-    showToast(t("equipSuccess", { name: item.name }), true);
   }
 
   return (
@@ -402,36 +453,48 @@ export default function ShopPage() {
         ))}
       </div>
 
-      <AnimatePresence mode="popLayout">
-        <motion.div
-          key={activeFilter}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {filteredItems.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <CollectibleCard
-                item={item}
-                isOwned={ownedIds.has(item.id)}
-                isEquipped={equippedIds.has(item.id)}
-                onBuy={handleBuy}
-                onEquip={handleEquip}
-                isPending={pendingId === item.id}
-              />
-            </motion.div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-64 animate-pulse rounded-2xl border border-white/[0.06]"
+              style={{ background: "var(--bg-card)" }}
+            />
           ))}
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      ) : (
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={activeFilter}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {filteredItems.map((item, i) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <CollectibleCard
+                  item={item}
+                  isOwned={ownedIds.has(item.id)}
+                  isEquipped={equippedIds.has(item.id)}
+                  onBuy={handleBuy}
+                  onEquip={handleEquip}
+                  isPending={pendingId === item.id}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
 
-      {filteredItems.length === 0 && (
+      {!isLoading && filteredItems.length === 0 && (
         <div className="flex flex-col items-center gap-3 py-20 text-center">
           <span className="text-6xl opacity-30">🛒</span>
           <p className="text-sm text-[var(--text-muted)]">No items in this category yet.</p>

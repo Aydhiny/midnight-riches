@@ -49,7 +49,8 @@
     "resetLinkSentSuffix": "ima račun, link za resetiranje je na putu. Provjerite i spam folder.",
     "rememberedPassword": "Sjetili ste se?",
     "sendAnotherLink": "Pošalji još jedan link",
-    "emailAddress": "Email adresa"
+    "emailAddress": "Email adresa",
+    "signIn": "Prijava"
   },
   "game": {
     "selectGame": "Odaberi igru",
