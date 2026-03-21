@@ -86,7 +86,20 @@
     "playing": "Reprodukuje se",
     "enabled": "Uključeno",
     "disabled": "Isključeno",
-    "noChallenges": "Nema dostupnih izazova"
+    "noChallenges": "Nema dostupnih izazova",
+    "gameOptions": {
+      "expand": "Opcije igre",
+      "collapse": "Sakrij opcije",
+      "gameSize": "Veličina zone igre",
+      "compact": "Kompaktno",
+      "normal": "Normalno",
+      "large": "Veliko",
+      "expanded": "Prošireno",
+      "currentSize": "Trenutna veličina",
+      "themes": "Teme i vizuali",
+      "browseShop": "Radnja kolekcija",
+      "browseShopDesc": "Teme, zvučni paketi i više"
+    }
   },
   "wallet": {
     "title": "Novčanik",

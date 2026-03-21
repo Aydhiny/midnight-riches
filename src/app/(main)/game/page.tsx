@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { DailyChallengesWidget } from "@/components/game/daily-challenges-widget";
 import { HowToPlayModal } from "@/components/game/how-to-play-modal";
+import { GameOptionsPanel, loadGameSize, SIZE_CLASS, type GameSize } from "@/components/game/game-options-panel";
 import { seedCommunityWinsAction } from "@/server/actions/seed-notifications";
 
 const SlotMachine = dynamic(
@@ -470,6 +471,11 @@ export default function GamePage() {
   const tc = useTranslations("common");
   const seededRef = useRef(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
+  const [gameSize, setGameSize] = useState<GameSize>("large");
+
+  useEffect(() => {
+    setGameSize(loadGameSize());
+  }, []);
 
   useEffect(() => {
     if (seededRef.current) return;
@@ -489,19 +495,25 @@ export default function GamePage() {
       <div className="relative z-[10] flex flex-1 flex-col items-center overflow-y-auto px-4 pt-4 pb-4"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.3) transparent" }}
       >
-        {/* Back button — always visible at top, never hidden by justify-center */}
-        <div className="w-full max-w-4xl mb-3 shrink-0">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 border-violet-400/60 bg-violet-100 text-violet-700 hover:bg-violet-200 hover:text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25 dark:hover:text-violet-200"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            {tc("home")}
-          </Link>
-        </div>
-        {/* Slot machine — centred in remaining vertical space */}
-        <div className="flex flex-1 w-full max-w-4xl flex-col items-center justify-center gap-3">
-          <SlotMachine />
+        <div className={`w-full ${SIZE_CLASS[gameSize]} flex flex-col min-h-full gap-3 transition-all duration-300`}>
+          {/* Back button — always visible at top */}
+          <div className="shrink-0">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 border-violet-400/60 bg-violet-100 text-violet-700 hover:bg-violet-200 hover:text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25 dark:hover:text-violet-200"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              {tc("home")}
+            </Link>
+          </div>
+          {/* Slot machine — centred in remaining vertical space */}
+          <div className="flex flex-1 items-center justify-center">
+            <SlotMachine />
+          </div>
+          {/* Game options panel — always below the slot machine */}
+          <div className="shrink-0 pb-2">
+            <GameOptionsPanel size={gameSize} onSizeChange={setGameSize} />
+          </div>
         </div>
       </div>
 

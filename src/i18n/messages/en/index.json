@@ -85,7 +85,20 @@
     "playing": "Playing",
     "enabled": "Enabled",
     "disabled": "Disabled",
-    "noChallenges": "No challenges available"
+    "noChallenges": "No challenges available",
+    "gameOptions": {
+      "expand": "Game Options",
+      "collapse": "Hide Options",
+      "gameSize": "Game Area Size",
+      "compact": "Compact",
+      "normal": "Normal",
+      "large": "Large",
+      "expanded": "Expanded",
+      "currentSize": "Current size",
+      "themes": "Themes & Visuals",
+      "browseShop": "Collectibles Shop",
+      "browseShopDesc": "Reel themes, sound packs & more"
+    }
   },
   "wallet": {
     "title": "Wallet",
