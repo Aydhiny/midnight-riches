@@ -162,7 +162,7 @@ export interface CreditBundle {
   name: string;
   credits: number;
   priceUsd: number;
-  stripePriceId: string;
+  stripeProductId: string;
   popular?: boolean;
 }
 

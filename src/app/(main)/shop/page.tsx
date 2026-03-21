@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect } from "react";
+import { useState, useTransition, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,6 +15,7 @@ import {
   equipCollectible,
   unequipCollectible,
 } from "@/server/actions/collectibles";
+import { createCollectibleCheckoutAction } from "@/server/actions/stripe";
 
 function useShopSfx() {
   const sfxEnabled = useIsSfxEnabled();
@@ -116,10 +117,11 @@ const SHOP_CSS = `
 `;
 
 function CollectibleCard({
-  item, isOwned, isEquipped, onBuy, onEquip, isPending,
+  item, isOwned, isEquipped, onBuy, onEquip, onStripe, isPending,
 }: {
   item: DisplayCollectible; isOwned: boolean; isEquipped: boolean;
-  onBuy: (id: string) => void; onEquip: (id: string) => void; isPending: boolean;
+  onBuy: (id: string) => void; onEquip: (id: string) => void;
+  onStripe: (id: string) => void; isPending: boolean;
 }) {
   const t = useTranslations("shop");
   const rc = RARITY_CONFIG[item.rarity];
@@ -216,10 +218,11 @@ function CollectibleCard({
           )
         ) : item.priceUsd !== null ? (
           <button
-            disabled
-            className="w-full cursor-not-allowed rounded-xl bg-[#6772e5]/30 py-2.5 text-xs font-bold text-[#a5b4ff] opacity-70"
+            onClick={() => onStripe(item.id)}
+            disabled={isPending}
+            className="w-full rounded-xl bg-[#6772e5] py-2.5 text-xs font-bold text-white transition-all hover:bg-[#5469d4] active:scale-95 disabled:opacity-50 disabled:cursor-wait"
           >
-            {t("buyWithStripe")}
+            {isPending ? "Redirecting…" : `${t("buyWithStripe")} — $${item.priceUsd?.toFixed(2)}`}
           </button>
         ) : (
           <button
@@ -266,6 +269,20 @@ export default function ShopPage() {
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [, startTransition] = useTransition();
+  const successShownRef = useRef(false);
+
+  // Show success toast if redirected back from Stripe
+  useEffect(() => {
+    if (successShownRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("purchase") === "success") {
+      successShownRef.current = true;
+      showToast("Payment successful! Your item has been added to your collection.", true);
+      // Clean up the URL
+      window.history.replaceState({}, "", "/shop");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load collectibles + owned items from DB on mount
   useEffect(() => {
@@ -335,6 +352,26 @@ export default function ShopPage() {
         showToast(t("addedToCollection", { name: item.name }), true);
       }
       setPendingId(null);
+    });
+  }
+
+  function handleStripe(id: string) {
+    const item = items.find((c) => c.id === id);
+    if (!item || item.priceUsd === null) return;
+    setPendingId(id);
+    startTransition(async () => {
+      const result = await createCollectibleCheckoutAction({
+        collectibleId: id,
+        name: item.name,
+        description: item.description,
+        priceUsd: item.priceUsd!,
+      });
+      if (result.success) {
+        window.location.href = result.url;
+      } else {
+        showToast(result.error ?? "Checkout failed", false);
+        setPendingId(null);
+      }
     });
   }
 
@@ -508,6 +545,7 @@ export default function ShopPage() {
                   isEquipped={equippedIds.has(item.id)}
                   onBuy={handleBuy}
                   onEquip={handleEquip}
+                  onStripe={handleStripe}
                   isPending={pendingId === item.id}
                 />
               </motion.div>

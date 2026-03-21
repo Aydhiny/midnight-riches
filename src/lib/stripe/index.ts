@@ -30,14 +30,14 @@ export const CREDIT_BUNDLES: CreditBundle[] = [
     name: "Starter Pack",
     credits: 500,
     priceUsd: 4.99,
-    stripePriceId: process.env.STRIPE_PRICE_STARTER || "price_starter",
+    stripeProductId: process.env.STRIPE_PRODUCT_STARTER || "prod_UBtWcCOazqHyNK",
   },
   {
     id: "popular",
     name: "Popular Pack",
     credits: 1200,
     priceUsd: 9.99,
-    stripePriceId: process.env.STRIPE_PRICE_POPULAR || "price_popular",
+    stripeProductId: process.env.STRIPE_PRODUCT_POPULAR || "prod_UBtXj8Fzvuppjm",
     popular: true,
   },
   {
@@ -45,14 +45,7 @@ export const CREDIT_BUNDLES: CreditBundle[] = [
     name: "Premium Pack",
     credits: 3000,
     priceUsd: 19.99,
-    stripePriceId: process.env.STRIPE_PRICE_PREMIUM || "price_premium",
-  },
-  {
-    id: "whale",
-    name: "High Roller",
-    credits: 8000,
-    priceUsd: 49.99,
-    stripePriceId: process.env.STRIPE_PRICE_WHALE || "price_whale",
+    stripeProductId: process.env.STRIPE_PRODUCT_PREMIUM || "prod_UBtYbs3B3jKoQi",
   },
 ];
 

@@ -79,7 +79,11 @@ export async function createCheckoutAction(data: {
       customer: customerId,
       line_items: [
         {
-          price: bundle.stripePriceId,
+          price_data: {
+            currency: "usd",
+            product: bundle.stripeProductId,
+            unit_amount: Math.round(bundle.priceUsd * 100),
+          },
           quantity: 1,
         },
       ],
@@ -88,6 +92,7 @@ export async function createCheckoutAction(data: {
       },
       metadata: {
         userId,
+        type: "bundle",
         bundleId: bundle.id,
         credits: bundle.credits.toString(),
       },
@@ -179,6 +184,84 @@ export async function fulfillCheckout(
       metadata: { error: message, sessionId },
     });
     return false;
+  }
+}
+
+// ── Collectible Checkout ───────────────────────────────────────────────────────
+
+interface CollectibleCheckoutSuccess { success: true; url: string }
+interface CollectibleCheckoutError   { success: false; error: string }
+type CollectibleCheckoutResponse = CollectibleCheckoutSuccess | CollectibleCheckoutError;
+
+export async function createCollectibleCheckoutAction(data: {
+  collectibleId: string;
+  name: string;
+  description: string;
+  priceUsd: number;
+}): Promise<CollectibleCheckoutResponse> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+    const userId = session.user.id;
+
+    const rateLimitResult = checkRateLimit(`checkout:${userId}`, {
+      maxRequests: 5,
+      windowMs: 60_000,
+    });
+    if (!rateLimitResult.success) {
+      return { success: false, error: "Too many requests" };
+    }
+
+    const stripe   = getStripe();
+    const appUrl   = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    const customerId = await getOrCreateStripeCustomer(
+      userId,
+      session.user.email ?? "",
+      session.user.name ?? undefined,
+    );
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer: customerId,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: data.name,
+              description: data.description || undefined,
+            },
+            unit_amount: Math.round(data.priceUsd * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId,
+        type: "collectible",
+        collectibleId: data.collectibleId,
+        collectibleName: data.name,
+      },
+      success_url: `${appUrl}/shop?purchase=success`,
+      cancel_url:  `${appUrl}/shop`,
+    });
+
+    logger.action("createCollectibleCheckout", userId, 0, {
+      collectibleId: data.collectibleId,
+      priceUsd: data.priceUsd,
+    });
+
+    return { success: true, url: checkoutSession.url! };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error("Collectible checkout failed", {
+      action: "createCollectibleCheckout",
+      metadata: { error: message },
+    });
+    return { success: false, error: "Internal error" };
   }
 }
 
