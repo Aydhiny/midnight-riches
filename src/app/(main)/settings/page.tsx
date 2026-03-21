@@ -232,7 +232,12 @@ function ProfileTab({
         image: avatarData || undefined,
       });
       if (result.success) {
-        await updateSession({ name, image: avatarData ?? avatarPreview });
+        // Store a cache-busted URL in the JWT (not base64 — 4 KB cookie limit)
+        const avatarUrl = avatarData
+          ? `/api/profile/avatar?t=${Date.now()}`
+          : (avatarPreview ?? undefined);
+        await updateSession({ name, image: avatarUrl });
+        if (avatarData) setAvatarPreview(avatarUrl ?? null);
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
         setAvatarData(null);

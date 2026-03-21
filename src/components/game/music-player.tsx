@@ -4,13 +4,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { getOwnedSoundPacks } from "@/server/actions/collectibles";
 
 // ── Track catalogue ────────────────────────────────────────────────────────────
-// collectibleId links the track to the shop item that unlocks it (stored in mr_owned_collectibles)
+// collectibleName matches the DB collectibles.name for the shop item that unlocks the track.
 const MUSIC_TRACKS = [
-  { id: "casino",    src: "/sounds/casino-music.mp3",    label: "Casino Classic", emoji: "🎰", premium: false, collectibleId: null               },
-  { id: "funky",     src: "/sounds/funky-music.mp3",     label: "Funky Groove",   emoji: "🎸", premium: true,  collectibleId: "funky-track"      },
-  { id: "saxophone", src: "/sounds/saxophone-music.mp3", label: "Smooth Sax",     emoji: "🎷", premium: true,  collectibleId: "saxophone-track"  },
+  { id: "casino",    src: "/sounds/casino-music.mp3",    label: "Casino Classic", emoji: "🎰", premium: false, collectibleName: null                    },
+  { id: "funky",     src: "/sounds/funky-music.mp3",     label: "Funky Groove",   emoji: "🎸", premium: true,  collectibleName: "Funky Groove Music"    },
+  { id: "saxophone", src: "/sounds/saxophone-music.mp3", label: "Smooth Sax",     emoji: "🎷", premium: true,  collectibleName: "Smooth Sax Music"      },
 ] as const;
 
 type TrackId = (typeof MUSIC_TRACKS)[number]["id"];
@@ -100,35 +101,36 @@ function TogglePill({
   );
 }
 
-// ── Ownership check ────────────────────────────────────────────────────────────
-function useOwnedCollectibles(): Set<string> {
-  const [owned, setOwned] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("mr_owned_collectibles");
-      if (raw) setOwned(new Set(JSON.parse(raw) as string[]));
-    } catch {}
+// ── Ownership check — reads from DB via server action ─────────────────────────
+function useOwnedSoundPacks(): { ownedNames: Set<string>; equippedName: string | null } {
+  const [ownedNames,   setOwnedNames]   = useState<Set<string>>(new Set());
+  const [equippedName, setEquippedName] = useState<string | null>(null);
 
-    function onStorage(e: StorageEvent) {
-      if (e.key === "mr_owned_collectibles") {
-        try {
-          const raw = e.newValue;
-          if (raw) setOwned(new Set(JSON.parse(raw) as string[]));
-        } catch {}
-      }
+  const refresh = useCallback(async () => {
+    const res = await getOwnedSoundPacks();
+    if (res.success) {
+      setOwnedNames(new Set(res.ownedNames));
+      setEquippedName(res.equippedName);
     }
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
   }, []);
-  return owned;
+
+  useEffect(() => {
+    refresh();
+    // Re-fetch when the shop fires a "sound pack equipped" event
+    function onEquip() { refresh(); }
+    window.addEventListener("mr:sound-pack-equipped", onEquip);
+    return () => window.removeEventListener("mr:sound-pack-equipped", onEquip);
+  }, [refresh]);
+
+  return { ownedNames, equippedName };
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export function MusicPlayer() {
   const t = useTranslations("game");
-  const audioRef          = useRef<HTMLAudioElement | null>(null);
-  const pendingAutoPlay   = useRef(false);
-  const ownedCollectibles = useOwnedCollectibles();
+  const audioRef        = useRef<HTMLAudioElement | null>(null);
+  const pendingAutoPlay = useRef(false);
+  const { ownedNames, equippedName } = useOwnedSoundPacks();
 
   const [muted,           setMuted]           = useState(false);
   const [volume,          setVolume]          = useState(0.18);
@@ -141,8 +143,18 @@ export function MusicPlayer() {
 
   function isTrackUnlocked(track: (typeof MUSIC_TRACKS)[number]): boolean {
     if (!track.premium) return true;
-    return track.collectibleId ? ownedCollectibles.has(track.collectibleId) : false;
+    return track.collectibleName ? ownedNames.has(track.collectibleName) : false;
   }
+
+  // ── Auto-switch to equipped sound pack from shop ──────────────────────────
+  useEffect(() => {
+    if (!equippedName) return;
+    const track = MUSIC_TRACKS.find((tr) => tr.collectibleName === equippedName);
+    if (track && track.id !== selectedTrackId) {
+      switchTrack(track.id as TrackId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [equippedName]);
 
   // ── Load persisted preferences ────────────────────────────────────────────
   useEffect(() => {

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signUpAction } from "@/server/actions/auth";
 import { signUpSchema } from "@/lib/validators";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Check, X } from "lucide-react";
 
 export default function SignUpPage() {
   const t = useTranslations("auth");
@@ -21,6 +21,7 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [devEmailError, setDevEmailError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -170,23 +171,75 @@ export default function SignUpPage() {
               <label className="text-sm font-medium text-[var(--text-secondary)]">
                 {t("password")}
               </label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (fieldErrors.password)
-                    setFieldErrors((prev) => ({ ...prev, password: "" }));
-                }}
-                required
-                className="border-black/10 bg-black/[0.03] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-violet-500/40 dark:border-white/10 dark:bg-white/[0.05] dark:focus:border-violet-500/50"
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password)
+                      setFieldErrors((prev) => ({ ...prev, password: "" }));
+                  }}
+                  required
+                  className="border-black/10 bg-black/[0.03] pr-10 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-violet-500/40 dark:border-white/10 dark:bg-white/[0.05] dark:focus:border-violet-500/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {fieldErrors.password && (
                 <p className="text-xs text-red-500">{fieldErrors.password}</p>
               )}
-              <p className="text-xs text-[var(--text-muted)]">
-                Min 8 characters, 1 uppercase, 1 lowercase, 1 number
-              </p>
+              {password.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  {/* Strength bar */}
+                  {(() => {
+                    const checks = [
+                      password.length >= 8,
+                      /[A-Z]/.test(password),
+                      /[a-z]/.test(password),
+                      /[0-9]/.test(password),
+                    ];
+                    const score = checks.filter(Boolean).length;
+                    const colors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-emerald-500"];
+                    return (
+                      <div className="flex gap-1">
+                        {[0, 1, 2, 3].map((i) => (
+                          <div
+                            key={i}
+                            className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                              i < score ? colors[score - 1] : "bg-black/10 dark:bg-white/10"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
+                  {/* Requirements checklist */}
+                  <ul className="space-y-0.5">
+                    {[
+                      { label: "At least 8 characters", ok: password.length >= 8 },
+                      { label: "One uppercase letter", ok: /[A-Z]/.test(password) },
+                      { label: "One lowercase letter", ok: /[a-z]/.test(password) },
+                      { label: "One number",           ok: /[0-9]/.test(password) },
+                    ].map(({ label, ok }) => (
+                      <li key={label} className={`flex items-center gap-1.5 text-xs transition-colors ${ok ? "text-emerald-500" : "text-[var(--text-muted)]"}`}>
+                        {ok
+                          ? <Check className="h-3 w-3 shrink-0" />
+                          : <X className="h-3 w-3 shrink-0 opacity-40" />
+                        }
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <Button type="submit" variant="gold" className="w-full" disabled={isLoading}>

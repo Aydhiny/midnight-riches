@@ -13,6 +13,7 @@ import {
   getUserCollectibles,
   purchaseCollectible,
   equipCollectible,
+  unequipCollectible,
 } from "@/server/actions/collectibles";
 
 function useShopSfx() {
@@ -199,7 +200,8 @@ function CollectibleCard({
           isEquipped ? (
             <button
               onClick={() => onEquip(item.id)}
-              className="w-full rounded-xl border border-emerald-400/40 bg-emerald-500/15 py-2.5 text-xs font-bold text-emerald-300"
+              className="w-full rounded-xl border border-emerald-400/40 bg-emerald-500/15 py-2.5 text-xs font-bold text-emerald-300 transition-all hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400"
+              title="Click to unequip"
             >
               ✓ {t("equipped")}
             </button>
@@ -339,21 +341,41 @@ export default function ShopPage() {
   function handleEquip(id: string) {
     const item = items.find((c) => c.id === id);
     if (!item) return;
+    const alreadyEquipped = equippedIds.has(id);
     startTransition(async () => {
-      const result = await equipCollectible(id, item.type);
-      if (!result.success) {
-        showToast(result.error ?? "Could not equip item", false);
-        return;
+      if (alreadyEquipped) {
+        // Toggle off — unequip
+        const result = await unequipCollectible(item.type);
+        if (!result.success) {
+          showToast(result.error ?? "Could not unequip item", false);
+          return;
+        }
+        setEquippedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        showToast(`Unequipped ${item.name}`, true);
+      } else {
+        const result = await equipCollectible(id, item.type);
+        if (!result.success) {
+          showToast(result.error ?? "Could not equip item", false);
+          return;
+        }
+        setEquippedIds((prev) => {
+          const next = new Set(prev);
+          // Unequip any other item of the same type
+          items.filter((c) => c.type === item.type).forEach((c) => next.delete(c.id));
+          next.add(id);
+          return next;
+        });
+        playEquip();
+        showToast(t("equipSuccess", { name: item.name }), true);
+        // Tell the music player to refresh its owned sound packs
+        if (item.type === "sound_pack") {
+          window.dispatchEvent(new CustomEvent("mr:sound-pack-equipped"));
+        }
       }
-      setEquippedIds((prev) => {
-        const next = new Set(prev);
-        // Unequip all items of the same type first
-        items.filter((c) => c.type === item.type).forEach((c) => next.delete(c.id));
-        next.add(id);
-        return next;
-      });
-      playEquip();
-      showToast(t("equipSuccess", { name: item.name }), true);
     });
   }
 

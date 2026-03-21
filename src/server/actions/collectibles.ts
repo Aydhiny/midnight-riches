@@ -6,6 +6,33 @@ import { collectibles, userCollectibles, wallets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/** Returns the names of owned sound_pack collectibles and which one is equipped. */
+export async function getOwnedSoundPacks(): Promise<{
+  success: true; ownedNames: string[]; equippedName: string | null;
+} | { success: false; error: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Not authenticated" };
+
+    const rows = await db
+      .select({ name: collectibles.name, equippedSlot: userCollectibles.equippedSlot })
+      .from(userCollectibles)
+      .innerJoin(collectibles, eq(userCollectibles.collectibleId, collectibles.id))
+      .where(
+        and(
+          eq(userCollectibles.userId, session.user.id),
+          eq(collectibles.type, "sound_pack"),
+        ),
+      );
+
+    const ownedNames   = rows.map((r) => r.name);
+    const equippedName = rows.find((r) => r.equippedSlot === "sound_pack")?.name ?? null;
+    return { success: true, ownedNames, equippedName };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}
+
 export async function getCollectibles() {
   try {
     const items = await db.select().from(collectibles).where(eq(collectibles.isActive, true));
@@ -83,6 +110,26 @@ export async function equipCollectible(collectibleId: string, slot: "avatar_fram
       .where(and(
         eq(userCollectibles.userId, session.user.id),
         eq(userCollectibles.collectibleId, collectibleId)
+      ));
+
+    revalidatePath("/shop");
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}
+
+export async function unequipCollectible(slot: "avatar_frame" | "reel_theme" | "symbol_skin" | "sound_pack"): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Not authenticated" };
+
+    await db.update(userCollectibles)
+      .set({ equippedSlot: null })
+      .where(and(
+        eq(userCollectibles.userId, session.user.id),
+        eq(userCollectibles.equippedSlot, slot),
       ));
 
     revalidatePath("/shop");

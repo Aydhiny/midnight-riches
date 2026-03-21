@@ -486,10 +486,11 @@ export default function GamePage() {
         <LiveChat />
       </aside>
 
-      <div className="relative z-[10] flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 pt-4 pb-4"
+      <div className="relative z-[10] flex flex-1 flex-col items-center overflow-y-auto px-4 pt-4 pb-4"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.3) transparent" }}
       >
-        <div className="w-full max-w-4xl mb-2">
+        {/* Back button — always visible at top, never hidden by justify-center */}
+        <div className="w-full max-w-4xl mb-3 shrink-0">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 border-violet-400/60 bg-violet-100 text-violet-700 hover:bg-violet-200 hover:text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25 dark:hover:text-violet-200"
@@ -498,7 +499,8 @@ export default function GamePage() {
             {tc("home")}
           </Link>
         </div>
-        <div className="flex w-full max-w-4xl flex-col items-center gap-3">
+        {/* Slot machine — centred in remaining vertical space */}
+        <div className="flex flex-1 w-full max-w-4xl flex-col items-center justify-center gap-3">
           <SlotMachine />
         </div>
       </div>
