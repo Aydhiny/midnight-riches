@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, Users, Shield, BarChart3, Activity } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Activity } from "lucide-react";
 
 const NAV = [
   { href: "/admin",          label: "Overview",  icon: LayoutDashboard },
