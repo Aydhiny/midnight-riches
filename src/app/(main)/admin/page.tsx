@@ -33,7 +33,7 @@ function KpiCard({
   label, value, sub, icon: Icon, color, glow, trend,
 }: {
   label: string; value: string; sub?: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   color: string; glow: string; trend?: "up" | "down" | null;
 }) {
   return (

@@ -26,10 +26,16 @@ export function LandingNav() {
   const t = useTranslations("landing.nav");
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { track } = useConversionTracker();
   const { data: session } = useSession();
   const { resolvedTheme } = useTheme();
-  const logoSrc = resolvedTheme === "light"
+
+  useEffect(() => { setMounted(true); }, []);
+
+  // Always render dark logo on server to avoid hydration mismatch.
+  // Switch to theme-matched logo only after client mounts.
+  const logoSrc = mounted && resolvedTheme === "light"
     ? "/images/midnight-riches-logo-light.png"
     : "/images/midnight-riches-logo.png";
 
