@@ -67,7 +67,7 @@ export function CookieConsent() {
   }, []);
 
   function accept(level: ConsentLevel) {
-    const resolved =
+    const resolved: CookiePreferences =
       level === "all"
         ? { necessary: true, analytics: true, marketing: true, preferences: true }
         : level === "necessary"
