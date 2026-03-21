@@ -28,7 +28,7 @@ export function Navbar() {
   const t = useTranslations("common");
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { balance, currency } = useWalletStore();
+  const { balance } = useWalletStore();
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);

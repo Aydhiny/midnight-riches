@@ -9,7 +9,7 @@ import {
   gameSessions,
   securityEvents,
 } from "@/lib/db/schema";
-import { eq, sql, desc, like, count, sum, and, gte, lt } from "drizzle-orm";
+import { eq, sql, desc, like, count, sum, and, gte } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import {
   adminUserSearchSchema,
