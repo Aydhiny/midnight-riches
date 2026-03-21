@@ -15,6 +15,8 @@ interface AuthSuccess {
   success: true;
   /** Dev-only: set when account was created but the verification email failed to send. Never populated in production. */
   devEmailError?: string;
+  /** True when SKIP_EMAIL_VERIFICATION=true — user was auto-verified, redirect to sign-in instead of check-email. */
+  skipVerification?: boolean;
 }
 
 interface AuthError {
@@ -107,10 +109,17 @@ export async function signUpAction(data: { name: string; email: string; password
     }
 
     const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+    const skipVerification = process.env.SKIP_EMAIL_VERIFICATION === "true";
 
     const [user] = await db
       .insert(users)
-      .values({ name: parsed.data.name, email: parsed.data.email, passwordHash })
+      .values({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        passwordHash,
+        // Auto-verify when the flag is on so the user can sign in immediately
+        ...(skipVerification ? { emailVerified: new Date() } : {}),
+      })
       .returning();
 
     let devEmailError: string | undefined;
@@ -122,23 +131,24 @@ export async function signUpAction(data: { name: string; email: string; password
         currency: "USD",
       });
 
-      // Send verification email — user must confirm before signing in
-      const verifyToken = await createVerificationToken(user.email);
-      const verifyUrl = buildVerifyUrl(verifyToken, user.email);
+      if (!skipVerification) {
+        // Send verification email — user must confirm before signing in
+        const verifyToken = await createVerificationToken(user.email);
+        const verifyUrl = buildVerifyUrl(verifyToken, user.email);
 
-      try {
-        await sendVerificationEmail(user.email, verifyUrl);
-      } catch (emailErr) {
-        const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
-        logger.error("Failed to send verification email", { action: "signup", metadata: { email: user.email, error: msg } });
-        if (process.env.NODE_ENV === "development") devEmailError = msg;
+        try {
+          await sendVerificationEmail(user.email, verifyUrl);
+        } catch (emailErr) {
+          const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+          logger.error("Failed to send verification email", { action: "signup", metadata: { email: user.email, error: msg } });
+          if (process.env.NODE_ENV === "development") devEmailError = msg;
+        }
       }
     }
 
-    logger.info("User registered", { action: "signup", metadata: { email: parsed.data.email } });
+    logger.info("User registered", { action: "signup", metadata: { email: parsed.data.email, skipVerification } });
 
-    // Don't sign in yet — user must verify email first
-    return { success: true, devEmailError };
+    return { success: true, devEmailError, skipVerification };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     logger.error("Signup failed", { action: "signup", metadata: { error: message } });
@@ -160,24 +170,29 @@ export async function signInAction(data: { email: string; password: string }): P
 
     // Block sign-in only when there is an active verification token — same check as signup.
     // Legacy users (emailVerified=null, no token) can still sign in normally.
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, parsed.data.email),
-    });
+    // Skipped entirely when SKIP_EMAIL_VERIFICATION=true.
+    const skipVerification = process.env.SKIP_EMAIL_VERIFICATION === "true";
 
-    if (user?.passwordHash && !user.emailVerified) {
-      const activeToken = await db.query.verificationTokens.findFirst({
-        where: and(
-          eq(verificationTokens.identifier, user.email),
-          gt(verificationTokens.expires, new Date()),
-        ),
+    if (!skipVerification) {
+      const user = await db.query.users.findFirst({
+        where: eq(users.email, parsed.data.email),
       });
 
-      if (activeToken) {
-        return {
-          success: false,
-          error: "Please verify your email before signing in. Check your inbox for the confirmation link.",
-          code: "UNAUTHORIZED",
-        };
+      if (user?.passwordHash && !user.emailVerified) {
+        const activeToken = await db.query.verificationTokens.findFirst({
+          where: and(
+            eq(verificationTokens.identifier, user.email),
+            gt(verificationTokens.expires, new Date()),
+          ),
+        });
+
+        if (activeToken) {
+          return {
+            success: false,
+            error: "Please verify your email before signing in. Check your inbox for the confirmation link.",
+            code: "UNAUTHORIZED",
+          };
+        }
       }
     }
 

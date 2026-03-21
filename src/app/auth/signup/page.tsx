@@ -68,8 +68,13 @@ export default function SignUpPage() {
         return;
       }
       if (result.devEmailError) setDevEmailError(result.devEmailError);
-      // Redirect to "check your email" page — user must verify before signing in
-      router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
+      if (result.skipVerification) {
+        // Verification disabled — go straight to sign-in
+        router.push("/auth/signin?registered=1");
+      } else {
+        // Redirect to "check your email" page — user must verify before signing in
+        router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
+      }
     } catch {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);
