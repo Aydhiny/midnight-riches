@@ -46,18 +46,12 @@ async function getClientIp(): Promise<string> {
 export async function signUpAction(data: { name: string; email: string; password: string }): Promise<AuthResponse> {
   try {
     const ip = await getClientIp();
-    const ipRateLimit = checkRateLimit(`signup-ip:${ip}`, {
-      maxRequests: 3,
-      windowMs: 3_600_000,
-    });
+    const ipRateLimit = checkRateLimit(`signup-ip:${ip}`, { maxRequests: 3, windowMs: 3_600_000 });
     if (!ipRateLimit.success) {
       return { success: false, error: "Too many sign-up attempts. Please try again later.", code: "RATE_LIMITED" };
     }
 
-    const emailRateLimit = checkRateLimit(`signup-email:${data.email}`, {
-      maxRequests: 3,
-      windowMs: 3_600_000,
-    });
+    const emailRateLimit = checkRateLimit(`signup-email:${data.email}`, { maxRequests: 3, windowMs: 3_600_000 });
     if (!emailRateLimit.success) {
       return { success: false, error: "Too many requests", code: "RATE_LIMITED" };
     }
@@ -116,11 +110,7 @@ export async function signUpAction(data: { name: string; email: string; password
 
     const [user] = await db
       .insert(users)
-      .values({
-        name: parsed.data.name,
-        email: parsed.data.email,
-        passwordHash,
-      })
+      .values({ name: parsed.data.name, email: parsed.data.email, passwordHash })
       .returning();
 
     let devEmailError: string | undefined;
@@ -158,10 +148,7 @@ export async function signUpAction(data: { name: string; email: string; password
 
 export async function signInAction(data: { email: string; password: string }): Promise<AuthResponse> {
   try {
-    const rateLimitResult = checkRateLimit(`signin:${data.email}`, {
-      maxRequests: 5,
-      windowMs: 900_000,
-    });
+    const rateLimitResult = checkRateLimit(`signin:${data.email}`, { maxRequests: 5, windowMs: 900_000 });
     if (!rateLimitResult.success) {
       return { success: false, error: "Too many sign-in attempts. Please try again in 15 minutes.", code: "RATE_LIMITED" };
     }
@@ -169,6 +156,29 @@ export async function signInAction(data: { email: string; password: string }): P
     const parsed = signInSchema.safeParse(data);
     if (!parsed.success) {
       return { success: false, error: "Invalid input", code: "VALIDATION_ERROR" };
+    }
+
+    // Block sign-in only when there is an active verification token — same check as signup.
+    // Legacy users (emailVerified=null, no token) can still sign in normally.
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, parsed.data.email),
+    });
+
+    if (user?.passwordHash && !user.emailVerified) {
+      const activeToken = await db.query.verificationTokens.findFirst({
+        where: and(
+          eq(verificationTokens.identifier, user.email),
+          gt(verificationTokens.expires, new Date()),
+        ),
+      });
+
+      if (activeToken) {
+        return {
+          success: false,
+          error: "Please verify your email before signing in. Check your inbox for the confirmation link.",
+          code: "UNAUTHORIZED",
+        };
+      }
     }
 
     await signIn("credentials", {

@@ -5,9 +5,7 @@
  *   npx tsx scripts/seed-admin.ts
  *   npx tsx scripts/seed-admin.ts --email admin@yourdomain.com --password YourSecurePass1
  *
- * Defaults (if not passed via flags):
- *   email:    admin@midnightriches.app
- *   password: Admin@123456
+ * Both --email and --password are required (no defaults).
  */
 
 import "dotenv/config";
@@ -23,9 +21,14 @@ const getArg = (flag: string, fallback: string) => {
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : fallback;
 };
 
-const ADMIN_EMAIL    = getArg("--email",    "admin@midnightriches.app");
-const ADMIN_PASSWORD = getArg("--password", "Admin@123456");
+const ADMIN_EMAIL    = getArg("--email",    "");
+const ADMIN_PASSWORD = getArg("--password", "");
 const ADMIN_NAME     = getArg("--name",     "Admin");
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error("❌  Usage: npx tsx scripts/seed-admin.ts --email <email> --password <password>");
+  process.exit(1);
+}
 
 async function seed() {
   if (!process.env.DATABASE_URL) {
@@ -77,9 +80,8 @@ async function seed() {
   });
 
   console.log("✅  Admin user created:");
-  console.log(`   Email:    ${ADMIN_EMAIL}`);
-  console.log(`   Password: ${ADMIN_PASSWORD}`);
-  console.log(`   ID:       ${newUser.id}`);
+  console.log(`   Email: ${ADMIN_EMAIL}`);
+  console.log(`   ID:    ${newUser.id}`);
   console.log("\n⚠️   Change the password immediately after first login!");
 }
 

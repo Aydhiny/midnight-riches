@@ -575,3 +575,12 @@ body > * {
       0 0 40px rgba(251, 191, 36, 0.5);
   }
 }
+
+/* ── Reduced animations (user preference) ───────────────────────────────────── */
+[data-no-animations="true"] *,
+[data-no-animations="true"] *::before,
+[data-no-animations="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}

@@ -14,10 +14,10 @@ interface RendererConfig {
 }
 
 const GAME_CONFIGS: Record<GameType, Omit<RendererConfig, "width" | "height">> = {
-  classic: { symbolSize: 100, reels: 3, rows: 3 },
-  "five-reel": { symbolSize: 80, reels: 5, rows: 3 },
-  cascade: { symbolSize: 64, reels: 5, rows: 5 },
-  megaways: { symbolSize: 48, reels: 6, rows: 7 },
+  classic:    { symbolSize: 130, reels: 3, rows: 3 },
+  "five-reel": { symbolSize: 100, reels: 5, rows: 3 },
+  cascade:    { symbolSize: 80,  reels: 5, rows: 5 },
+  megaways:   { symbolSize: 60,  reels: 6, rows: 7 },
 };
 
 export class RendererManager {

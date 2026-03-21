@@ -66,6 +66,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
+        // Block login until email is verified
+        if (!user.emailVerified) {
+          throw new Error("EmailNotVerified");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -75,28 +80,80 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name ?? undefined;
+        // Don't store base64 images in JWT (4 KB cookie limit)
+        if (user.image && !user.image.startsWith("data:")) {
+          token.image = user.image;
+        }
         delete token.picture;
+        // Fetch role from DB on first sign-in
+        if (user.id) {
+          const dbUser = await db.query.users.findFirst({
+            where: eq(users.id, user.id),
+            columns: { role: true },
+          });
+          if (dbUser) token.role = dbUser.role;
+        }
+      }
+      // Backfill role for sessions created before role was added to JWT
+      if (!token.role && token.id) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.id, token.id as string),
+          columns: { role: true },
+        });
+        if (dbUser) token.role = dbUser.role;
+      }
+      // Handle updateSession() calls from the client
+      if (trigger === "update" && session) {
+        if (session.name !== undefined) token.name = session.name;
+        // Only persist URL-based images in the JWT, not base64
+        if (session.image !== undefined && !session.image.startsWith("data:")) {
+          token.image = session.image;
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
+      if (session.user) {
+        if (token.id)    session.user.id    = token.id    as string;
+        if (token.name)  session.user.name  = token.name  as string;
+        if (token.image) session.user.image = token.image as string;
+        if (token.role)  session.user.role  = token.role  as string;
       }
       return session;
     },
   },
   events: {
+    /**
+     * Fires after every successful sign-in.
+     * OAuth providers (Google, GitHub, Discord) already verify the user's email,
+     * so we stamp emailVerified immediately — no email confirmation step needed.
+     */
+    async signIn({ user, account }) {
+      if (account?.provider && account.provider !== "credentials" && user.id) {
+        const dbUser = await db.query.users.findFirst({
+          where: eq(users.id, user.id),
+          columns: { emailVerified: true },
+        });
+        if (dbUser && !dbUser.emailVerified) {
+          await db
+            .update(users)
+            .set({ emailVerified: new Date() })
+            .where(eq(users.id, user.id));
+        }
+      }
+    },
+    /** Fires when a brand-new user row is created (OAuth first sign-in). */
     async createUser({ user }) {
       if (user.id) {
-        await db.insert(wallets).values({
-          userId: user.id,
-          balance: "1000.00",
-          currency: "USD",
-        });
+        // onConflictDoNothing guards against the rare double-fire edge case
+        await db
+          .insert(wallets)
+          .values({ userId: user.id, balance: "1000.00", currency: "USD" })
+          .onConflictDoNothing();
       }
     },
   },
