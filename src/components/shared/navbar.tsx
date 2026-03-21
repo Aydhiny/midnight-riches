@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   Gamepad2, Wallet, History, Settings, LogOut,
-  ChevronDown, Menu, X, ShoppingBag, BarChart3, LayoutDashboard,
+  ChevronDown, Menu, X, ShoppingBag, LayoutDashboard,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -28,7 +28,7 @@ export function Navbar() {
   const t = useTranslations("common");
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { balance, currency } = useWalletStore();
+  const { balance } = useWalletStore();
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
