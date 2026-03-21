@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   Gamepad2, Wallet, History, Settings, LogOut,
-  ChevronDown, Menu, X, ShoppingBag, LayoutDashboard,
+  ChevronDown, Menu, X, ShoppingBag, BarChart3, LayoutDashboard,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
