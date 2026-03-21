@@ -91,12 +91,12 @@ export default function AdminSecurityPage() {
                   <p className="mt-1 text-xs text-[var(--text-muted)]">
                     {t("securityPage.userId")}: <span className="font-mono">{e.userId}</span>
                   </p>
-                  {e.details && (
+                  {e.details != null && (
                     <pre
                       className="mt-2 max-h-24 overflow-auto rounded-lg p-2.5 text-xs text-[var(--text-secondary)]"
                       style={{ background: "var(--glass-bg)" }}
                     >
-                      {JSON.stringify(e.details, null, 2)}
+                      {JSON.stringify(e.details as Record<string, unknown>, null, 2)}
                     </pre>
                   )}
                 </div>
