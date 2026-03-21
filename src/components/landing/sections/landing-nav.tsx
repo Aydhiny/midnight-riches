@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { useConversionTracker } from "@/lib/analytics/conversion";
 import { LanguageSwitcher } from "./language-switcher";
@@ -27,6 +28,10 @@ export function LandingNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { track } = useConversionTracker();
   const { data: session } = useSession();
+  const { resolvedTheme } = useTheme();
+  const logoSrc = resolvedTheme === "light"
+    ? "/images/midnight-riches-logo-light.png"
+    : "/images/midnight-riches-logo.png";
 
   useEffect(() => {
     function onScroll() {
@@ -53,9 +58,15 @@ export function LandingNav() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative flex h-7 w-7 items-center justify-center rounded-full from-white to-pink-500">
-              <Image src="/logo.svg" alt="Midnight Riches Logo" width={28} height={28} priority />
-              <div className="absolute inset-0 rounded-[7px] bg-gradient-to-br from-black/80 to-pink-500/30 blur-sm group-hover:blur-lg transition-all" />
+            <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+              <Image
+                src={logoSrc}
+                alt="Midnight Riches Logo"
+                width={32}
+                height={32}
+                priority
+                className="object-contain drop-shadow-[0_0_8px_rgba(251,191,36,0.35)] transition-all group-hover:drop-shadow-[0_0_14px_rgba(251,191,36,0.55)]"
+              />
             </div>
             <span className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
               Midnight{" "}
@@ -94,7 +105,7 @@ export function LandingNav() {
                 <Link href="/game" className="hidden md:block">
                   <ShinyButton className="h-9 px-4 text-sm flex items-center gap-1.5">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    Play Now
+                    {t("playNow")}
                   </ShinyButton>
                 </Link>
                 {/* Profile avatar */}
@@ -104,9 +115,7 @@ export function LandingNav() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={session.user.image} alt={session.user.name ?? "User"} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-sm font-bold text-white">
-                        {(session.user.name ?? session.user.email ?? "U")[0].toUpperCase()}
-                      </span>
+                      <Image src="/images/profile-pic.webp" alt="Profile" width={36} height={36} className="h-full w-full object-cover" />
                     )}
                     {/* Online indicator */}
                     <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 border-2 border-[var(--nav-bg)]" />
@@ -192,7 +201,7 @@ export function LandingNav() {
                       )}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="inline mr-1"><path d="M8 5v14l11-7z"/></svg>
-                    Play Now
+                    {t("playNow")}
                     </Link>
                     <Link
                       href="/settings"
@@ -209,9 +218,7 @@ export function LandingNav() {
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={session.user.image} alt={session.user.name ?? "User"} className="h-full w-full object-cover" />
                         ) : (
-                          <span className="text-xs font-bold text-white">
-                            {(session.user.name ?? session.user.email ?? "U")[0].toUpperCase()}
-                          </span>
+                          <Image src="/images/profile-pic.webp" alt="Profile" width={28} height={28} className="h-full w-full object-cover" />
                         )}
                         <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 border border-[var(--nav-bg)]" />
                       </div>

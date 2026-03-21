@@ -18,6 +18,9 @@ function formatEntry(entry: LogEntry): string {
   if (entry.userId) parts.push(`user=${entry.userId}`);
   if (entry.action) parts.push(`action=${entry.action}`);
   if (entry.duration !== undefined) parts.push(`${entry.duration}ms`);
+  if (entry.metadata && Object.keys(entry.metadata).length > 0) {
+    parts.push(JSON.stringify(entry.metadata));
+  }
   return parts.join(" ");
 }
 

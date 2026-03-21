@@ -3,12 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 // ── Track catalogue ────────────────────────────────────────────────────────────
+// collectibleId links the track to the shop item that unlocks it (stored in mr_owned_collectibles)
 const MUSIC_TRACKS = [
-  { id: "casino",    src: "/sounds/casino-music.mp3",    label: "Casino Classic", emoji: "🎰", premium: false },
-  { id: "funky",     src: "/sounds/funky-music.mp3",     label: "Funky Groove",   emoji: "🎸", premium: true  },
-  { id: "saxophone", src: "/sounds/saxophone-music.mp3", label: "Smooth Sax",     emoji: "🎷", premium: true  },
+  { id: "casino",    src: "/sounds/casino-music.mp3",    label: "Casino Classic", emoji: "🎰", premium: false, collectibleId: null               },
+  { id: "funky",     src: "/sounds/funky-music.mp3",     label: "Funky Groove",   emoji: "🎸", premium: true,  collectibleId: "funky-track"      },
+  { id: "saxophone", src: "/sounds/saxophone-music.mp3", label: "Smooth Sax",     emoji: "🎷", premium: true,  collectibleId: "saxophone-track"  },
 ] as const;
 
 type TrackId = (typeof MUSIC_TRACKS)[number]["id"];
@@ -98,11 +100,35 @@ function TogglePill({
   );
 }
 
+// ── Ownership check ────────────────────────────────────────────────────────────
+function useOwnedCollectibles(): Set<string> {
+  const [owned, setOwned] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("mr_owned_collectibles");
+      if (raw) setOwned(new Set(JSON.parse(raw) as string[]));
+    } catch {}
+
+    function onStorage(e: StorageEvent) {
+      if (e.key === "mr_owned_collectibles") {
+        try {
+          const raw = e.newValue;
+          if (raw) setOwned(new Set(JSON.parse(raw) as string[]));
+        } catch {}
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+  return owned;
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export function MusicPlayer() {
   const t = useTranslations("game");
   const audioRef          = useRef<HTMLAudioElement | null>(null);
   const pendingAutoPlay   = useRef(false);
+  const ownedCollectibles = useOwnedCollectibles();
 
   const [muted,           setMuted]           = useState(false);
   const [volume,          setVolume]          = useState(0.18);
@@ -111,6 +137,12 @@ export function MusicPlayer() {
   const [sfxEnabled,      setSfxEnabled]      = useState(true);
   const [panelOpen,       setPanelOpen]       = useState(false);
   const [selectedTrackId, setSelectedTrackId] = useState<TrackId>("casino");
+  const [lockedHint,      setLockedHint]      = useState<string | null>(null);
+
+  function isTrackUnlocked(track: (typeof MUSIC_TRACKS)[number]): boolean {
+    if (!track.premium) return true;
+    return track.collectibleId ? ownedCollectibles.has(track.collectibleId) : false;
+  }
 
   // ── Load persisted preferences ────────────────────────────────────────────
   useEffect(() => {
@@ -300,39 +332,82 @@ export function MusicPlayer() {
                 </span>
               </div>
               <div className="space-y-1">
-                {MUSIC_TRACKS.map((track) => (
-                  <button
-                    key={track.id}
-                    onClick={() => switchTrack(track.id as TrackId)}
-                    className={[
-                      "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-all duration-150 border",
-                      selectedTrackId === track.id
-                        ? "bg-amber-500/15 border-amber-500/40"
-                        : "border-transparent hover:bg-white/[0.04]",
-                    ].join(" ")}
-                  >
-                    <span className="text-sm leading-none">{track.emoji}</span>
-                    <span
-                      className={`flex-1 text-[11px] font-medium ${
-                        selectedTrackId === track.id ? "text-amber-400" : "text-[var(--text-secondary)]"
-                      }`}
+                {MUSIC_TRACKS.map((track) => {
+                  const unlocked = isTrackUnlocked(track);
+                  return (
+                    <button
+                      key={track.id}
+                      onClick={() => {
+                        if (!unlocked) {
+                          setLockedHint(track.id);
+                          setTimeout(() => setLockedHint(null), 3000);
+                          return;
+                        }
+                        setLockedHint(null);
+                        switchTrack(track.id as TrackId);
+                      }}
+                      className={[
+                        "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-all duration-150 border",
+                        !unlocked
+                          ? "border-transparent opacity-60 cursor-not-allowed"
+                          : selectedTrackId === track.id
+                          ? "bg-amber-500/15 border-amber-500/40"
+                          : "border-transparent hover:bg-white/[0.04]",
+                      ].join(" ")}
                     >
-                      {track.label}
-                    </span>
-                    {track.premium && (
-                      <span className="rounded-full border border-amber-500/40 bg-amber-500/20 px-1.5 py-0.5 text-[8px] font-bold text-amber-400">
-                        PRO
+                      <span className="text-sm leading-none">{unlocked ? track.emoji : "🔒"}</span>
+                      <span
+                        className={`flex-1 text-[11px] font-medium ${
+                          !unlocked
+                            ? "text-[var(--text-muted)]"
+                            : selectedTrackId === track.id
+                            ? "text-amber-400"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      >
+                        {track.label}
                       </span>
-                    )}
-                    {selectedTrackId === track.id && (
-                      <span className="relative flex h-2 w-2 shrink-0">
-                        <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-amber-400 opacity-60" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
-                      </span>
-                    )}
-                  </button>
-                ))}
+                      {track.premium && !unlocked && (
+                        <span className="rounded-full border border-white/10 bg-white/[0.06] px-1.5 py-0.5 text-[8px] font-bold text-[var(--text-muted)]">
+                          PRO
+                        </span>
+                      )}
+                      {track.premium && unlocked && (
+                        <span className="rounded-full border border-amber-500/40 bg-amber-500/20 px-1.5 py-0.5 text-[8px] font-bold text-amber-400">
+                          PRO
+                        </span>
+                      )}
+                      {unlocked && selectedTrackId === track.id && (
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-amber-400 opacity-60" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+              {/* Locked hint */}
+              <AnimatePresence>
+                {lockedHint && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-amber-500/20 bg-amber-500/8 px-2.5 py-1.5"
+                  >
+                    <span className="text-[10px] text-amber-300/80">Unlock this track in the shop</span>
+                    <Link
+                      href="/shop"
+                      onClick={() => setPanelOpen(false)}
+                      className="text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
+                    >
+                      Shop →
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* ── SFX section ── */}

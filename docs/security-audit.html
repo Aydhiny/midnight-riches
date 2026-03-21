@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Midnight Riches — Security & Architecture Audit</title>
+<style>
+  :root {
+    --bg:        #07020f;
+    --bg2:       #0f0720;
+    --card:      rgba(255,255,255,0.03);
+    --border:    rgba(255,255,255,0.08);
+    --gold:      #fbbf24;
+    --violet:    #7c3aed;
+    --pink:      #ec4899;
+    --green:     #22c55e;
+    --red:       #ef4444;
+    --yellow:    #f59e0b;
+    --blue:      #38bdf8;
+    --text:      rgba(255,255,255,0.85);
+    --muted:     rgba(255,255,255,0.4);
+    --faint:     rgba(255,255,255,0.12);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.65;
+    padding: 0 0 80px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0d0620 0%, #1a0b30 50%, #07020f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at 70% 40%, rgba(124,58,237,0.18) 0%, transparent 65%);
+  }
+  .hero-inner { max-width:900px; margin:0 auto; position:relative; z-index:1; }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid rgba(251,191,36,0.3); background:rgba(251,191,36,0.08);
+    border-radius:999px; padding:4px 12px;
+    font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase;
+    color: var(--gold); margin-bottom:16px;
+  }
+  .hero h1 {
+    font-size:clamp(28px,5vw,44px); font-weight:900; letter-spacing:-0.02em;
+    background: linear-gradient(90deg, #fbbf24, #fde68a, #f59e0b);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .hero-sub { margin-top:8px; font-size:15px; color:var(--muted); }
+  .hero-meta {
+    margin-top:24px; display:flex; flex-wrap:wrap; gap:20px;
+    font-size:12px; color:var(--muted);
+  }
+  .hero-meta span { display:flex; align-items:center; gap:5px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; }
+
+  /* ── Layout ── */
+  .container { max-width:900px; margin:0 auto; padding:0 24px; }
+  .section { margin-top:48px; }
+  .section-title {
+    font-size:11px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:16px; display:flex; align-items:center; gap:8px;
+  }
+  .section-title::after {
+    content:''; flex:1; height:1px; background:var(--border);
+  }
+
+  /* ── Score cards ── */
+  .score-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+  .score-card {
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:18px 16px; text-align:center;
+  }
+  .score-num {
+    font-size:36px; font-weight:900; line-height:1;
+  }
+  .score-label { font-size:11px; color:var(--muted); margin-top:4px; font-weight:600; letter-spacing:0.05em; }
+  .score-bar {
+    height:5px; border-radius:99px; background:rgba(255,255,255,0.06);
+    margin-top:10px; overflow:hidden;
+  }
+  .score-fill { height:100%; border-radius:99px; }
+
+  /* ── Finding cards ── */
+  .findings { display:flex; flex-direction:column; gap:10px; }
+  .finding {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:16px 18px; display:flex; gap:14px; align-items:flex-start;
+  }
+  .finding-icon {
+    font-size:18px; line-height:1; flex-shrink:0; margin-top:1px;
+  }
+  .finding-body { flex:1; min-width:0; }
+  .finding-title {
+    font-size:13px; font-weight:700; color:var(--text);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .finding-desc { font-size:12px; color:var(--muted); margin-top:3px; line-height:1.5; }
+  .finding-code {
+    font-family:'JetBrains Mono','Fira Code',monospace; font-size:11px;
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    border-radius:8px; padding:8px 12px; margin-top:8px;
+    color:rgba(255,255,255,0.65); overflow-x:auto; white-space:pre;
+  }
+
+  /* ── Severity badges ── */
+  .badge {
+    font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+    padding:2px 8px; border-radius:99px; flex-shrink:0;
+  }
+  .badge-critical { background:rgba(239,68,68,0.2);   color:#f87171; border:1px solid rgba(239,68,68,0.3); }
+  .badge-high     { background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); }
+  .badge-medium   { background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.25); }
+  .badge-low      { background:rgba(34,197,94,0.15);  color:#4ade80; border:1px solid rgba(34,197,94,0.25); }
+  .badge-info     { background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5); border:1px solid var(--border); }
+  .badge-fixed    { background:rgba(34,197,94,0.15);  color:#4ade80; border:1px solid rgba(34,197,94,0.35); }
+  .badge-open     { background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); }
+
+  /* ── Architecture table ── */
+  .arch-grid { display:flex; flex-direction:column; gap:8px; }
+  .arch-row {
+    display:grid; grid-template-columns:180px 1fr auto;
+    align-items:center; gap:12px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; padding:12px 16px;
+    font-size:12px;
+  }
+  .arch-label { font-weight:600; color:var(--text); }
+  .arch-detail { color:var(--muted); }
+  .arch-score { font-weight:700; font-size:13px; }
+
+  /* ── Checklist ── */
+  .checklist { display:flex; flex-direction:column; gap:7px; }
+  .check-item {
+    display:flex; align-items:center; gap:10px; font-size:13px;
+    padding:8px 12px; border-radius:10px;
+    background:var(--card); border:1px solid var(--border);
+  }
+  .check-icon { font-size:14px; flex-shrink:0; }
+
+  /* ── Roadmap ── */
+  .roadmap { display:flex; flex-direction:column; gap:0; }
+  .rm-item {
+    display:flex; gap:16px; padding:12px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .rm-item:last-child { border-bottom:none; }
+  .rm-num {
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700;
+  }
+  .rm-body { flex:1; }
+  .rm-title { font-size:13px; font-weight:700; }
+  .rm-desc  { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top:60px; padding:24px 40px;
+    border-top:1px solid var(--border); text-align:center;
+    font-size:11px; color:var(--muted);
+  }
+
+  @media (max-width:600px) {
+    .hero { padding:32px 20px 28px; }
+    .arch-row { grid-template-columns:1fr; }
+    .score-grid { grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🔐 Security &amp; Architecture Audit</div>
+    <h1>Midnight Riches — Full Audit Report</h1>
+    <p class="hero-sub">
+      Comprehensive review of security posture, code architecture, rate limiting, data integrity,
+      and production readiness. Generated for internal use only.
+    </p>
+    <div class="hero-meta">
+      <span><span class="dot"></span> App Version: 1.1.0</span>
+      <span>📅 Date: March 2026</span>
+      <span>🔬 Scope: Full-stack (Next.js + Neon DB)</span>
+      <span>🧑‍💻 Auditor: Internal Review</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ── Score overview ──────────────────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">Overall Scores</p>
+  <div class="score-grid">
+    <div class="score-card">
+      <div class="score-num" style="color:#f59e0b">74</div>
+      <div class="score-label">Security Score</div>
+      <div class="score-bar"><div class="score-fill" style="width:74%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#7c3aed">81</div>
+      <div class="score-label">Architecture</div>
+      <div class="score-bar"><div class="score-fill" style="width:81%;background:linear-gradient(90deg,#7c3aed,#a855f7)"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#22c55e">88</div>
+      <div class="score-label">Code Quality</div>
+      <div class="score-bar"><div class="score-fill" style="width:88%;background:linear-gradient(90deg,#16a34a,#22c55e)"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#38bdf8">77</div>
+      <div class="score-label">Performance</div>
+      <div class="score-bar"><div class="score-fill" style="width:77%;background:linear-gradient(90deg,#0284c7,#38bdf8)"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#ec4899">65</div>
+      <div class="score-label">Compliance</div>
+      <div class="score-bar"><div class="score-fill" style="width:65%;background:linear-gradient(90deg,#be185d,#ec4899)"></div></div>
+    </div>
+    <div class="score-card">
+      <div class="score-num" style="color:#fbbf24">79</div>
+      <div class="score-label">Overall</div>
+      <div class="score-bar"><div class="score-fill" style="width:79%;background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b)"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Architecture overview ───────────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">Architecture Components</p>
+  <div class="arch-grid">
+    <div class="arch-row">
+      <span class="arch-label">Framework</span>
+      <span class="arch-detail">Next.js 15 (App Router) · Server Actions · JWT sessions via next-auth v5</span>
+      <span class="arch-score" style="color:#22c55e">✓ Solid</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Database</span>
+      <span class="arch-detail">PostgreSQL on Neon (serverless) · Drizzle ORM · Schema migrations</span>
+      <span class="arch-score" style="color:#22c55e">✓ Good</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Authentication</span>
+      <span class="arch-detail">next-auth v5 · Credentials + OAuth (Google, GitHub, Discord) · DrizzleAdapter</span>
+      <span class="arch-score" style="color:#f59e0b">⚠ Fair</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Rate Limiting</span>
+      <span class="arch-detail">In-memory Map-based limiter (checkRateLimit) · Applied on auth, stats, game actions</span>
+      <span class="arch-score" style="color:#ef4444">✗ Weak</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Game Engine</span>
+      <span class="arch-detail">Server-side RNG · Provably-fair hash chain · Outcome validated server-only</span>
+      <span class="arch-score" style="color:#22c55e">✓ Strong</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">State Management</span>
+      <span class="arch-detail">Zustand (game store, wallet store) · Server-side balance authority</span>
+      <span class="arch-score" style="color:#22c55e">✓ Good</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Email</span>
+      <span class="arch-detail">Resend SDK · Branded HTML templates · Verification + Password Reset flows</span>
+      <span class="arch-score" style="color:#22c55e">✓ Good</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Payments</span>
+      <span class="arch-detail">Stripe webhooks · Server-side validation · No PCI data stored</span>
+      <span class="arch-score" style="color:#22c55e">✓ Good</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Middleware</span>
+      <span class="arch-detail">Edge middleware · Cookie-based session check · Locale injection</span>
+      <span class="arch-score" style="color:#f59e0b">⚠ Fair</span>
+    </div>
+    <div class="arch-row">
+      <span class="arch-label">Admin</span>
+      <span class="arch-detail">Role-gated server actions + layout · Database role check on every request</span>
+      <span class="arch-score" style="color:#22c55e">✓ Good</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Security findings ────────────────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">Security Findings</p>
+  <div class="findings">
+
+    <!-- CRITICAL -->
+    <div class="finding">
+      <div class="finding-icon">🔴</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          In-Memory Rate Limiter Resets on Server Restart
+          <span class="badge badge-critical">Critical</span>
+          <span class="badge badge-open">Open</span>
+        </div>
+        <div class="finding-desc">
+          <code>checkRateLimit()</code> uses a <code>Map&lt;string, {count, resetAt}&gt;</code> stored in process memory.
+          On Vercel (serverless), every cold start resets all counters — meaning rate limits provide
+          <strong>zero protection</strong> against distributed brute-force attacks. An attacker can simply
+          hammer the sign-in endpoint from multiple invocations.
+        </div>
+        <div class="finding-code">// current (src/lib/server/rate-limiter.ts)
+const store = new Map&lt;string, {count: number; resetAt: number}&gt;();</div>
+        <div class="finding-desc" style="margin-top:8px">
+          <strong style="color:#fbbf24">Fix:</strong> Replace with a Redis-backed limiter (Upstash Redis + @upstash/ratelimit).
+          Upstash has a generous free tier. One import swap replaces the entire module.
+        </div>
+        <div class="finding-code">// recommended
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, "15 m"),
+});</div>
+      </div>
+    </div>
+
+    <!-- CRITICAL -->
+    <div class="finding">
+      <div class="finding-icon">🔴</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          Middleware Auth Check is Cookie-Presence Only
+          <span class="badge badge-critical">Critical</span>
+          <span class="badge badge-open">Open</span>
+        </div>
+        <div class="finding-desc">
+          The middleware checks <code>request.cookies.has("authjs.session-token")</code> — it does
+          <strong>not verify the JWT signature</strong>. A crafted request with a forged or expired cookie
+          named <code>authjs.session-token</code> would bypass the middleware gate and reach protected routes.
+          The actual server actions do call <code>auth()</code> which validates the JWT, but this creates a
+          misleading trust boundary and could expose UI to unauthenticated users.
+        </div>
+        <div class="finding-desc" style="margin-top:8px">
+          <strong style="color:#fbbf24">Fix:</strong> Use the official <code>auth()</code> export in middleware
+          (next-auth v5 supports this via <code>export { auth as middleware } from "./lib/auth"</code>).
+          This properly validates the JWT on every edge request.
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="finding">
+      <div class="finding-icon">🟠</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          No CSRF Protection on Server Actions
+          <span class="badge badge-high">High</span>
+          <span class="badge badge-open">Open</span>
+        </div>
+        <div class="finding-desc">
+          Next.js Server Actions include a built-in origin check for same-origin requests, but this
+          protection only applies to form submissions. Direct <code>fetch()</code> calls with a valid
+          session cookie from a malicious cross-origin site can invoke server actions.
+          All balance/spin/admin mutations are affected.
+        </div>
+        <div class="finding-desc" style="margin-top:8px">
+          <strong style="color:#fbbf24">Fix:</strong> Add a <code>x-csrf-token</code> header check in
+          sensitive server actions, or enforce <code>SameSite=Strict</code> on session cookies.
+          Next.js 15 also provides <code>experimental.serverActionsBodySizeLimit</code> and
+          should have <code>allowedOrigins</code> configured in <code>next.config.js</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="finding">
+      <div class="finding-icon">🟠</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          Open Redirect via callbackUrl (Partially Fixed)
+          <span class="badge badge-high">High</span>
+          <span class="badge badge-fixed">Fixed ✓</span>
+        </div>
+        <div class="finding-desc">
+          Previously the middleware passed the full absolute URL as <code>callbackUrl</code>, which
+          allowed external redirects. The middleware now passes only the pathname. The sign-in page
+          also sanitizes to require the path starts with <code>/</code> and not <code>//</code>.
+          However, next-auth's own <code>signIn()</code> accepts arbitrary <code>callbackUrl</code>
+          values from OAuth flows — ensure <code>NEXTAUTH_URL</code> is always set in production to
+          restrict OAuth callback origins.
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="finding">
+      <div class="finding-icon">🟠</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          Password Reset Tokens Stored in Plain Text
+          <span class="badge badge-high">High</span>
+          <span class="badge badge-open">Open</span>
+        </div>
+        <div class="finding-desc">
+          The <code>verificationTokens</code> table stores reset/verify tokens verbatim. If the database
+          is breached, an attacker could directly use these tokens to reset any user's password.
+          Tokens should be stored as SHA-256 hashes.
+        </div>
+        <div class="finding-code">// recommended: store hash, compare hash
+const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+await db.insert(verificationTokens).values({ ..., token: tokenHash });</div>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="finding">
+      <div class="finding-icon">🟡</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          Admin Route Uses Layout-Level Guard Only
+          <span class="badge badge-medium">Medium</span>
+          <span class="badge badge-fixed">Fixed ✓</span>
+        </div>
+        <div class="finding-desc">
+          Each admin server action calls <code>requireAdmin()</code> which re-validates the session
+          and role from the database on every request — this is correct. The layout-level redirect
+          is defence-in-depth for the UI only. Architecture is sound.
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="finding">
+      <div class="finding-icon">🟡</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          No Content Security Policy (CSP) Header
+          <span class="badge badge-medium">Medium</span>
+          <span class="badge badge-open">Open</span>
+        </div>
+        <div class="finding-desc">
+          The app has no CSP headers configured. This means any XSS vulnerability (e.g. from
+          user-supplied content in the future) could execute arbitrary scripts, exfiltrate session
+          tokens, or redirect users.
+        </div>
+        <div class="finding-desc" style="margin-top:8px">
+          <strong style="color:#fbbf24">Fix:</strong> Add CSP headers in <code>next.config.js</code>:
+        </div>
+        <div class="finding-code">headers: async () => [{
+  source: "/(.*)",
+  headers: [{
+    key: "Content-Security-Policy",
+    value: "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none';",
+  }],
+}]</div>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="finding">
+      <div class="finding-icon">🟡</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          No SQL Injection Protection Audit on Dynamic Queries
+          <span class="badge badge-medium">Medium</span>
+          <span class="badge badge-info">Info</span>
+        </div>
+        <div class="finding-desc">
+          The app uses Drizzle ORM for all queries — parameterized by default, making SQL injection
+          highly unlikely. However, the admin search uses <code>like(users.email, `%${query}%`)</code>
+          where <code>query</code> comes from user input. Drizzle parameterizes this correctly, but
+          extremely long query strings could cause slow LIKE scans without an index.
+        </div>
+        <div class="finding-desc" style="margin-top:8px">
+          <strong style="color:#fbbf24">Recommendation:</strong> Add a <code>GIN/TRGM</code> index
+          on <code>users.email</code> and enforce a max 100-char limit on the search input.
+        </div>
+      </div>
+    </div>
+
+    <!-- LOW -->
+    <div class="finding">
+      <div class="finding-icon">🟢</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          Missing Security Headers (HSTS, X-Frame-Options, etc.)
+          <span class="badge badge-low">Low</span>
+          <span class="badge badge-open">Open</span>
+        </div>
+        <div class="finding-desc">
+          The following headers are not set: <code>Strict-Transport-Security</code>,
+          <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>,
+          <code>Referrer-Policy</code>, <code>Permissions-Policy</code>.
+          Vercel sets HSTS automatically on custom domains, but explicit configuration is better practice.
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="finding">
+      <div class="finding-icon">🔵</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          Game Integrity: Server-Side RNG ✓
+          <span class="badge badge-info">Info</span>
+          <span class="badge badge-fixed">✓ Secure</span>
+        </div>
+        <div class="finding-desc">
+          All game outcomes are computed server-side via <code>gameSpinAction()</code>. The client
+          sends only the bet amount — the server controls all RNG, payout calculation, and balance updates.
+          Provably-fair hash chain is implemented. The wallet uses optimistic deduction client-side
+          but always syncs from the authoritative server balance after each spin. This is the correct
+          pattern for a fair game.
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="finding">
+      <div class="finding-icon">🔵</div>
+      <div class="finding-body">
+        <div class="finding-title">
+          bcrypt Password Hashing ✓
+          <span class="badge badge-info">Info</span>
+          <span class="badge badge-fixed">✓ Secure</span>
+        </div>
+        <div class="finding-desc">
+          Passwords are hashed with <code>bcrypt (cost=12)</code>, which is the correct industry standard.
+          The plaintext password is never stored or logged. The compare uses <code>bcrypt.compare()</code>
+          which is timing-safe.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── What's working well ──────────────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">What's Working Well</p>
+  <div class="checklist">
+    <div class="check-item"><span class="check-icon">✅</span> Server-side game outcomes — client cannot manipulate RNG or payouts</div>
+    <div class="check-item"><span class="check-icon">✅</span> bcrypt(12) password hashing — correct cost factor</div>
+    <div class="check-item"><span class="check-icon">✅</span> JWT sessions with 30-day expiry — HttpOnly cookie via next-auth</div>
+    <div class="check-item"><span class="check-icon">✅</span> Admin role verified from DB on every action — not just session claim</div>
+    <div class="check-item"><span class="check-icon">✅</span> Rate limiting exists on all auth endpoints (even though in-memory)</div>
+    <div class="check-item"><span class="check-icon">✅</span> No PCI data stored — Stripe handles all payment card data</div>
+    <div class="check-item"><span class="check-icon">✅</span> Server Actions for all mutations — no exposed REST API surface</div>
+    <div class="check-item"><span class="check-icon">✅</span> Drizzle ORM — parameterized queries, no raw SQL strings</div>
+    <div class="check-item"><span class="check-icon">✅</span> TypeScript throughout — type errors caught at build time</div>
+    <div class="check-item"><span class="check-icon">✅</span> Zod validation on all server action inputs</div>
+    <div class="check-item"><span class="check-icon">✅</span> Security event logging table with severity levels</div>
+    <div class="check-item"><span class="check-icon">✅</span> Provably-fair hash chain for game fairness auditing</div>
+    <div class="check-item"><span class="check-icon">✅</span> Email enumeration protection on forgot-password (always returns success)</div>
+    <div class="check-item"><span class="check-icon">✅</span> Resend email service with branded templates</div>
+  </div>
+</div>
+
+<!-- ── Priority Roadmap ─────────────────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">Recommended Fixes — Priority Order</p>
+  <div class="roadmap">
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.3)">1</div>
+      <div class="rm-body">
+        <div class="rm-title">Replace in-memory rate limiter with Upstash Redis</div>
+        <div class="rm-desc">~30 min · Free tier available · Fixes brute-force vulnerability on serverless deployments</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(239,68,68,0.2);color:#f87171;border:1px solid rgba(239,68,68,0.3)">2</div>
+      <div class="rm-body">
+        <div class="rm-title">Use auth() in middleware for proper JWT validation</div>
+        <div class="rm-desc">~15 min · Replace cookie-presence check with cryptographic token verification</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)">3</div>
+      <div class="rm-body">
+        <div class="rm-title">Add security headers (CSP, HSTS, X-Frame-Options) in next.config.js</div>
+        <div class="rm-desc">~45 min · Hardens against XSS and clickjacking attacks</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(245,158,11,0.2);color:#fbbf24;border:1px solid rgba(245,158,11,0.3)">4</div>
+      <div class="rm-body">
+        <div class="rm-title">Hash reset/verify tokens before storing in DB</div>
+        <div class="rm-desc">~30 min · Prevents token theft from DB breach · Use SHA-256</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(56,189,248,0.15);color:#7dd3fc;border:1px solid rgba(56,189,248,0.25)">5</div>
+      <div class="rm-body">
+        <div class="rm-title">Set NEXTAUTH_URL and AUTH_SECRET in Vercel environment variables</div>
+        <div class="rm-desc">~5 min · Required for production OAuth and JWT integrity</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(56,189,248,0.15);color:#7dd3fc;border:1px solid rgba(56,189,248,0.25)">6</div>
+      <div class="rm-body">
+        <div class="rm-title">Add GIN/TRGM index on users.email for search performance</div>
+        <div class="rm-desc">~15 min · Prevents full-table LIKE scans in admin user search</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)">7</div>
+      <div class="rm-body">
+        <div class="rm-title">Add anomaly detection alerts (large wins, rapid-fire spins)</div>
+        <div class="rm-desc">~2 hr · Log suspicious patterns, send admin alert emails via Resend</div>
+      </div>
+    </div>
+    <div class="rm-item">
+      <div class="rm-num" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)">8</div>
+      <div class="rm-body">
+        <div class="rm-title">Add 2FA (TOTP) for admin accounts</div>
+        <div class="rm-desc">~4 hr · Protect admin panel against credential stuffing</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Required Env Vars ─────────────────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">Required Environment Variables</p>
+  <div class="finding-code">
+# ── Auth ─────────────────────────────────────────────────
+NEXTAUTH_URL=https://your-app.vercel.app
+AUTH_SECRET=&lt;random 32+ char string — openssl rand -base64 32&gt;
+
+# ── Database ──────────────────────────────────────────────
+DATABASE_URL=postgresql://...
+
+# ── OAuth (optional but recommended) ─────────────────────
+AUTH_GOOGLE_ID=...
+AUTH_GOOGLE_SECRET=...
+AUTH_GITHUB_ID=...
+AUTH_GITHUB_SECRET=...
+AUTH_DISCORD_ID=...
+AUTH_DISCORD_SECRET=...
+
+# ── Email (Resend) ────────────────────────────────────────
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=Midnight Riches &lt;noreply@yourdomain.com&gt;
+
+# ── Payments ──────────────────────────────────────────────
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLISHABLE_KEY=pk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ── Optional (future) ─────────────────────────────────────
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+  </div>
+</div>
+
+<!-- ── Architecture diagram (text) ──────────────────────────────────────────── -->
+<div class="section">
+  <p class="section-title">Request Flow Diagram</p>
+  <div class="finding-code">
+Browser
+  │
+  ├─► [Edge Middleware] ──── cookie check ────── unauthenticated? → /auth/signin?callbackUrl=/game
+  │                                               authenticated? → pass through
+  │
+  ├─► [Next.js Route Handler / Page]
+  │     │
+  │     ├─► Server Component (RSC) — auth(), db queries (Drizzle)
+  │     │
+  │     └─► Client Component → "use client"
+  │               │
+  │               └─► Server Action call
+  │                     │
+  │                     ├─ auth() ── validates JWT signature ── unauthorized? return error
+  │                     ├─ checkRateLimit() ── rate limit? return error   [⚠ in-memory]
+  │                     ├─ Zod validation
+  │                     ├─ Drizzle query (parameterized)
+  │                     └─ return result to client
+  │
+  └─► [/api/webhooks/stripe] — verifyWebhookSignature → update wallet
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  Midnight Riches Security Audit · Confidential · Internal Use Only ·
+  Generated March 2026
+</div>
+
+</body>
+</html>

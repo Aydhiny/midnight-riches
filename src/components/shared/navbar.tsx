@@ -9,13 +9,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   Gamepad2, Wallet, History, Settings, LogOut,
-  ChevronDown, Zap, Menu, X, ShoppingBag, BarChart3,
+  ChevronDown, Menu, X, ShoppingBag, BarChart3,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import { NotificationBell } from "./notification-bell";
 import { useWalletStore } from "@/store/wallet-store";
-import { formatCurrency } from "@/lib/utils";
+import { formatTokens } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/game",    key: "game",         icon: Gamepad2    },
@@ -98,9 +98,9 @@ export function Navbar() {
           {session?.user ? (
             <>
               <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5">
-                <Zap className="h-3 w-3 text-amber-400 shrink-0" />
+                <Image src="/images/coin-token.png" alt="tokens" width={14} height={14} className="object-contain shrink-0" />
                 <span className="text-sm font-bold text-amber-400 tabular-nums">
-                  {formatCurrency(balance, currency)}
+                  {formatTokens(balance)}
                 </span>
               </div>
 
@@ -120,9 +120,13 @@ export function Navbar() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <span className="text-xs font-bold text-white">
-                        {(session.user.name ?? session.user.email ?? "U")[0].toUpperCase()}
-                      </span>
+                      <Image
+                        src="/images/profile-pic.webp"
+                        alt="Profile"
+                        width={28}
+                        height={28}
+                        className="h-full w-full object-cover"
+                      />
                     )}
                     <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 ring-1 ring-[var(--nav-bg)]" />
                   </div>
@@ -156,9 +160,9 @@ export function Navbar() {
                         </p>
                         <p className="text-xs text-[var(--text-muted)] truncate">{session.user.email}</p>
                         <div className="mt-2 flex items-center gap-1.5 sm:hidden">
-                          <Zap className="h-3 w-3 text-amber-400" />
+                          <Image src="/images/coin-token.png" alt="tokens" width={13} height={13} className="object-contain" />
                           <span className="text-sm font-bold text-amber-400">
-                            {formatCurrency(balance, currency)}
+                            {formatTokens(balance)}
                           </span>
                         </div>
                       </div>
@@ -237,8 +241,8 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-2.5 mt-2">
-                <Zap className="h-4 w-4 text-amber-400" />
-                <span className="text-sm font-bold text-amber-400">{formatCurrency(balance, currency)}</span>
+                <Image src="/images/coin-token.png" alt="tokens" width={16} height={16} className="object-contain" />
+                <span className="text-sm font-bold text-amber-400">{formatTokens(balance)}</span>
               </div>
               <button
                 onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }}

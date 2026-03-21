@@ -92,23 +92,12 @@ export function CookieConsent() {
         {visible && (
           <motion.div
             key="cookie-consent-overlay"
-            className="fixed inset-0 z-[9999] flex items-end justify-center px-4 pb-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            className="fixed bottom-4 right-4 z-[9999] w-[360px] max-w-[calc(100vw-2rem)]"
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.95 }}
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
           >
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}
-            />
-            <motion.div
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="relative z-10 w-full max-w-[520px]"
-            >
               <div
                 className="overflow-hidden rounded-2xl border border-amber-500/30 shadow-2xl"
                 style={{
@@ -240,7 +229,6 @@ export function CookieConsent() {
                   </p>
                 </div>
               </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

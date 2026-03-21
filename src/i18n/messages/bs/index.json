@@ -36,7 +36,20 @@
     "noAccount": "Nemate račun?",
     "hasAccount": "Već imate račun?",
     "orContinueWith": "Ili nastavite sa",
-    "google": "Google"
+    "google": "Google",
+    "backToHome": "Nazad na Početnu",
+    "backToSignIn": "Nazad na Prijavu",
+    "forgotPassword": "Zaboravili lozinku?",
+    "forgotPasswordTitle": "Zaboravljena Lozinka",
+    "forgotPasswordDesc": "Unesite vaš email i poslat ćemo link za resetiranje.",
+    "sendResetLink": "Pošalji Link za Reset",
+    "sending": "Slanje…",
+    "checkInbox": "Provjerite inbox",
+    "resetLinkSentPrefix": "Ako",
+    "resetLinkSentSuffix": "ima račun, link za resetiranje je na putu. Provjerite i spam folder.",
+    "rememberedPassword": "Sjetili ste se?",
+    "sendAnotherLink": "Pošalji još jedan link",
+    "emailAddress": "Email adresa"
   },
   "game": {
     "selectGame": "Odaberi igru",
@@ -178,7 +191,27 @@
       "updatePassword": "Ažuriraj lozinku",
       "advancedTitle": "Napredne postavke",
       "advancedDesc": "Alati za odgovorno igranje"
-    }
+    },
+    "profileInfo": "Informacije profila",
+    "changePhoto": "Promijeni sliku",
+    "emailCannotChange": "Email se ne može mijenjati",
+    "playerStats": "Statistike igrača",
+    "totalWon": "Ukupno dobijeno",
+    "achievements": "Dostignuća",
+    "saving": "Čuvanje…",
+    "saved": "Sačuvano!",
+    "gamePreferences": "Postavke igre",
+    "soundEffects": "Zvučni efekti",
+    "soundEffectsDesc": "Reprodukuj zvukove tokom vrtnji i dobitaka",
+    "animations": "Animacije",
+    "animationsDesc": "Prikaži vizuelne efekte i prijelaze",
+    "turboMode": "Auto-spremi Turbo",
+    "turboModeDesc": "Zapamti turbo mode između sesija",
+    "dailyBonusReminders": "Podsjetnici za dnevni bonus",
+    "dailyBonusRemindersDesc": "Primi obavještenje kada je dnevni bonus dostupan",
+    "jackpotAlerts": "Upozorenja za jackpot",
+    "jackpotAlertsDesc": "Obavijesti kada jackpot dostigne visoke iznose",
+    "selectOption": "Odaberi opciju"
   },
   "notifications": {
     "title": "Obavještenja",
@@ -193,7 +226,8 @@
       "howItWorks": "Kako Funkcioniše",
       "faq": "Pitanja",
       "signIn": "Prijava",
-      "claimBonus": "Preuzmi Bonus"
+      "claimBonus": "Preuzmi Bonus",
+      "playNow": "Igraj Sad"
     },
     "hero": {
       "playersOnline": "igrača online",
@@ -436,6 +470,115 @@
         "description": "Naša posvećenost sigurnoj i odgovornoj igri."
       }
     }
+  },
+  "howToPlay": {
+    "title": "Kako igrati",
+    "botName": "KasinoBot",
+    "next": "Dalje",
+    "letsPlay": "Ajmo igrati!",
+    "steps": {
+      "welcome": {
+        "title": "Dobrodošli u Midnight Riches!",
+        "description": "Ja sam vaš kasino vodič. Dozvolite mi da vas provedem kroz sve što trebate znati za vrtnju i dobitak.",
+        "botMessage": "Hej, visoki ulagaču! Spremi se naučiti? Pokazaću ti sve u nekoliko koraka. 🎰",
+        "highlight": "Vodeća slot platforma"
+      },
+      "reels": {
+        "title": "Slot Mašina",
+        "description": "Igra ima 3 bubnja sa 3 reda svaki. Poveži simbole kroz linije za dobitak. Srednji red je uvijek aktivan!",
+        "botMessage": "Vidiš te stupce koji se vrte? To su tvoji bubnjevi! Istaknuti srednji red je glavna linija — poveži 3 simbola i pobjediš!",
+        "highlight": "3 bubnja × 3 reda = 9 pozicija simbola",
+        "tip": "Srednji red je istaknut zlatom — to je tvoja glavna linija dobitka!"
+      },
+      "bet": {
+        "title": "Postavi Ulog",
+        "description": "Izaberi ulog po liniji prije svake vrtnje. Ulog je od 0.10 do 100 tokena po liniji. Veći ulog = veći potencijalni dobitak!",
+        "botMessage": "Biraj ulog pažljivo! Počni malo da se privikneš, pa idi veće kad si sretan. Zapamti: veći ulog = veća nagrada!",
+        "highlight": "Ulog 0.10 – 100.00 tokena po liniji",
+        "tip": "Novi igrači: počni sa 0.50 ili 1.00 da ti stanje duže traje."
+      },
+      "spin": {
+        "title": "Vrtnja i Dobitak",
+        "description": "Pritisni VRTI da pokeneš bubnjeve! Svi ishodi se generišu na serveru pomoću kriptografski sigurnog generatora — potpuno fer.",
+        "botMessage": "Momenat istine! Pritisni veliko dugme VRTI. Sve je fer — obećavam. Server generiše tvoj rezultat kriptografski sigurno!",
+        "highlight": "RNG na serveru — dokazano fer svaka vrtnja",
+        "tip": "Pazi na WIN eksploziju na bubnju — svaka dobitna linija se osvijetli!"
+      },
+      "paylines": {
+        "title": "Linije i Simboli",
+        "description": "Poveži 3 identična simbola kroz bilo koju od 5 linija za dobitak. Wild simboli zamjenjuju sve. 3 Scatter simbola aktiviraju 10 besplatnih vrtnji sa 2× multiplikatorom!",
+        "botMessage": "Evo tajne! Različiti simboli plaćaju različito. Wild simboli su tvoj prijatelj — dovršavaju nepotpune kombinacije. I ako pogodite 3 Scattere, pripremite se za BESPLATNE VRTNJE! 🎉",
+        "highlight": "Wild = bilo koji simbol · Scatter = 10 besplatnih vrtnji (2×)",
+        "tip": "Lubenica, Wild i Sedmica su simboli s najboljom isplatom!"
+      },
+      "chat": {
+        "title": "Ćaskanje Uživo",
+        "description": "Pridruži se stotinama igrača uživo! Dijeli dobitke, savjete i natjecan se. Zajednica čini svaku sesiju uzbudljivijom.",
+        "botMessage": "Ne igraj sam! Chat na lijevoj strani je uživo — pravi igrači su tamo sada. Dijeli dobitke, pitaj za savjete ili se opusti sa zajednicom. 💬",
+        "highlight": "Pravi igrači, pravi chat, pravi ugođaj",
+        "tip": "Chat prikazuje nedavne dobitke od innych igrača — odlična motivacija!"
+      },
+      "leaderboard": {
+        "title": "Rang Lista",
+        "description": "Takmičite se s drugim igračima za vrhu! Rang lista prati najveće dobitke, najviše vrtnji i ukupne zarade. Možeš li doseći #1?",
+        "botMessage": "Rang lista je zid slave! Možeš li je predvesti? Svaki veliki dobitak te gura gore. Igraj! 🏆",
+        "highlight": "Takmičenje za vrhu svakog dana",
+        "tip": "Veliki pojedinačni dobici su bitniji od ukupnog volumena!"
+      },
+      "shop": {
+        "title": "Radnja Kolekcija",
+        "description": "Personalizuj iskustvo sa okvirima avatara, temama bubnjeva, skinovima simbola i zvučnim paketima! Zarađivaj tokene igranjem.",
+        "botMessage": "Hoćeš se istaknuti? Idi u Radnju Kolekcija! Kupi okvire avatara, teme bubnjeva, pixel skinove i premium muziku. 🎵",
+        "highlight": "Okviri avatara · Teme bubnjeva · Zvučni paketi",
+        "tip": "Casino Classic muzika je besplatna! Premium numere zahtijevaju kupovinu u radnji."
+      },
+      "bonus": {
+        "title": "Dnevni Izazovi i Bonusi",
+        "description": "Provjeri panel dnevnih izazova za dodatne nagrade! Prvotni depoziti dobivaju bonus. Odgovorni limiti za igranje su ugrađeni.",
+        "botMessage": "Jedna stvar — ne zaboravi Dnevne Izazove na desnoj traci! Oni ti daju dodatne tokene. I tvoj prvi depozit dobiva bonus dobrodošlice. Sad idi i osvoji! 🚀",
+        "highlight": "Dnevne nagrade + bonus dobrodošlice na prvom depozitu",
+        "tip": "Završi sva 3 dnevna izazova za bonus u tokenima!"
+      }
+    }
+  },
+  "shop": {
+    "title": "Radnja Kolekcija",
+    "storeTag": "Ekskluzivna Radnja",
+    "backToGame": "Nazad na igru",
+    "yourBalance": "Vaše stanje",
+    "tokens": "tokena",
+    "allItems": "Sve stavke",
+    "avatarFrames": "Okviri avatara",
+    "reelThemes": "Teme bubnjeva",
+    "symbolSkins": "Skinovi simbola",
+    "soundPacks": "Zvučni paketi",
+    "purchase": "Kupi",
+    "purchasing": "Kupovanje…",
+    "equip": "Opremi",
+    "equipped": "Opremljeno",
+    "owned": "U vlasništvu",
+    "buyWithStripe": "Kupi sa Stripe",
+    "free": "Besplatno",
+    "insufficient": "Nedovoljno tokena.",
+    "addedToCollection": "{name} dodano u vašu kolekciju!",
+    "equipSuccess": "{name} opremljeno!",
+    "rarities": {
+      "common": "Uobičajeno",
+      "rare": "Rijetko",
+      "epic": "Epsko",
+      "legendary": "Legendarno"
+    }
+  },
+  "checkEmail": {
+    "title": "Provjerite Inbox",
+    "subtitle": "Poslali smo link za verifikaciju na",
+    "nextSteps": "Sljedeći koraci",
+    "step1": "Otvorite email od Midnight Riches",
+    "step2": "Kliknite \"Potvrdi Email Adresu\"",
+    "step3": "Prijavite se i počnite igrati 🎰",
+    "didntReceive": "Niste primili? Provjerite spam folder. Link ističe za 24 sata.",
+    "goToSignIn": "Idi na Prijavu",
+    "backToHome": "Nazad na Početnu"
   },
   "cookies": {
     "title": "Bacite Kocku za Svoju Privatnost?",

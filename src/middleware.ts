@@ -1,4 +1,11 @@
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth/config";
 import { NextRequest, NextResponse } from "next/server";
+
+// Use lightweight authConfig (no DB adapter) so this runs on the Edge runtime.
+// The `authorized` callback inside authConfig properly validates the JWT signature
+// via next-auth rather than a simple cookie-presence check.
+const { auth } = NextAuth(authConfig);
 
 const PROTECTED = ["/game", "/wallet", "/history", "/settings", "/shop"];
 const SUPPORTED_LOCALES = ["en", "bs"];
@@ -7,16 +14,16 @@ const LOCALE_COOKIE = "NEXT_LOCALE";
 
 const OLD_JWT_CHUNKS = Array.from({ length: 8 }, (_, i) => `authjs.session-token.${i}`);
 
-export function middleware(request: NextRequest) {
+export default auth(async function middleware(request: NextRequest & { auth: { user?: unknown } | null }) {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED.some((r) => pathname.startsWith(r));
-
-  const hasSession = request.cookies.has("authjs.session-token");
   const hasOldChunks = OLD_JWT_CHUNKS.some((name) => request.cookies.has(name));
 
-  if (isProtected && !hasSession && !hasOldChunks) {
+  if (isProtected && !request.auth?.user && !hasOldChunks) {
     const url = new URL("/auth/signin", request.url);
-    url.searchParams.set("callbackUrl", request.url);
+    // Use only the pathname (+ search) so the callbackUrl stays clean in prod
+    const callbackPath = request.nextUrl.pathname + (request.nextUrl.search || "");
+    url.searchParams.set("callbackUrl", callbackPath);
     return NextResponse.redirect(url);
   }
 
@@ -39,7 +46,7 @@ export function middleware(request: NextRequest) {
   }
 
   return response;
-}
+});
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],

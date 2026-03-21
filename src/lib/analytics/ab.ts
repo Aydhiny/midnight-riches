@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { trackConversion } from "./conversion";
 
 const AB_STORAGE_KEY = "mr_ab_variant";
@@ -34,8 +34,14 @@ function getOrAssignVariant(): HeroVariant {
 }
 
 export function useHeroVariant() {
-  const variant = useMemo(() => getOrAssignVariant(), []);
-  const config = HERO_VARIANTS[variant];
+  // Always start with "A" so server and client initial render match,
+  // then switch to the stored/assigned variant after hydration.
+  const [variant, setVariant] = useState<HeroVariant>("A");
 
+  useEffect(() => {
+    setVariant(getOrAssignVariant());
+  }, []);
+
+  const config = HERO_VARIANTS[variant];
   return { variant, ...config };
 }

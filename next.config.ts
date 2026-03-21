@@ -18,7 +18,7 @@ const securityHeaders = [
   },
   {
     key: "X-Frame-Options",
-    value: "SAMEORIGIN",
+    value: "DENY",
   },
   {
     key: "X-Content-Type-Options",
@@ -52,6 +52,14 @@ const nextConfig: NextConfig = {
   output: "standalone",
   eslint: {
     ignoreDuringBuilds: false,
+  },
+  experimental: {
+    serverActions: {
+      // Restrict server actions to same-origin only — prevents cross-site invocation
+      allowedOrigins: [
+        process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+      ].filter(Boolean),
+    },
   },
   async headers() {
     return [

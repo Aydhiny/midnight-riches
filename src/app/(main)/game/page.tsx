@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { DailyChallengesWidget } from "@/components/game/daily-challenges-widget";
+import { HowToPlayModal } from "@/components/game/how-to-play-modal";
 import { seedCommunityWinsAction } from "@/server/actions/seed-notifications";
 
 const SlotMachine = dynamic(
@@ -468,6 +469,7 @@ export default function GamePage() {
   const t  = useTranslations("game");
   const tc = useTranslations("common");
   const seededRef = useRef(false);
+  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
   useEffect(() => {
     if (seededRef.current) return;
@@ -484,13 +486,13 @@ export default function GamePage() {
         <LiveChat />
       </aside>
 
-      <div className="relative z-[10] flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 pt-4 pb-4"
+      <div className="relative z-[10] flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 pt-4 pb-4"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.3) transparent" }}
       >
         <div className="w-full max-w-4xl mb-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 border-violet-400/60 bg-violet-100 text-violet-700 hover:bg-violet-200 hover:text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25 dark:hover:text-violet-200"
           >
             <ArrowLeft className="h-3 w-3" />
             {tc("home")}
@@ -515,7 +517,17 @@ export default function GamePage() {
         <DailyChallengesWidget />
 
         <SidebarButton icon="🛍️" label={t("collectiblesShop")} sub={t("collectiblesDesc")} color="bg-fuchsia-500/20" href="/shop" />
-        <SidebarButton icon="❓" label={t("howToPlay")}       sub={t("howToPlayDesc")}    color="bg-violet-500/20" />
+        <button
+          onClick={() => setHowToPlayOpen(true)}
+          className="flex w-full items-center gap-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2.5 text-left backdrop-blur-md transition-all duration-200 hover:bg-white/[0.06] hover:-translate-y-px active:translate-y-0"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/20 text-base">❓</span>
+          <div>
+            <div className="text-xs font-bold text-[var(--text-primary)]">{t("howToPlay")}</div>
+            <div className="text-[10px] text-[var(--text-muted)]">{t("howToPlayDesc")}</div>
+          </div>
+        </button>
+        <HowToPlayModal open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
         <SidebarButton icon="🏆" label={t("leaderboard")}    sub={t("leaderboardDesc")}  color="bg-amber-500/20"  />
         <SidebarButton icon="✅" label={t("provablyFair")}   sub={t("provablyFairDesc")} color="bg-emerald-500/20"/>
         <SidebarButton icon="🎁" label={t("claimBonus")}     sub={t("claimBonusDesc")}   color="bg-pink-500/20"   />

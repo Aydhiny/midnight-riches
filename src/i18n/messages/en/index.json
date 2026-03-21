@@ -36,7 +36,20 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "orContinueWith": "Or continue with",
-    "google": "Google"
+    "google": "Google",
+    "backToHome": "Back to Home",
+    "backToSignIn": "Back to Sign In",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordTitle": "Forgot Password",
+    "forgotPasswordDesc": "Enter your email and we'll send a reset link.",
+    "sendResetLink": "Send Reset Link",
+    "sending": "Sending…",
+    "checkInbox": "Check your inbox",
+    "resetLinkSentPrefix": "If",
+    "resetLinkSentSuffix": "has an account, a reset link is on its way. Check your spam folder too.",
+    "rememberedPassword": "Remembered it?",
+    "sendAnotherLink": "Send another link",
+    "emailAddress": "Email address"
   },
   "game": {
     "selectGame": "Select Game",
@@ -178,7 +191,27 @@
       "updatePassword": "Update Password",
       "advancedTitle": "Advanced Settings",
       "advancedDesc": "Responsible gaming tools"
-    }
+    },
+    "profileInfo": "Profile Information",
+    "changePhoto": "Change photo",
+    "emailCannotChange": "Email cannot be changed",
+    "playerStats": "Player Stats",
+    "totalWon": "Total Won",
+    "achievements": "Achievements",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "gamePreferences": "Game Preferences",
+    "soundEffects": "Sound Effects",
+    "soundEffectsDesc": "Play sounds during spins and wins",
+    "animations": "Animations",
+    "animationsDesc": "Show visual effects and transitions",
+    "turboMode": "Auto-save Turbo",
+    "turboModeDesc": "Remember turbo mode between sessions",
+    "dailyBonusReminders": "Daily Bonus Reminders",
+    "dailyBonusRemindersDesc": "Get notified when daily bonus is available",
+    "jackpotAlerts": "Jackpot Alerts",
+    "jackpotAlertsDesc": "Notify when jackpot reaches high amounts",
+    "selectOption": "Select option"
   },
   "notifications": {
     "title": "Notifications",
@@ -193,7 +226,8 @@
       "howItWorks": "How It Works",
       "faq": "FAQ",
       "signIn": "Sign In",
-      "claimBonus": "Claim Bonus"
+      "claimBonus": "Claim Bonus",
+      "playNow": "Play Now"
     },
     "hero": {
       "playersOnline": "players online",
@@ -437,6 +471,115 @@
         "description": "Our commitment to safe, responsible play."
       }
     }
+  },
+  "howToPlay": {
+    "title": "How to Play",
+    "botName": "CasinoBot",
+    "next": "Next",
+    "letsPlay": "Let's Play!",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Midnight Riches!",
+        "description": "I'm your casino guide bot. Let me walk you through everything you need to know to start spinning and winning.",
+        "botMessage": "Hey there, high roller! Ready to learn the ropes? I'll show you everything in just a few steps. 🎰",
+        "highlight": "The #1 crypto-style slot platform"
+      },
+      "reels": {
+        "title": "The Slot Machine",
+        "description": "The game has 3 reels with 3 rows each. Match symbols across paylines to win. The middle row is always active!",
+        "botMessage": "See those spinning columns? Those are your reels! The highlighted center row is the main payline — match 3 symbols there and you win!",
+        "highlight": "3 reels × 3 rows = 9 symbol positions",
+        "tip": "The center row is highlighted in gold — that's your main winning line!"
+      },
+      "bet": {
+        "title": "Setting Your Bet",
+        "description": "Choose your bet per line before each spin. Bet ranges from 0.10 to 100 tokens per line. Higher bets mean higher potential winnings!",
+        "botMessage": "Pick your bet carefully! Start small to get a feel for the game, then go big when you're feeling lucky. Remember: higher bet = higher reward!",
+        "highlight": "Bet 0.10 – 100.00 tokens per line",
+        "tip": "New players: start at 0.50 or 1.00 to make your balance last longer."
+      },
+      "spin": {
+        "title": "Spinning & Winning",
+        "description": "Hit SPIN to set the reels in motion! All outcomes are generated server-side using a cryptographically secure RNG — completely fair and provably random.",
+        "botMessage": "The moment of truth! Hit that big SPIN button. Everything is fair — I promise. The server generates your result using crypto-secure randomness before you even see the reels stop!",
+        "highlight": "Server-side RNG — provably fair every spin",
+        "tip": "Watch for the WIN burst on the reels — each winning payline lights up!"
+      },
+      "paylines": {
+        "title": "Paylines & Symbols",
+        "description": "Match 3 identical symbols across any of the 5 paylines to win. Wild symbols substitute for anything. 3 Scatter symbols trigger 10 free spins with a 2× multiplier!",
+        "botMessage": "Here's the secret sauce! Different symbols pay differently. Wilds are your best friend — they complete broken combos. And if you hit 3 Scatters, get ready for FREE SPINS! 🎉",
+        "highlight": "Wild = any symbol · Scatter = 10 free spins (2×)",
+        "tip": "Watermelon, Wild, and Seven are the highest-paying symbols!"
+      },
+      "chat": {
+        "title": "Live Chat",
+        "description": "Join hundreds of live players in the chat! Share your wins, tips, and trash talk. The community makes every session more exciting.",
+        "botMessage": "Don't play alone! The chat on the left is live — real players are there right now. Share your big wins, ask for tips, or just vibe with the community. That's what makes this place special! 💬",
+        "highlight": "Real players, real chat, real vibes",
+        "tip": "The chat shows recent big wins from other players — great motivation!"
+      },
+      "leaderboard": {
+        "title": "Leaderboard",
+        "description": "Compete against other players for the top spots! The leaderboard tracks biggest wins, most spins, and highest total earnings. Can you make it to #1?",
+        "botMessage": "The leaderboard is the wall of fame! Can you top it? Every big win pushes you up the rankings. The top players get bragging rights and special recognition. Game on! 🏆",
+        "highlight": "Compete for the top position daily",
+        "tip": "Big single wins matter more than total volume for the leaderboard!"
+      },
+      "shop": {
+        "title": "Collectibles Shop",
+        "description": "Customize your experience with avatar frames, reel themes, symbol skins, and sound packs! Earn tokens through play, then spend them on exclusive collectibles.",
+        "botMessage": "Want to stand out? Head to the Collectibles Shop! Buy avatar frames, custom reel themes, pixel symbol skins, and premium music tracks. Some items cost tokens, some cost real money — all look incredible!",
+        "highlight": "Avatar frames · Reel themes · Sound packs",
+        "tip": "The Casino Classic music is free! Premium tracks require a purchase from the shop."
+      },
+      "bonus": {
+        "title": "Daily Challenges & Bonuses",
+        "description": "Check your daily challenges panel for extra token rewards! First-time deposits get a bonus. Responsible gaming limits are built in for your peace of mind.",
+        "botMessage": "One last thing — don't forget the Daily Challenges on the right sidebar! These give you extra tokens for completing in-game goals. And your first deposit gets a welcome bonus. Now go spin some wins — you've got this! 🚀",
+        "highlight": "Daily rewards + welcome bonus on first deposit",
+        "tip": "Complete all 3 daily challenges for a bonus token reward!"
+      }
+    }
+  },
+  "shop": {
+    "title": "Collectibles Shop",
+    "storeTag": "Exclusive Store",
+    "backToGame": "Back to Game",
+    "yourBalance": "Your Balance",
+    "tokens": "tokens",
+    "allItems": "All Items",
+    "avatarFrames": "Avatar Frames",
+    "reelThemes": "Reel Themes",
+    "symbolSkins": "Symbol Skins",
+    "soundPacks": "Sound Packs",
+    "purchase": "Purchase",
+    "purchasing": "Purchasing…",
+    "equip": "Equip",
+    "equipped": "Equipped",
+    "owned": "Owned",
+    "buyWithStripe": "Buy with Stripe",
+    "free": "Free",
+    "insufficient": "Insufficient tokens.",
+    "addedToCollection": "{name} added to your collection!",
+    "equipSuccess": "{name} equipped!",
+    "rarities": {
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    }
+  },
+  "checkEmail": {
+    "title": "Check Your Inbox",
+    "subtitle": "We sent a verification link to",
+    "nextSteps": "Next Steps",
+    "step1": "Open the email from Midnight Riches",
+    "step2": "Click \"Verify Email Address\"",
+    "step3": "Sign in and start playing 🎰",
+    "didntReceive": "Didn't get it? Check your spam folder. The link expires in 24 hours.",
+    "goToSignIn": "Go to Sign In",
+    "backToHome": "Back to Home"
   },
   "cookies": {
     "title": "Roll the Dice on Your Privacy?",

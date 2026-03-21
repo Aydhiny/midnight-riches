@@ -3,9 +3,11 @@
 import { useState, useTransition, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useWalletStore } from "@/store/wallet-store";
 import { useIsSfxEnabled } from "@/components/game/music-player";
-import { ArrowLeft, Zap } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function useShopSfx() {
   const sfxEnabled = useIsSfxEnabled();
@@ -44,16 +46,11 @@ const MOCK_COLLECTIBLES: MockCollectible[] = [
   { id: "crypto-skins",   name: "Crypto Symbol Pack",      type: "symbol_skin",  rarity: "epic",      priceCredits: 350,  priceUsd: null, description: "BTC, ETH and crypto icons replace classic symbols",          emoji: "₿",  preview: ["#78350f","#f59e0b"] },
   { id: "jazz-sounds",    name: "Casino Lounge Music",     type: "sound_pack",   rarity: "common",    priceCredits: 75,   priceUsd: null, description: "The iconic Midnight Riches casino soundtrack",               emoji: "🎰", preview: ["#1e3a5f","#3b82f6"] },
   { id: "retro-sounds",   name: "Midnight Beats Pack",     type: "sound_pack",   rarity: "rare",      priceCredits: 125,  priceUsd: null, description: "Enhanced beats and spin sounds for the ultimate vibe",       emoji: "🎶", preview: ["#14532d","#22c55e"] },
+  { id: "funky-track",    name: "Funky Groove Music",      type: "sound_pack",   rarity: "rare",      priceCredits: 200,  priceUsd: null, description: "Unlock the Funky Groove music track for the game player",    emoji: "🎸", preview: ["#4c1d95","#7c3aed"] },
+  { id: "saxophone-track",name: "Smooth Sax Music",        type: "sound_pack",   rarity: "epic",      priceCredits: 350,  priceUsd: null, description: "Unlock the Smooth Sax premium music track for the game",     emoji: "🎷", preview: ["#1e3a5f","#ec4899"] },
   { id: "diamond-frame",  name: "Diamond VIP Frame",       type: "avatar_frame", rarity: "legendary", priceCredits: null, priceUsd: 9.99, description: "Exclusive diamond-studded avatar frame for VIP players only", emoji: "💎", preview: ["#0c4a6e","#38bdf8"] },
 ];
 
-const FILTER_TABS: { key: FilterTab; label: string; icon: string }[] = [
-  { key: "all",          label: "All Items",     icon: "✦" },
-  { key: "avatar_frame", label: "Avatar Frames", icon: "🖼️" },
-  { key: "reel_theme",   label: "Reel Themes",   icon: "🎰" },
-  { key: "symbol_skin",  label: "Symbol Skins",  icon: "🎨" },
-  { key: "sound_pack",   label: "Sound Packs",   icon: "🎵" },
-];
 
 const RARITY_CONFIG: Record<Rarity, {
   label: string;
@@ -68,28 +65,28 @@ const RARITY_CONFIG: Record<Rarity, {
     badgeStyle: { background: "rgba(113,113,122,0.5)", color: "#d4d4d8" },
     cardBorder: "border-zinc-700/50",
     cardGlow: "",
-    titleColor: "text-zinc-100",
+    titleColor: "text-[var(--text-primary)]",
   },
   rare: {
     label: "Rare",    stars: 2,
     badgeStyle: { background: "rgba(37,99,235,0.45)", color: "#93c5fd" },
     cardBorder: "border-blue-500/40",
     cardGlow: "shadow-blue-500/15",
-    titleColor: "text-blue-100",
+    titleColor: "text-blue-400",
   },
   epic: {
     label: "Epic",    stars: 3,
     badgeStyle: { background: "rgba(124,58,237,0.5)", color: "#c4b5fd" },
     cardBorder: "border-violet-500/50",
     cardGlow: "shadow-violet-500/20",
-    titleColor: "text-violet-100",
+    titleColor: "text-violet-400",
   },
   legendary: {
     label: "Legendary", stars: 4,
     badgeStyle: { background: "linear-gradient(90deg,#f59e0b,#fbbf24)", color: "#451a03", fontWeight: 700 },
     cardBorder: "border-amber-500/60",
     cardGlow: "shadow-amber-500/30",
-    titleColor: "text-amber-300",
+    titleColor: "text-amber-400",
   },
 };
 
@@ -116,6 +113,7 @@ function CollectibleCard({
   item: MockCollectible; isOwned: boolean; isEquipped: boolean;
   onBuy: (id: string) => void; onEquip: (id: string) => void; isPending: boolean;
 }) {
+  const t = useTranslations("shop");
   const rc = RARITY_CONFIG[item.rarity];
   const isLegendary = item.rarity === "legendary";
 
@@ -128,7 +126,7 @@ function CollectibleCard({
       transition={{ duration: 0.22 }}
       whileHover={{ y: -4, transition: { duration: 0.18 } }}
       className={`relative flex flex-col overflow-hidden rounded-2xl border backdrop-blur-md transition-shadow duration-300 ${rc.cardBorder} ${rc.cardGlow ? `shadow-lg ${rc.cardGlow}` : ""} ${isLegendary ? "legendary-pulse" : ""}`}
-      style={{ background: "rgba(8,2,22,0.82)" }}
+      style={{ background: "var(--bg-card)" }}
     >
       {isLegendary && <div className="gold-shimmer-bar absolute inset-x-0 top-0 h-[3px]" />}
 
@@ -152,7 +150,7 @@ function CollectibleCard({
         </div>
         {isOwned && (
           <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-emerald-500/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-            ✓ Owned
+            ✓ {t("owned")}
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 h-8" style={{ background: "linear-gradient(0deg, rgba(8,2,22,0.82) 0%, transparent 100%)" }} />
@@ -175,9 +173,9 @@ function CollectibleCard({
         <div className="flex items-center gap-2">
           {item.priceCredits !== null ? (
             <div className="flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1">
-              <Zap className="h-3 w-3 text-amber-400" />
+              <Image src="/images/coin-token.png" alt="tokens" width={13} height={13} className="object-contain shrink-0" />
               <span className="text-sm font-bold text-amber-400 tabular-nums">
-                {item.priceCredits.toLocaleString()} cr
+                {item.priceCredits.toLocaleString()}
               </span>
             </div>
           ) : item.priceUsd !== null ? (
@@ -186,7 +184,7 @@ function CollectibleCard({
               <span className="rounded bg-[#6772e5]/25 px-1 py-0.5 text-[8px] font-bold uppercase tracking-wider text-[#93a0ff]">Stripe</span>
             </div>
           ) : (
-            <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">Free</div>
+            <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">{t("free")}</div>
           )}
         </div>
 
@@ -196,7 +194,7 @@ function CollectibleCard({
               onClick={() => onEquip(item.id)}
               className="w-full rounded-xl border border-emerald-400/40 bg-emerald-500/15 py-2.5 text-xs font-bold text-emerald-300"
             >
-              ✓ Equipped
+              ✓ {t("equipped")}
             </button>
           ) : (
             <button
@@ -204,7 +202,7 @@ function CollectibleCard({
               disabled={isPending}
               className="w-full rounded-xl border border-emerald-500/40 bg-emerald-600/25 py-2.5 text-xs font-bold text-emerald-200 transition-all hover:bg-emerald-500/30 active:scale-95 disabled:opacity-50"
             >
-              Equip
+              {t("equip")}
             </button>
           )
         ) : item.priceUsd !== null ? (
@@ -212,7 +210,7 @@ function CollectibleCard({
             disabled
             className="w-full cursor-not-allowed rounded-xl bg-[#6772e5]/30 py-2.5 text-xs font-bold text-[#a5b4ff] opacity-70"
           >
-            Buy with Stripe
+            {t("buyWithStripe")}
           </button>
         ) : (
           <button
@@ -229,7 +227,7 @@ function CollectibleCard({
                 : "inset 0 1px 0 rgba(255,255,255,0.2)",
             }}
           >
-            {isPending ? "Purchasing…" : "Purchase"}
+            {isPending ? t("purchasing") : t("purchase")}
           </button>
         )}
       </div>
@@ -238,9 +236,18 @@ function CollectibleCard({
 }
 
 export default function ShopPage() {
+  const t = useTranslations("shop");
   const balance = useWalletStore((s) => s.balance);
   const setBalance = useWalletStore((s) => s.setBalance);
   const { playPurchase, playEquip } = useShopSfx();
+
+  const filterTabs: { key: FilterTab; label: string; icon: string }[] = [
+    { key: "all",          label: t("allItems"),     icon: "✦" },
+    { key: "avatar_frame", label: t("avatarFrames"), icon: "🖼️" },
+    { key: "reel_theme",   label: t("reelThemes"),   icon: "🎰" },
+    { key: "symbol_skin",  label: t("symbolSkins"),  icon: "🎨" },
+    { key: "sound_pack",   label: t("soundPacks"),   icon: "🎵" },
+  ];
 
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
@@ -272,7 +279,7 @@ export default function ShopPage() {
     const item = MOCK_COLLECTIBLES.find((c) => c.id === id);
     if (!item) return;
     if (item.priceCredits !== null) {
-      if (balance < item.priceCredits) { showToast("Insufficient credits.", false); return; }
+      if (balance < item.priceCredits) { showToast(t("insufficient"), false); return; }
       setBalance(balance - item.priceCredits);
     }
     setPendingId(id);
@@ -281,7 +288,7 @@ export default function ShopPage() {
       setOwnedIds((prev) => new Set(prev).add(id));
       setPendingId(null);
       playPurchase();
-      showToast(`${item.name} added to your collection!`, true);
+      showToast(t("addedToCollection", { name: item.name }), true);
     });
   }
 
@@ -296,7 +303,7 @@ export default function ShopPage() {
       return next;
     });
     playEquip();
-    showToast(`${item.name} equipped!`, true);
+    showToast(t("equipSuccess", { name: item.name }), true);
   }
 
   return (
@@ -316,13 +323,13 @@ export default function ShopPage() {
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back to Game
+        {t("backToGame")}
       </Link>
 
       <div
         className="relative mb-8 overflow-hidden rounded-2xl border border-amber-500/20 px-8 py-8"
         style={{
-          background: "linear-gradient(135deg, rgba(8,2,22,0.95) 0%, rgba(30,10,60,0.90) 50%, rgba(8,2,22,0.95) 100%)",
+          background: "var(--bg-card)",
           boxShadow: "0 0 60px rgba(251,191,36,0.08), inset 0 0 60px rgba(124,58,237,0.06)",
         }}
       >
@@ -337,7 +344,7 @@ export default function ShopPage() {
             <div className="mb-2 flex items-center gap-2">
               <span className="text-2xl">🎰</span>
               <span className="rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-400">
-                Exclusive Store
+                {t("storeTag")}
               </span>
             </div>
             <h1
@@ -349,7 +356,7 @@ export default function ShopPage() {
                 backgroundClip: "text",
               }}
             >
-              Collectibles Shop
+              {t("title")}
             </h1>
             <p className="mt-2 max-w-md text-sm text-[var(--text-muted)]">
               Unlock exclusive themes, frames & sound packs. Stand out at the tables with legendary gear.
@@ -360,23 +367,23 @@ export default function ShopPage() {
             className="flex shrink-0 items-center gap-3 rounded-2xl border border-amber-500/30 px-5 py-4"
             style={{ background: "rgba(251,191,36,0.08)", backdropFilter: "blur(12px)" }}
           >
-            <span className="text-3xl">🪙</span>
+            <Image src="/images/coin-token.png" alt="tokens" width={40} height={40} className="object-contain drop-shadow-[0_0_10px_rgba(251,191,36,0.4)]" />
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-400/70">Your Balance</div>
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-400/70">{t("yourBalance")}</div>
               <div
                 className="text-2xl font-black tabular-nums"
                 style={{ color: "#fbbf24", textShadow: "0 0 20px rgba(251,191,36,0.5)" }}
               >
                 {balance.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
-              <div className="text-[9px] text-amber-500/50 uppercase tracking-widest">credits</div>
+              <div className="text-[9px] text-amber-500/50 uppercase tracking-widest">{t("tokens")}</div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
-        {FILTER_TABS.map((tab) => (
+        {filterTabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveFilter(tab.key)}

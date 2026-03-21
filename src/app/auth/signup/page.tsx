@@ -22,6 +22,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [devEmailError, setDevEmailError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,20 +62,13 @@ export default function SignUpPage() {
       const result = await signUpAction({ name, email, password });
       if (!result.success) {
         setError(result.error);
+        if (result.devEmailError) setDevEmailError(result.devEmailError);
         setIsLoading(false);
         return;
       }
-      const signInResult = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (signInResult?.error || signInResult?.ok === false) {
-        setError("Account created but sign-in failed. Please sign in manually.");
-        setIsLoading(false);
-        return;
-      }
-      router.push("/game");
+      if (result.devEmailError) setDevEmailError(result.devEmailError);
+      // Redirect to "check your email" page — user must verify before signing in
+      router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
     } catch {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);
@@ -96,10 +90,10 @@ export default function SignUpPage() {
       <div className="relative w-full max-w-md">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
+          className="mb-6 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all border-violet-300/60 bg-white/80 text-violet-700 hover:bg-violet-50 hover:text-violet-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-[var(--text-secondary)] dark:hover:bg-white/[0.08] dark:hover:text-[var(--text-primary)]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Home
+          {t("backToHome")}
         </Link>
 
         <div
@@ -128,6 +122,14 @@ export default function SignUpPage() {
             {error && (
               <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-500">
                 {error}
+              </div>
+            )}
+            {devEmailError && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-left">
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-red-400/70">
+                  Dev — Email Send Failed
+                </p>
+                <p className="break-all text-xs text-red-400">{devEmailError}</p>
               </div>
             )}
 

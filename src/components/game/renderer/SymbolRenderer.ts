@@ -104,8 +104,10 @@ export function createSymbolGraphic(symbol: GameSymbol, size: number): Container
     sprite.x = half;
     sprite.y = half;
     const fit = inner * 0.88;
-    sprite.width = fit;
-    sprite.height = fit;
+    // Maintain natural aspect ratio — scale to fit within `fit × fit` without distortion
+    const scale = Math.min(fit / tex.width, fit / tex.height);
+    sprite.width  = tex.width  * scale;
+    sprite.height = tex.height * scale;
     container.addChild(sprite);
   } else {
     _drawVector(container, symbol, size);

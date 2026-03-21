@@ -7,6 +7,7 @@ import { eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { checkRateLimit } from "@/lib/server/rate-limiter";
 import { logger } from "@/lib/logger";
+import { sendPasswordResetEmail } from "@/lib/email";
 
 const RESET_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
@@ -14,8 +15,8 @@ const RESET_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 export async function requestPasswordResetAction(email: string): Promise<{
   success: boolean;
   error?: string;
-  // token is only returned in development; in prod you'd email this URL
   devToken?: string;
+  devEmailError?: string;
 }> {
   try {
     const rl = checkRateLimit(`pw-reset:${email}`, { maxRequests: 3, windowMs: 3_600_000 });
@@ -39,8 +40,10 @@ export async function requestPasswordResetAction(email: string): Promise<{
       return { success: true };
     }
 
-    const token   = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + RESET_EXPIRY_MS);
+    const rawToken  = crypto.randomBytes(32).toString("hex");
+    // Store only the SHA-256 hash — raw token is sent to user via email, never stored
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const expires   = new Date(Date.now() + RESET_EXPIRY_MS);
 
     // Delete any existing tokens for this email first
     await db
@@ -49,22 +52,39 @@ export async function requestPasswordResetAction(email: string): Promise<{
 
     await db.insert(verificationTokens).values({
       identifier: `reset:${email}`,
-      token,
+      token: tokenHash,
       expires,
     });
 
-    const resetUrl = `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/auth/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+    const appUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) throw new Error("NEXTAUTH_URL or NEXT_PUBLIC_APP_URL must be set.");
+
+    const resetUrl = `${appUrl}/auth/reset-password?token=${rawToken}&email=${encodeURIComponent(email)}`;
 
     logger.info("Password reset requested", {
       action: "password-reset-request",
-      metadata: { email, resetUrl },
+      metadata: { email },
     });
 
-    // In production: send resetUrl via email (Resend, SendGrid, etc.)
-    // For now we return the token in dev mode so you can test without email
+    // Send reset email (best-effort — don't fail the action if email sending fails)
+    let devEmailError: string | undefined;
+    try {
+      await sendPasswordResetEmail(email, resetUrl);
+    } catch (emailErr) {
+      const errMsg = emailErr instanceof Error ? emailErr.message : "unknown";
+      logger.error("Failed to send reset email", {
+        action: "password-reset-request",
+        metadata: { error: errMsg },
+      });
+      if (process.env.NODE_ENV === "development") {
+        devEmailError = errMsg;
+      }
+    }
+
     return {
       success: true,
-      devToken: process.env.NODE_ENV === "development" ? token : undefined,
+      devToken: process.env.NODE_ENV === "development" ? rawToken : undefined,
+      devEmailError,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -81,10 +101,11 @@ export async function validateResetTokenAction(token: string, email: string): Pr
   valid: boolean;
 }> {
   try {
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
     const record = await db.query.verificationTokens.findFirst({
       where: and(
         eq(verificationTokens.identifier, `reset:${email}`),
-        eq(verificationTokens.token, token),
+        eq(verificationTokens.token, tokenHash),
         gt(verificationTokens.expires, new Date()),
       ),
     });
@@ -108,10 +129,11 @@ export async function resetPasswordAction(
       return { success: false, error: "Password must include uppercase, lowercase, and a number." };
     }
 
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
     const record = await db.query.verificationTokens.findFirst({
       where: and(
         eq(verificationTokens.identifier, `reset:${email}`),
-        eq(verificationTokens.token, token),
+        eq(verificationTokens.token, tokenHash),
         gt(verificationTokens.expires, new Date()),
       ),
     });

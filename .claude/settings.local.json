@@ -62,7 +62,9 @@
       "Bash(git -C /C/User/Programming/midnight-riches/.claude/worktrees/agent-a44c4bf4 status)",
       "Bash(git -C /C/User/Programming/midnight-riches/.claude/worktrees/agent-a44c4bf4 log --oneline -5)",
       "Bash(ls -la \"C:\\\\User\\\\Programming\\\\midnight-riches\\\\public\\\\images\"\" 2>/dev/null || echo \"Directory does not exist or is empty \")",
-      "Bash(find /c/User/Programming/midnight-riches/public -name favicon* -o -name *.ico)"
+      "Bash(find /c/User/Programming/midnight-riches/public -name favicon* -o -name *.ico)",
+      "Bash(node -e \"const d=require\\(''./package.json''\\); console.log\\(Object.keys\\(d.dependencies\\).join\\(''\\\\n''\\)\\)\")",
+      "Bash(node -e \"require\\(''resend''\\); console.log\\(''resend ok''\\)\")"
     ]
   }
 }

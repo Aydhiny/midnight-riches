@@ -9,7 +9,7 @@ import {
   gameSessions,
   securityEvents,
 } from "@/lib/db/schema";
-import { eq, sql, desc, like, count, sum, and, gte } from "drizzle-orm";
+import { eq, sql, desc, like, count, sum, and, gte, lt } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import {
   adminUserSearchSchema,
@@ -322,5 +322,199 @@ export async function getSecurityEvents(input?: {
       metadata: { error: message },
     });
     return { success: false, error: "Internal error", code: "INTERNAL_ERROR" };
+  }
+}
+
+// ── Daily spin activity (last N days) ────────────────────────────────────────
+export async function getSpinChartData(days = 14): Promise<ActionResult<{
+  daily: Array<{ date: string; spins: number; wagered: number; payouts: number }>;
+}>> {
+  const adminCheck = await requireAdmin();
+  if ("error" in adminCheck) return adminCheck.error;
+
+  try {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    since.setHours(0, 0, 0, 0);
+
+    const rows = await db
+      .select({
+        date: sql<string>`date_trunc('day', ${gameSessions.createdAt})::date::text`,
+        spins:    sql<number>`count(*)`,
+        wagered:  sql<number>`coalesce(sum(${gameSessions.betAmount}), 0)`,
+        payouts:  sql<number>`coalesce(sum(${gameSessions.winAmount}), 0)`,
+      })
+      .from(gameSessions)
+      .where(gte(gameSessions.createdAt, since))
+      .groupBy(sql`date_trunc('day', ${gameSessions.createdAt})`)
+      .orderBy(sql`date_trunc('day', ${gameSessions.createdAt})`);
+
+    // Fill in missing days with zeros
+    const map = new Map(rows.map((r) => [r.date, r]));
+    const daily: Array<{ date: string; spins: number; wagered: number; payouts: number }> = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(since);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().split("T")[0];
+      const row = map.get(key);
+      daily.push({
+        date:    key,
+        spins:   Number(row?.spins   ?? 0),
+        wagered: Number(row?.wagered ?? 0),
+        payouts: Number(row?.payouts ?? 0),
+      });
+    }
+
+    return { success: true, data: { daily } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error("Spin chart failed", { action: "getSpinChartData", metadata: { error: message } });
+    return { success: false, error: "Internal error", code: "INTERNAL_ERROR" };
+  }
+}
+
+// ── Top players by total wagered ──────────────────────────────────────────────
+export async function getTopPlayers(limit = 10): Promise<ActionResult<{
+  players: Array<{ id: string; name: string | null; email: string; totalWagered: number; totalWon: number; spins: number }>;
+}>> {
+  const adminCheck = await requireAdmin();
+  if ("error" in adminCheck) return adminCheck.error;
+
+  try {
+    const rows = await db
+      .select({
+        id:           gameSessions.userId,
+        name:         users.name,
+        email:        users.email,
+        totalWagered: sql<number>`coalesce(sum(${gameSessions.betAmount}), 0)`,
+        totalWon:     sql<number>`coalesce(sum(${gameSessions.winAmount}), 0)`,
+        spins:        sql<number>`count(*)`,
+      })
+      .from(gameSessions)
+      .innerJoin(users, eq(gameSessions.userId, users.id))
+      .groupBy(gameSessions.userId, users.name, users.email)
+      .orderBy(desc(sql`sum(${gameSessions.betAmount})`))
+      .limit(limit);
+
+    return {
+      success: true,
+      data: {
+        players: rows.map((r) => ({
+          id:           r.id,
+          name:         r.name,
+          email:        r.email,
+          totalWagered: Number(r.totalWagered),
+          totalWon:     Number(r.totalWon),
+          spins:        Number(r.spins),
+        })),
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error("Top players failed", { action: "getTopPlayers", metadata: { error: message } });
+    return { success: false, error: "Internal error", code: "INTERNAL_ERROR" };
+  }
+}
+
+// ── Recent game sessions ──────────────────────────────────────────────────────
+export async function getRecentSessions(limit = 20): Promise<ActionResult<{
+  sessions: Array<{
+    id: string; userId: string; email: string; gameId: string;
+    betAmount: number; winAmount: number; outcome: string; createdAt: Date;
+  }>;
+}>> {
+  const adminCheck = await requireAdmin();
+  if ("error" in adminCheck) return adminCheck.error;
+
+  try {
+    const rows = await db
+      .select({
+        id:         gameSessions.id,
+        userId:     gameSessions.userId,
+        email:      users.email,
+        gameId:     gameSessions.gameId,
+        betAmount:  gameSessions.betAmount,
+        winAmount:  gameSessions.winAmount,
+        outcome:    gameSessions.outcome,
+        createdAt:  gameSessions.createdAt,
+      })
+      .from(gameSessions)
+      .innerJoin(users, eq(gameSessions.userId, users.id))
+      .orderBy(desc(gameSessions.createdAt))
+      .limit(limit);
+
+    return {
+      success: true,
+      data: {
+        sessions: rows.map((r) => ({
+          id:        r.id,
+          userId:    r.userId,
+          email:     r.email,
+          gameId:    r.gameId,
+          betAmount: Number(r.betAmount),
+          winAmount: Number(r.winAmount),
+          outcome:   r.outcome,
+          createdAt: r.createdAt,
+        })),
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error("Recent sessions failed", { action: "getRecentSessions", metadata: { error: message } });
+    return { success: false, error: "Internal error", code: "INTERNAL_ERROR" };
+  }
+}
+
+// ── New user registrations (last 30 days) ────────────────────────────────────
+export async function getUserGrowthData(): Promise<ActionResult<{
+  daily: Array<{ date: string; registrations: number }>;
+}>> {
+  const adminCheck = await requireAdmin();
+  if ("error" in adminCheck) return adminCheck.error;
+
+  try {
+    const since = new Date();
+    since.setDate(since.getDate() - 29);
+    since.setHours(0, 0, 0, 0);
+
+    const rows = await db
+      .select({
+        date:  sql<string>`date_trunc('day', ${users.createdAt})::date::text`,
+        count: sql<number>`count(*)`,
+      })
+      .from(users)
+      .where(gte(users.createdAt, since))
+      .groupBy(sql`date_trunc('day', ${users.createdAt})`)
+      .orderBy(sql`date_trunc('day', ${users.createdAt})`);
+
+    const map = new Map(rows.map((r) => [r.date, r]));
+    const daily: Array<{ date: string; registrations: number }> = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(since);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().split("T")[0];
+      daily.push({ date: key, registrations: Number(map.get(key)?.count ?? 0) });
+    }
+
+    return { success: true, data: { daily } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error("User growth failed", { action: "getUserGrowthData", metadata: { error: message } });
+    return { success: false, error: "Internal error", code: "INTERNAL_ERROR" };
+  }
+}
+
+// ── Toggle user role ──────────────────────────────────────────────────────────
+export async function adminSetUserRole(userId: string, role: "user" | "admin"): Promise<ActionResult<{ ok: true }>> {
+  const adminCheck = await requireAdmin();
+  if ("error" in adminCheck) return adminCheck.error;
+
+  try {
+    await db.update(users).set({ role }).where(eq(users.id, userId));
+    logger.action("adminSetUserRole", adminCheck.userId, 0, { targetUserId: userId, role });
+    return { success: true, data: { ok: true } };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return { success: false, error: message, code: "INTERNAL_ERROR" };
   }
 }

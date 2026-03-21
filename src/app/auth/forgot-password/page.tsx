@@ -4,17 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { requestPasswordResetAction } from "@/server/actions/password-reset";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth");
   const [email, setEmail]     = useState("");
   const [sent, setSent]       = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
-  // dev only — shows the token so you can test without real email
-  const [devToken, setDevToken] = useState<string | null>(null);
+  const [devToken, setDevToken]         = useState<string | null>(null);
+  const [devEmailError, setDevEmailError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,6 +29,7 @@ export default function ForgotPasswordPage() {
       } else {
         setSent(true);
         if (res.devToken) setDevToken(res.devToken);
+        if (res.devEmailError) setDevEmailError(res.devEmailError);
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -41,16 +44,16 @@ export default function ForgotPasswordPage() {
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 left-1/3 h-96 w-96 rounded-full bg-violet-600/10 blur-3xl" />
-        <div className="absolute -bottom-40 right-1/3 h-96 w-96 rounded-full bg-amber-500/8 blur-3xl" />
+        <div className="absolute -bottom-40 right-1/3 h-96 w-96 rounded-full bg-amber-500/[0.08] blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-md">
         <Link
           href="/auth/signin"
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
+          className="mb-6 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all border-violet-300/60 bg-white/80 text-violet-700 hover:bg-violet-50 hover:text-violet-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-[var(--text-secondary)] dark:hover:bg-white/[0.08] dark:hover:text-[var(--text-primary)]"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Sign In
+          {t("backToSignIn")}
         </Link>
 
         <div
@@ -70,10 +73,10 @@ export default function ForgotPasswordPage() {
               className="mx-auto mb-3 object-contain drop-shadow-[0_0_12px_rgba(251,191,36,0.5)]"
             />
             <h1 className="text-2xl font-black text-[var(--text-primary)]">
-              Forgot Password
+              {t("forgotPasswordTitle")}
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              Enter your email and we&apos;ll send a reset link.
+              {t("forgotPasswordDesc")}
             </p>
           </div>
 
@@ -83,16 +86,17 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 className="h-7 w-7 text-emerald-400" />
               </div>
               <div>
-                <p className="font-semibold text-[var(--text-primary)]">Check your inbox</p>
+                <p className="font-semibold text-[var(--text-primary)]">{t("checkInbox")}</p>
                 <p className="mt-1 text-sm text-[var(--text-muted)]">
-                  If <span className="text-amber-400">{email}</span> has an account, a reset link
-                  is on its way. Check your spam folder too.
+                  {t("resetLinkSentPrefix")}{" "}
+                  <span className="text-amber-400">{email}</span>{" "}
+                  {t("resetLinkSentSuffix")}
                 </p>
               </div>
 
               {/* DEV ONLY: show direct link */}
               {devToken && (
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/8 p-3 text-left">
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.08] p-3 text-left">
                   <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-400/70">
                     Dev Mode — Direct Reset Link
                   </p>
@@ -105,12 +109,25 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
+              {/* DEV ONLY: show EmailJS error if email sending failed */}
+              {devEmailError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-left">
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-red-400/70">
+                    Dev Mode — Email Send Failed
+                  </p>
+                  <p className="break-all text-xs text-red-400">{devEmailError}</p>
+                  <p className="mt-1.5 text-[10px] text-red-400/60">
+                    Check: EMAILJS env vars, &quot;Allow non-browser applications&quot; setting in EmailJS dashboard.
+                  </p>
+                </div>
+              )}
+
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => { setSent(false); setDevToken(null); }}
+                onClick={() => { setSent(false); setDevToken(null); setDevEmailError(null); }}
               >
-                Send another link
+                {t("sendAnotherLink")}
               </Button>
             </div>
           ) : (
@@ -123,7 +140,7 @@ export default function ForgotPasswordPage() {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-[var(--text-secondary)]">
-                  Email address
+                  {t("emailAddress")}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
@@ -139,18 +156,18 @@ export default function ForgotPasswordPage() {
               </div>
 
               <Button type="submit" variant="gold" className="w-full" disabled={loading}>
-                {loading ? "Sending…" : "Send Reset Link"}
+                {loading ? t("sending") : t("sendResetLink")}
               </Button>
             </form>
           )}
 
           <p className="mt-5 text-center text-sm text-[var(--text-muted)]">
-            Remembered it?{" "}
+            {t("rememberedPassword")}{" "}
             <Link
               href="/auth/signin"
               className="font-semibold text-amber-500 transition-colors hover:text-amber-400"
             >
-              Sign In
+              {t("signIn")}
             </Link>
           </p>
         </div>

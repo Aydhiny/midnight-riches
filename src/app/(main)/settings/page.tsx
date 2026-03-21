@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ interface CustomSelectProps {
 }
 
 function CustomSelect({ value, onChange, options, variant = "default" }: CustomSelectProps) {
+  const t = useTranslations("settings");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -90,7 +92,7 @@ function CustomSelect({ value, onChange, options, variant = "default" }: CustomS
             className={`absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border shadow-lg ${dropdownClass}`}
           >
             <div className={`px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider ${headerClass}`}>
-              Select option
+              {t("selectOption")}
             </div>
             {options.map((opt) => (
               <button
@@ -155,9 +157,9 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>("profile");
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "profile",     label: "Profile"          },
-    { id: "preferences", label: "Preferences"      },
-    { id: "security",    label: "Security & Limits" },
+    { id: "profile",     label: t("profile")     },
+    { id: "preferences", label: t("preferences") },
+    { id: "security",    label: t("security")    },
   ];
 
   return (
@@ -194,6 +196,7 @@ function ProfileTab({
   session: ReturnType<typeof useSession>["data"];
   updateSession: ReturnType<typeof useSession>["update"];
 }) {
+  const t = useTranslations("settings");
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(session?.user?.name ?? "");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(session?.user?.image ?? null);
@@ -241,7 +244,7 @@ function ProfileTab({
     <div className="space-y-4">
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
         <CardHeader>
-          <CardTitle className="text-[var(--text-primary)]">Profile Information</CardTitle>
+          <CardTitle className="text-[var(--text-primary)]">{t("profileInfo")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center gap-5">
@@ -251,9 +254,7 @@ function ProfileTab({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="text-3xl font-bold text-white">
-                    {(session?.user?.name ?? session?.user?.email ?? "U")[0].toUpperCase()}
-                  </span>
+                  <Image src="/images/profile-pic.webp" alt="Profile" width={80} height={80} className="h-full w-full object-cover" />
                 )}
               </div>
               <button
@@ -277,29 +278,29 @@ function ProfileTab({
                 onClick={() => fileRef.current?.click()}
                 className="mt-1 text-xs text-violet-400 hover:text-violet-300 transition-colors"
               >
-                Change photo
+                {t("changePhoto")}
               </button>
             </div>
           </div>
 
           <div className="grid gap-4">
             <div>
-              <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Display Name</label>
+              <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">{t("profileTab.name")}</label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-1.5"
-                placeholder="Your display name"
+                placeholder={t("profileTab.namePlaceholder")}
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">Email</label>
+              <label className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">{t("profileTab.email")}</label>
               <Input
                 defaultValue={session?.user?.email ?? ""}
                 disabled
                 className="mt-1.5 opacity-50 cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Email cannot be changed</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">{t("emailCannotChange")}</p>
             </div>
           </div>
 
@@ -309,11 +310,11 @@ function ProfileTab({
             className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
           >
             {isPending ? (
-              <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
+              <><Loader2 className="h-4 w-4 animate-spin" /> {t("saving")}</>
             ) : saved ? (
-              <><Check className="h-4 w-4" /> Saved!</>
+              <><Check className="h-4 w-4" /> {t("saved")}</>
             ) : (
-              "Save Changes"
+              t("profileTab.saveChanges")
             )}
           </Button>
         </CardContent>
@@ -321,7 +322,7 @@ function ProfileTab({
 
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
         <CardHeader>
-          <CardTitle className="text-[var(--text-primary)]">Player Stats</CardTitle>
+          <CardTitle className="text-[var(--text-primary)]">{t("playerStats")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -343,6 +344,7 @@ function ProfileTab({
 }
 
 function PreferencesTab() {
+  const t = useTranslations("settings");
   const [sounds,        setSounds]        = useState(() => localStorage.getItem("pref_sounds")        !== "false");
   const [animations,   setAnimations]    = useState(() => localStorage.getItem("pref_animations")    !== "false");
   const [turbo,         setTurbo]         = useState(() => localStorage.getItem("pref_turbo")         === "true");
@@ -351,22 +353,26 @@ function PreferencesTab() {
 
   function persist(key: string, value: boolean) {
     localStorage.setItem(key, String(value));
+    if (key === "pref_sounds") {
+      localStorage.setItem("mr_sfx_enabled", String(value));
+      window.dispatchEvent(new StorageEvent("storage", { key: "mr_sfx_enabled", newValue: String(value) }));
+    }
   }
 
   const prefRows: { label: string; sub: string; key: string; value: boolean; set: (v: boolean) => void }[] = [
-    { label: "Sound Effects",   sub: "Play sounds during spins and wins",        key: "pref_sounds",      value: sounds,      set: setSounds      },
-    { label: "Animations",      sub: "Show visual effects and transitions",       key: "pref_animations",  value: animations,  set: setAnimations  },
-    { label: "Auto-save Turbo", sub: "Remember turbo mode between sessions",      key: "pref_turbo",       value: turbo,       set: setTurbo       },
+    { label: t("soundEffects"),  sub: t("soundEffectsDesc"),        key: "pref_sounds",      value: sounds,      set: setSounds      },
+    { label: t("animations"),    sub: t("animationsDesc"),           key: "pref_animations",  value: animations,  set: setAnimations  },
+    { label: t("turboMode"),     sub: t("turboModeDesc"),            key: "pref_turbo",       value: turbo,       set: setTurbo       },
   ];
   const notifRows: { label: string; sub: string; key: string; value: boolean; set: (v: boolean) => void }[] = [
-    { label: "Daily Bonus Reminders", sub: "Get notified when daily bonus is available", key: "pref_dailyBonus",    value: dailyBonus,    set: setDailyBonus    },
-    { label: "Jackpot Alerts",        sub: "Notify when jackpot reaches high amounts",   key: "pref_jackpotAlerts", value: jackpotAlerts, set: setJackpotAlerts },
+    { label: t("dailyBonusReminders"), sub: t("dailyBonusRemindersDesc"), key: "pref_dailyBonus",    value: dailyBonus,    set: setDailyBonus    },
+    { label: t("jackpotAlerts"),        sub: t("jackpotAlertsDesc"),        key: "pref_jackpotAlerts", value: jackpotAlerts, set: setJackpotAlerts },
   ];
 
   return (
     <div className="space-y-4">
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
-        <CardHeader><CardTitle className="text-[var(--text-primary)]">Game Preferences</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-[var(--text-primary)]">{t("gamePreferences")}</CardTitle></CardHeader>
         <CardContent className="divide-y divide-[var(--glass-border)]">
           {prefRows.map((row) => (
             <div key={row.key} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
@@ -385,7 +391,7 @@ function PreferencesTab() {
       </Card>
 
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
-        <CardHeader><CardTitle className="text-[var(--text-primary)]">Notifications</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-[var(--text-primary)]">{t("preferencesTab.notifications")}</CardTitle></CardHeader>
         <CardContent className="divide-y divide-[var(--glass-border)]">
           {notifRows.map((row) => (
             <div key={row.key} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
@@ -411,6 +417,7 @@ function SecurityTab() {
 }
 
 function SecurityTabContent() {
+  const t = useTranslations("settings");
   const [limits, setLimits] = useState<GamblingLimit[]>([]);
   const [exclusion, setExclusion] = useState<SelfExclusion | null>(null);
   const [newLimit, setNewLimit] = useState<{ type: GamblingLimit["limitType"]; amount: string }>({
@@ -449,7 +456,7 @@ function SecurityTabContent() {
   return (
     <div className="space-y-4">
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
-        <CardHeader><CardTitle className="text-[var(--text-primary)]">Gambling Limits</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-[var(--text-primary)]">{t("gamblingLimits")}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {limits.length > 0 && (
             <div className="space-y-2">
@@ -466,20 +473,20 @@ function SecurityTabContent() {
               value={newLimit.type}
               onChange={(v) => setNewLimit((p) => ({ ...p, type: v as GamblingLimit["limitType"] }))}
               options={[
-                { value: "loss",    label: "Loss Limit"               },
-                { value: "deposit", label: "Deposit Limit"            },
-                { value: "session", label: "Session Time Limit (mins)" },
+                { value: "loss",    label: t("lossLimit")    },
+                { value: "deposit", label: t("depositLimit") },
+                { value: "session", label: t("sessionLimit") },
               ]}
               variant="default"
             />
             <Input
               type="number"
-              placeholder="Amount"
+              placeholder={t("limitAmount")}
               value={newLimit.amount}
               onChange={(e) => setNewLimit((p) => ({ ...p, amount: e.target.value }))}
               className="w-28"
             />
-            <Button onClick={handleSetLimit} className="bg-violet-600 hover:bg-violet-700 text-white">Set</Button>
+            <Button onClick={handleSetLimit} className="bg-violet-600 hover:bg-violet-700 text-white">{t("setLimit")}</Button>
           </div>
         </CardContent>
       </Card>
@@ -491,7 +498,7 @@ function SecurityTabContent() {
           </summary>
           <div className="px-4 pb-4 pt-2 space-y-3">
             <p className="text-xs text-[var(--text-muted)]">
-              Self-exclusion will block access to your account for the selected period. This action cannot be undone.
+              {t("selfExclusionDescription")}
             </p>
             <div className="flex gap-2">
               <CustomSelect
@@ -514,7 +521,7 @@ function SecurityTabContent() {
 
       {exclusion && (
         <div className="rounded-xl border border-red-500/30 bg-red-950/20 p-4">
-          <p className="text-sm font-medium text-red-400">Self-Exclusion Active</p>
+          <p className="text-sm font-medium text-red-400">{t("selfExclusionActive")}</p>
           <p className="text-xs text-[var(--text-muted)] mt-1">
             {exclusion.endDate
               ? `Your account is excluded until ${new Date(exclusion.endDate).toLocaleDateString()}.`
