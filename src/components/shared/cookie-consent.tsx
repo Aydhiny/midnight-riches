@@ -19,7 +19,7 @@ function loadConsent(): CookiePreferences | null {
   try {
     const raw = localStorage.getItem(CONSENT_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw) as { version: number; preferences: CookiePreferences };
     if (parsed.version !== CONSENT_VERSION) return null;
     return parsed.preferences;
   } catch {
