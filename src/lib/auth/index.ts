@@ -30,20 +30,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
-      allowDangerousEmailAccountLinking: true,
     }),
     ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
       ? [GitHub({
           clientId: process.env.AUTH_GITHUB_ID,
           clientSecret: process.env.AUTH_GITHUB_SECRET,
-          allowDangerousEmailAccountLinking: true,
         })]
       : []),
     ...(process.env.AUTH_DISCORD_ID && process.env.AUTH_DISCORD_SECRET
       ? [Discord({
           clientId: process.env.AUTH_DISCORD_ID,
           clientSecret: process.env.AUTH_DISCORD_SECRET,
-          allowDangerousEmailAccountLinking: true,
         })]
       : []),
     Credentials({
@@ -131,14 +128,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
           }
         }
-      }
-      // Backfill role for sessions created before role was added to JWT
-      if (!token.role && token.id) {
-        const dbUser = await db.query.users.findFirst({
-          where: eq(users.id, token.id as string),
-          columns: { role: true },
-        });
-        if (dbUser) token.role = dbUser.role;
       }
       // Handle updateSession() calls from the client
       if (trigger === "update" && session) {

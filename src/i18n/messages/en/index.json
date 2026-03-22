@@ -737,6 +737,24 @@
       "filterWin": "Win",
       "filterLoss": "Loss",
       "filterBonus": "Bonus"
+    },
+    "auditLogs": "Audit Log",
+    "auditPage": {
+      "title": "Admin Audit Log",
+      "subtitle": "Full history of admin actions — balance adjustments, role changes, and more",
+      "refresh": "Refresh",
+      "filterAll": "All Actions",
+      "logsTotal": "entries",
+      "noLogs": "No audit entries yet",
+      "noTarget": "—",
+      "noDetails": "—",
+      "colAction": "Action",
+      "colAdmin": "Admin",
+      "colTarget": "Target User",
+      "colDetails": "Details",
+      "colTime": "Time",
+      "page": "Page",
+      "of": "of"
     }
   },
   "howToPlay": {

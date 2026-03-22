@@ -463,6 +463,26 @@ export const userCollectiblesRelations = relations(userCollectibles, ({ one }) =
   collectible: one(collectibles, { fields: [userCollectibles.collectibleId], references: [collectibles.id] }),
 }));
 
+export const adminAuditLogs = pgTable(
+  "admin_audit_logs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    adminId: uuid("admin_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    targetUserId: uuid("target_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    details: jsonb("details"),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("admin_audit_logs_admin_idx").on(table.adminId, table.createdAt),
+    index("admin_audit_logs_target_idx").on(table.targetUserId, table.createdAt),
+  ]
+);
+
 export const referrals = pgTable(
   "referrals",
   {
@@ -483,4 +503,9 @@ export const referrals = pgTable(
 export const referralsRelations = relations(referrals, ({ one }) => ({
   referrer: one(users, { fields: [referrals.referrerId], references: [users.id] }),
   referred: one(users, { fields: [referrals.referredId], references: [users.id] }),
+}));
+
+export const adminAuditLogsRelations = relations(adminAuditLogs, ({ one }) => ({
+  admin: one(users, { fields: [adminAuditLogs.adminId], references: [users.id] }),
+  targetUser: one(users, { fields: [adminAuditLogs.targetUserId], references: [users.id] }),
 }));

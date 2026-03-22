@@ -5,6 +5,27 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 vi.mock("@/lib/db", () => {
+  const mockTx = {
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => ({
+          returning: vi.fn(() => []),
+        })),
+      })),
+    })),
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({
+        returning: vi.fn(() => [{ id: "game-session-1" }]),
+        onConflictDoNothing: vi.fn(() => Promise.resolve()),
+      })),
+    })),
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => Promise.resolve([{ balance: "999.50" }])),
+      })),
+    })),
+  };
+
   const mockDb = {
     query: {
       wallets: {
@@ -23,12 +44,18 @@ vi.mock("@/lib/db", () => {
         returning: vi.fn(() => [{ id: "game-session-1" }]),
       })),
     })),
+    // transaction() runs the callback with the mock tx object
+    transaction: vi.fn(async (cb: (tx: typeof mockTx) => Promise<unknown>) => {
+      return cb(mockTx);
+    }),
+    _mockTx: mockTx,
   };
   return { db: mockDb };
 });
 
 vi.mock("@/lib/server/rate-limiter", () => ({
   checkRateLimit: vi.fn(() => ({ success: true, remaining: 29, resetAt: Date.now() + 60000 })),
+  checkRateLimitAsync: vi.fn(async () => ({ success: true, remaining: 29, resetAt: Date.now() + 60000 })),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -38,16 +65,23 @@ vi.mock("@/lib/logger", () => ({
 import { spinAction } from "./spin";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { checkRateLimit } from "@/lib/server/rate-limiter";
+import { checkRateLimitAsync } from "@/lib/server/rate-limiter";
 
 const mockAuth = vi.mocked(auth);
 const mockWalletFind = vi.mocked(db.query.wallets.findFirst);
-const mockRateLimit = vi.mocked(checkRateLimit);
+const mockRateLimit = vi.mocked(checkRateLimitAsync);
+// Access the mock tx for per-test overrides
+const mockTx = (db as unknown as { _mockTx: Record<string, unknown> })._mockTx;
 
 describe("spinAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRateLimit.mockReturnValue({ success: true, remaining: 29, resetAt: Date.now() + 60000 });
+    mockRateLimit.mockResolvedValue({ success: true, remaining: 29, resetAt: Date.now() + 60000 });
+    // Default: transaction runs the callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(db.transaction).mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+      return cb(mockTx);
+    });
   });
 
   it("returns UNAUTHORIZED for unauthenticated request", async () => {
@@ -69,7 +103,7 @@ describe("spinAction", () => {
       user: { id: "user-1", email: "test@test.com" },
       expires: new Date().toISOString(),
     } as unknown as Awaited<ReturnType<typeof auth>>);
-    mockRateLimit.mockReturnValue({ success: false, remaining: 0, resetAt: Date.now() + 60000 });
+    mockRateLimit.mockResolvedValue({ success: false, remaining: 0, resetAt: Date.now() + 60000 });
 
     const result = await spinAction({
       betPerLine: 1,
@@ -105,13 +139,21 @@ describe("spinAction", () => {
       expires: new Date().toISOString(),
     } as unknown as Awaited<ReturnType<typeof auth>>);
 
-    vi.mocked(db.update).mockReturnValue({
-      set: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          returning: vi.fn().mockResolvedValue([]),
+    // Simulate the transaction throwing a SpinTxError (insufficient funds)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(db.transaction).mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+      const txWithEmptyUpdate = {
+        ...mockTx,
+        update: vi.fn().mockReturnValue({
+          set: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([]),
+            }),
+          }),
         }),
-      }),
-    } as unknown as ReturnType<typeof db.update>);
+      };
+      return cb(txWithEmptyUpdate);
+    });
 
     const result = await spinAction({
       betPerLine: 1,
@@ -130,19 +172,31 @@ describe("spinAction", () => {
       expires: new Date().toISOString(),
     } as unknown as Awaited<ReturnType<typeof auth>>);
 
-    vi.mocked(db.update).mockReturnValue({
-      set: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          returning: vi.fn().mockResolvedValue([{ id: "wallet-1", balance: "999.50" }]),
+    // Successful transaction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(db.transaction).mockImplementation(async (cb: (tx: any) => Promise<unknown>) => {
+      const txWithSuccess = {
+        ...mockTx,
+        update: vi.fn().mockReturnValue({
+          set: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              returning: vi.fn().mockResolvedValue([{ id: "wallet-1", balance: "999.50" }]),
+            }),
+          }),
         }),
-      }),
-    } as unknown as ReturnType<typeof db.update>);
-
-    vi.mocked(db.insert).mockReturnValue({
-      values: vi.fn().mockReturnValue({
-        returning: vi.fn().mockResolvedValue([{ id: "game-session-1" }]),
-      }),
-    } as unknown as ReturnType<typeof db.insert>);
+        insert: vi.fn().mockReturnValue({
+          values: vi.fn().mockReturnValue({
+            returning: vi.fn().mockResolvedValue([{ id: "game-session-1" }]),
+          }),
+        }),
+        select: vi.fn().mockReturnValue({
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([{ balance: "999.50" }]),
+          }),
+        }),
+      };
+      return cb(txWithSuccess);
+    });
 
     mockWalletFind.mockResolvedValue({
       id: "wallet-1",

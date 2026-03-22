@@ -4,10 +4,11 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { wallets, transactions, collectibles, userCollectibles, users } from "@/lib/db/schema";
 import { eq, sql, and } from "drizzle-orm";
-import { checkRateLimit } from "@/lib/server/rate-limiter";
+import { checkRateLimitAsync } from "@/lib/server/rate-limiter";
 import { logger } from "@/lib/logger";
 import { getStripe, getBundleById, DAILY_BONUS_CREDITS, getOrCreateStripeCustomer } from "@/lib/stripe";
 import { purchaseBundleSchema } from "@/lib/validators";
+import { isUserExcluded } from "@/lib/security/spin-guard";
 
 interface CheckoutSuccess {
   success: true;
@@ -38,13 +39,18 @@ export async function createCheckoutAction(data: {
     }
     const userId = session.user.id;
 
+    // Block self-excluded users from making purchases
+    if (await isUserExcluded(userId)) {
+      return { success: false, error: "Account is self-excluded", code: "UNAUTHORIZED" };
+    }
+
     // Require verified email before allowing purchases
     const dbUser = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { emailVerified: true } });
     if (!dbUser?.emailVerified) {
       return { success: false, error: "EMAIL_NOT_VERIFIED", code: "UNAUTHORIZED" };
     }
 
-    const rateLimitResult = checkRateLimit(`checkout:${userId}`, {
+    const rateLimitResult = await checkRateLimitAsync(`checkout:${userId}`, {
       maxRequests: 5,
       windowMs: 60_000,
     });
@@ -212,13 +218,18 @@ export async function createCollectibleCheckoutAction(data: {
     }
     const userId = session.user.id;
 
+    // Block self-excluded users from making purchases
+    if (await isUserExcluded(userId)) {
+      return { success: false, error: "Account is self-excluded" };
+    }
+
     // Require verified email before allowing purchases
     const dbUserC = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { emailVerified: true } });
     if (!dbUserC?.emailVerified) {
       return { success: false, error: "EMAIL_NOT_VERIFIED" };
     }
 
-    const rateLimitResult = checkRateLimit(`checkout:${userId}`, {
+    const rateLimitResult = await checkRateLimitAsync(`checkout:${userId}`, {
       maxRequests: 5,
       windowMs: 60_000,
     });
@@ -365,7 +376,7 @@ export async function claimDailyBonusAction(): Promise<DailyBonusResponse> {
     }
     const userId = session.user.id;
 
-    const rateLimitResult = checkRateLimit(`dailyBonus:${userId}`, {
+    const rateLimitResult = await checkRateLimitAsync(`dailyBonus:${userId}`, {
       maxRequests: 1,
       windowMs: 60_000,
     });

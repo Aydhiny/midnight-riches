@@ -59,7 +59,7 @@ describe("signUpSchema", () => {
     const result = signUpSchema.safeParse({
       name: "Test User",
       email: "test@example.com",
-      password: "password123",
+      password: "Password123",
     });
     expect(result.success).toBe(true);
   });
@@ -68,7 +68,7 @@ describe("signUpSchema", () => {
     const result = signUpSchema.safeParse({
       name: "A",
       email: "test@example.com",
-      password: "password123",
+      password: "Password123",
     });
     expect(result.success).toBe(false);
   });
@@ -77,7 +77,7 @@ describe("signUpSchema", () => {
     const result = signUpSchema.safeParse({
       name: "Test User",
       email: "notanemail",
-      password: "password123",
+      password: "Password123",
     });
     expect(result.success).toBe(false);
   });

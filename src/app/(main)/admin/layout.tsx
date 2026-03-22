@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { LayoutDashboard, Users, Shield, Activity } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Activity, ClipboardList } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -18,10 +18,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const t = await getTranslations("admin");
 
   const NAV = [
-    { href: "/admin",          label: t("overview"),  icon: LayoutDashboard },
-    { href: "/admin/users",    label: t("users"),     icon: Users           },
-    { href: "/admin/activity", label: t("activity"),  icon: Activity        },
-    { href: "/admin/security", label: t("security"),  icon: Shield          },
+    { href: "/admin",             label: t("overview"),   icon: LayoutDashboard },
+    { href: "/admin/users",       label: t("users"),      icon: Users           },
+    { href: "/admin/activity",    label: t("activity"),   icon: Activity        },
+    { href: "/admin/security",    label: t("security"),   icon: Shield          },
+    { href: "/admin/audit-logs",  label: t("auditLogs"),  icon: ClipboardList   },
   ];
 
   return (

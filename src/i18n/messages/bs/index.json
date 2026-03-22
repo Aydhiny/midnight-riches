@@ -737,6 +737,24 @@
       "filterWin": "Dobitak",
       "filterLoss": "Gubitak",
       "filterBonus": "Bonus"
+    },
+    "auditLogs": "Revizijski Dnevnik",
+    "auditPage": {
+      "title": "Admin Revizijski Dnevnik",
+      "subtitle": "Potpuna historija admin akcija — prilagodbe balansa, promjene uloga i više",
+      "refresh": "Osvježi",
+      "filterAll": "Sve Akcije",
+      "logsTotal": "zapisa",
+      "noLogs": "Još nema revizijskih zapisa",
+      "noTarget": "—",
+      "noDetails": "—",
+      "colAction": "Akcija",
+      "colAdmin": "Admin",
+      "colTarget": "Ciljni Korisnik",
+      "colDetails": "Detalji",
+      "colTime": "Vrijeme",
+      "page": "Stranica",
+      "of": "od"
     }
   },
   "howToPlay": {

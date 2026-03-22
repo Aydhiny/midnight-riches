@@ -13,6 +13,7 @@ import { HowToPlayModal } from "@/components/game/how-to-play-modal";
 import { GameOptionsPanel, loadGameSize, SIZE_CLASS, type GameSize } from "@/components/game/game-options-panel";
 import { seedCommunityWinsAction } from "@/server/actions/seed-notifications";
 import { useGameStore } from "@/store/game-store";
+import { GameErrorBoundary } from "@/components/game/game-error-boundary";
 
 const SlotMachine = dynamic(
   () => import("@/components/game/slot-machine").then((mod) => mod.SlotMachine),
@@ -667,7 +668,9 @@ export default function GamePage() {
           </div>
           {/* Slot machine — centred in remaining vertical space */}
           <div className="flex flex-1 items-center justify-center">
-            <SlotMachine />
+            <GameErrorBoundary>
+              <SlotMachine />
+            </GameErrorBoundary>
           </div>
           {/* Game options panel — always below the slot machine */}
           <div className="shrink-0 pb-2">

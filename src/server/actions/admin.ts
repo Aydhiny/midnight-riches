@@ -8,6 +8,7 @@ import {
   transactions,
   gameSessions,
   securityEvents,
+  adminAuditLogs,
 } from "@/lib/db/schema";
 import { eq, sql, desc, like, count, sum, and, gte } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -241,6 +242,14 @@ export async function adminAdjustBalance(input: {
         reason,
         adjustedBy: adminCheck.userId,
       },
+    });
+
+    // Audit log
+    await db.insert(adminAuditLogs).values({
+      adminId: adminCheck.userId,
+      action: "adjust_balance",
+      targetUserId: userId,
+      details: { amount, reason },
     });
 
     const updatedWallet = await db.query.wallets.findFirst({
@@ -504,6 +513,89 @@ export async function getUserGrowthData(): Promise<ActionResult<{
   }
 }
 
+// ── Admin Audit Logs ──────────────────────────────────────────────────────────
+export async function getAdminAuditLogs(input?: {
+  page?: number;
+  limit?: number;
+  action?: string;
+}): Promise<ActionResult<{
+  logs: Array<{
+    id: string;
+    adminId: string;
+    adminEmail: string;
+    adminName: string | null;
+    action: string;
+    targetUserId: string | null;
+    targetEmail: string | null;
+    details: unknown;
+    createdAt: Date;
+  }>;
+  total: number;
+  actions: string[];
+}>> {
+  const adminCheck = await requireAdmin();
+  if ("error" in adminCheck) return adminCheck.error;
+
+  try {
+    const page   = input?.page  ?? 1;
+    const limit  = input?.limit ?? 50;
+    const offset = (page - 1) * limit;
+
+    const whereClause = input?.action ? eq(adminAuditLogs.action, input.action) : undefined;
+
+    const [rows, [totalResult], actionRows] = await Promise.all([
+      db
+        .select()
+        .from(adminAuditLogs)
+        .where(whereClause)
+        .orderBy(desc(adminAuditLogs.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ total: count() }).from(adminAuditLogs).where(whereClause),
+      db.selectDistinct({ action: adminAuditLogs.action }).from(adminAuditLogs).orderBy(adminAuditLogs.action),
+    ]);
+
+    // Collect all unique user IDs to resolve in one query
+    const userIds = new Set<string>();
+    for (const r of rows) {
+      userIds.add(r.adminId);
+      if (r.targetUserId) userIds.add(r.targetUserId);
+    }
+
+    const userList = userIds.size > 0
+      ? await db
+          .select({ id: users.id, email: users.email, name: users.name })
+          .from(users)
+          .where(sql`${users.id} = ANY(ARRAY[${sql.join([...userIds].map(id => sql`${id}::uuid`), sql`, `)}])`)
+      : [];
+
+    const userMap = new Map(userList.map((u) => [u.id, u]));
+
+    return {
+      success: true,
+      data: {
+        logs: rows.map((r) => ({
+          id:           r.id,
+          adminId:      r.adminId,
+          adminEmail:   userMap.get(r.adminId)?.email ?? r.adminId,
+          adminName:    userMap.get(r.adminId)?.name ?? null,
+          action:       r.action,
+          targetUserId: r.targetUserId,
+          targetEmail:  r.targetUserId ? (userMap.get(r.targetUserId)?.email ?? null) : null,
+          details:      r.details,
+          createdAt:    r.createdAt,
+        })),
+        total:   totalResult?.total ?? 0,
+        actions: actionRows.map((r) => r.action),
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    logger.error("Audit log query failed", { action: "getAdminAuditLogs", metadata: { error: message } });
+    return { success: false, error: "Internal error", code: "INTERNAL_ERROR" };
+  }
+}
+
 // ── Toggle user role ──────────────────────────────────────────────────────────
 export async function adminSetUserRole(userId: string, role: "user" | "admin"): Promise<ActionResult<{ ok: true }>> {
   const adminCheck = await requireAdmin();
@@ -516,6 +608,15 @@ export async function adminSetUserRole(userId: string, role: "user" | "admin"): 
 
   try {
     await db.update(users).set({ role }).where(eq(users.id, userId));
+
+    // Audit log
+    await db.insert(adminAuditLogs).values({
+      adminId: adminCheck.userId,
+      action: "set_user_role",
+      targetUserId: userId,
+      details: { role },
+    });
+
     logger.action("adminSetUserRole", adminCheck.userId, 0, { targetUserId: userId, role });
     return { success: true, data: { ok: true } };
   } catch (err) {
