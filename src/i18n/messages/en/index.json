@@ -25,7 +25,9 @@
     "dark": "Dark",
     "light": "Light",
     "myStats": "My Stats",
-    "adminDashboard": "Admin Dashboard"
+    "adminDashboard": "Admin Dashboard",
+    "achievements": "Achievements",
+    "provablyFair": "Provably Fair"
   },
   "auth": {
     "email": "Email",

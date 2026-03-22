@@ -10,6 +10,7 @@ import Image from "next/image";
 import {
   Gamepad2, Wallet, History, Settings, LogOut,
   ChevronDown, Menu, X, ShoppingBag, BarChart3, LayoutDashboard,
+  Trophy, ShieldCheck,
 } from "lucide-react";
 import { LocaleSwitcher } from "./locale-switcher";
 import { ThemeToggle } from "./theme-toggle";
@@ -228,6 +229,13 @@ export function Navbar() {
             className="md:hidden overflow-hidden border-t border-[var(--glass-border)]"
           >
             <div className="px-4 py-3 space-y-1">
+              {/* Balance pill */}
+              <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-2.5">
+                <Image src="/images/coin-token.png" alt="tokens" width={16} height={16} className="object-contain" />
+                <span className="text-sm font-bold text-amber-400">{formatTokens(balance)}</span>
+              </div>
+
+              {/* Primary nav items */}
               {NAV_ITEMS.map(({ href, key, icon: Icon }) => (
                 <Link
                   key={href}
@@ -244,10 +252,55 @@ export function Navbar() {
                   {t(key)}
                 </Link>
               ))}
-              <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-2.5 mt-2">
-                <Image src="/images/coin-token.png" alt="tokens" width={16} height={16} className="object-contain" />
-                <span className="text-sm font-bold text-amber-400">{formatTokens(balance)}</span>
+
+              {/* Divider */}
+              <div className="h-px bg-[var(--glass-border)] my-1" />
+
+              {/* Secondary links */}
+              {[
+                { href: "/stats",         icon: BarChart3,   label: t("myStats")   },
+                { href: "/achievements",  icon: Trophy,      label: t("achievements")  },
+                { href: "/provably-fair", icon: ShieldCheck, label: t("provablyFair")  },
+                { href: "/settings",      icon: Settings,    label: t("settings")  },
+              ].map(({ href, icon: Icon, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className={[
+                    "flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
+                    isActive(href)
+                      ? "bg-violet-500/15 text-[var(--text-primary)] border border-violet-500/25"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]",
+                  ].join(" ")}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </Link>
+              ))}
+
+              {/* Admin link (only for admins) */}
+              {session.user.role === "admin" && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-amber-400 hover:bg-amber-500/10 transition-all"
+                >
+                  <LayoutDashboard className="h-4 w-4 shrink-0" />
+                  {t("adminDashboard")}
+                </Link>
+              )}
+
+              {/* Divider */}
+              <div className="h-px bg-[var(--glass-border)] my-1" />
+
+              {/* Theme + Language */}
+              <div className="flex items-center gap-2 px-1 py-1">
+                <LocaleSwitcher />
+                <ThemeToggle />
               </div>
+
+              {/* Sign out */}
               <button
                 onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }); }}
                 className="flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"

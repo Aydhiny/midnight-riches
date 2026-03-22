@@ -20,6 +20,8 @@ export function loadGameSize(): GameSize {
   try {
     const v = localStorage.getItem(SIZE_KEY);
     if (v === "compact" || v === "normal" || v === "large" || v === "expanded") return v;
+    // Default to compact on narrow mobile screens (< 480px), large otherwise
+    if (typeof window !== "undefined" && window.innerWidth < 480) return "compact";
   } catch { /* SSR */ }
   return "large";
 }

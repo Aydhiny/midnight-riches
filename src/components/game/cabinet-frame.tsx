@@ -132,7 +132,7 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
   const isMega   = win > 150;
 
   return (
-    <div className="relative w-full select-none" style={{ perspective: "1600px" }}>
+    <div className="relative w-full max-w-full select-none overflow-hidden" style={{ perspective: "1600px" }}>
       {/* ── Outer ambient glow ───────────────────────────────────────────────── */}
       <div
         className="pointer-events-none absolute -inset-6 rounded-[40px] opacity-70"
@@ -177,9 +177,9 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
           style={{ boxShadow: "0 0 20px rgba(167,139,250,0.8), 0 0 40px rgba(236,72,153,0.4)" }} />
 
         {/* ── Top LED strip ───────────────────────────────────────────────── */}
-        <div className="py-2 px-4 border-b border-white/[0.05]"
+        <div className="py-2 px-2 border-b border-white/[0.05] overflow-hidden"
           style={{ background: "rgba(0,0,0,0.65)" }}>
-          <LedStrip count={30} size={7} />
+          <LedStrip count={24} size={6} />
         </div>
 
         {/* ── Brand header ────────────────────────────────────────────────── */}
@@ -220,13 +220,13 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
           {PAYTABLE.map((row, i) => (
             <div
               key={i}
-              className="flex flex-1 items-center justify-center gap-1.5 border-r border-white/[0.05] last:border-r-0 px-2 py-2"
+              className="flex flex-1 items-center justify-center gap-1 border-r border-white/[0.05] last:border-r-0 px-1 py-1.5 sm:gap-1.5 sm:px-2 sm:py-2"
             >
-              <span className="text-[17px] leading-none">{row.symbol}</span>
+              <span className="text-[13px] leading-none sm:text-[17px]">{row.symbol}</span>
               <div className="text-right">
-                <div className="text-[6.5px] font-bold uppercase tracking-widest text-white/20">{row.label}</div>
+                <div className="text-[5px] font-bold uppercase tracking-widest text-white/20 sm:text-[6.5px]">{row.label}</div>
                 <div
-                  className="text-[12px] font-black leading-none"
+                  className="text-[10px] font-black leading-none sm:text-[12px]"
                   style={{ color: row.color, textShadow: `0 0 8px ${row.glow}` }}
                 >
                   {row.mult}
@@ -449,9 +449,9 @@ export function CabinetFrame({ children }: CabinetFrameProps) {
         </div>
 
         {/* ── Bottom LED strip ───────────────────────────────────────────────── */}
-        <div className="py-2 px-4 border-t border-white/[0.05]"
+        <div className="py-2 px-2 border-t border-white/[0.05] overflow-hidden"
           style={{ background: "rgba(0,0,0,0.65)" }}>
-          <LedStrip count={30} size={7} />
+          <LedStrip count={24} size={6} />
         </div>
 
         {/* ── Neon bottom edge ───────────────────────────────────────────────── */}

@@ -25,7 +25,9 @@
     "dark": "Tamna",
     "light": "Svijetla",
     "myStats": "Moje Statistike",
-    "adminDashboard": "Admin Kontrolna Tabla"
+    "adminDashboard": "Admin Kontrolna Tabla",
+    "achievements": "Dostignuća",
+    "provablyFair": "Dokazivo Pravično"
   },
   "auth": {
     "email": "Email",

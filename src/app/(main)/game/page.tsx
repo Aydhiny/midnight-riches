@@ -652,7 +652,7 @@ export default function GamePage() {
         <LiveChat />
       </aside>
 
-      <div className="relative z-[10] flex flex-1 flex-col items-center overflow-y-auto px-4 pt-4 pb-4"
+      <div className="relative z-[10] flex flex-1 flex-col items-center overflow-y-auto overflow-x-hidden px-4 pt-4 pb-4"
         style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.3) transparent" }}
       >
         <div className={`w-full ${SIZE_CLASS[gameSize]} flex flex-col min-h-full gap-3 transition-all duration-300`}>
