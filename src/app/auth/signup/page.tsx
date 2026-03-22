@@ -60,6 +60,7 @@ export default function SignUpPage() {
     if (!validateFields()) return;
     setIsLoading(true);
     try {
+      // Step 1: create the account + fire the verification email
       const result = await signUpAction({ name, email, password });
       if (!result.success) {
         setError(result.error);
@@ -68,13 +69,25 @@ export default function SignUpPage() {
         return;
       }
       if (result.devEmailError) setDevEmailError(result.devEmailError);
-      if (result.skipVerification) {
-        // Verification disabled — go straight to sign-in
+
+      // Step 2: sign the user in immediately — no email gate on login
+      const signInResult = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        // Fallback: shouldn't happen, but send them to sign-in just in case
         router.push("/auth/signin?registered=1");
-      } else {
-        // Redirect to "check your email" page — user must verify before signing in
-        router.push(`/auth/check-email?email=${encodeURIComponent(email)}`);
+        return;
       }
+
+      // Step 3: tag as new user so the game page can show the inbox toast
+      try { sessionStorage.setItem("mr:newUser", "1"); } catch { /* safari private */ }
+
+      // Step 4: go straight into the app
+      router.push("/game");
     } catch {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);

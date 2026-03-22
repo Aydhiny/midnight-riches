@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { Check, ChevronDown, Globe } from "lucide-react";
 import { setUserLocale, type Locale } from "@/i18n/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +15,7 @@ const LOCALES: { value: Locale; label: string; flag: string }[] = [
 export function LocaleSwitcher({ dropUp = false }: { dropUp?: boolean }) {
   const locale = useLocale();
   const t = useTranslations("common");
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -40,8 +42,10 @@ export function LocaleSwitcher({ dropUp = false }: { dropUp?: boolean }) {
 
   function handleSelect(newLocale: Locale) {
     setOpen(false);
+    if (newLocale === locale) return;
     startTransition(async () => {
       await setUserLocale(newLocale);
+      router.refresh();
     });
   }
 

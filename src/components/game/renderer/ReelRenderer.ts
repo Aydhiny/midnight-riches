@@ -165,7 +165,7 @@ export class ReelRenderer {
   }
 
   setSymbols(symbols: GameSymbol[]): void {
-    if (this.destroyed) return;
+    if (this.destroyed || !this.strip) return;
     this.currentSymbols = symbols;
     this.strip.removeChildren();
     this.strip.y = 0;
@@ -223,7 +223,7 @@ export class ReelRenderer {
   }
 
   update(delta: number): void {
-    if (!this.spinning) return;
+    if (this.destroyed || !this.spinning || !this.strip) return;
 
     this.elapsedTime += delta;
 

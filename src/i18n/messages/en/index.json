@@ -23,7 +23,9 @@
     "language": "Language",
     "theme": "Theme",
     "dark": "Dark",
-    "light": "Light"
+    "light": "Light",
+    "myStats": "My Stats",
+    "adminDashboard": "Admin Dashboard"
   },
   "auth": {
     "email": "Email",
@@ -66,6 +68,8 @@
     }
   },
   "game": {
+    "newUserToastTitle": "Welcome! Check your inbox 📧",
+    "newUserToastDesc": "We sent you a verification email. Verify to unlock purchases, referrals & payment methods.",
     "selectGame": "Select Game",
     "balance": "Balance",
     "lastWin": "Last Win",
@@ -106,7 +110,11 @@
       "title": "Wait — Your Luck Is Just Warming Up!",
       "message": "Statistically, the next spin is your best chance at a big win. Are you really going to leave now? The jackpot won't wait forever...",
       "stay": "Keep Spinning!",
-      "leave": "Leave anyway"
+      "leave": "Leave anyway",
+      "spinTitle": "Spin in Progress!",
+      "spinMessage": "Leaving now will cancel your current spin. Are you sure you want to navigate away?",
+      "spinStay": "Stay in Game",
+      "spinLeave": "Leave anyway"
     },
     "gameOptions": {
       "expand": "Game Options",

@@ -66,10 +66,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!valid) return null;
 
-        const skipVerification = process.env.SKIP_EMAIL_VERIFICATION === "true";
-        if (!user.emailVerified && !skipVerification) {
-          throw new Error("EmailNotVerified");
-        }
+        // Email verification is NOT a login gate — unverified users can play.
+        // Purchases / referrals / payment methods are gated in their server actions.
 
         // If 2FA is enabled, signal the client to redirect to the 2FA page.
         // We encode the userId in the error so the /auth/verify-2fa page can

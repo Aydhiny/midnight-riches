@@ -23,7 +23,9 @@
     "language": "Jezik",
     "theme": "Tema",
     "dark": "Tamna",
-    "light": "Svijetla"
+    "light": "Svijetla",
+    "myStats": "Moje Statistike",
+    "adminDashboard": "Admin Kontrolna Tabla"
   },
   "auth": {
     "email": "Email",
@@ -67,6 +69,8 @@
     "signIn": "Prijava"
   },
   "game": {
+    "newUserToastTitle": "Dobrodošli! Provjerite inbox 📧",
+    "newUserToastDesc": "Poslali smo vam email za verifikaciju. Verificirajte da otključate kupovine, preporuke i metode plaćanja.",
     "selectGame": "Odaberi igru",
     "balance": "Stanje",
     "lastWin": "Zadnji dobitak",
@@ -107,7 +111,11 @@
       "title": "Čekaj — Sreća Ti Se Tek Zagrijava!",
       "message": "Statistički, sljedeće okretanje je vaša najbolja šansa za veliki dobitak. Stvarno ćete otići sada? Jackpot neće čekati vječno...",
       "stay": "Nastavi Vrtjeti!",
-      "leave": "Ipak idi"
+      "leave": "Ipak idi",
+      "spinTitle": "Okretanje u Toku!",
+      "spinMessage": "Odlaskom sada ćete prekinuti trenutno okretanje. Sigurno želite napustiti stranicu?",
+      "spinStay": "Ostani u Igri",
+      "spinLeave": "Ipak napusti"
     },
     "gameOptions": {
       "expand": "Opcije igre",

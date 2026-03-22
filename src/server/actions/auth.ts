@@ -29,11 +29,15 @@ interface AuthError {
 
 type AuthResponse = AuthSuccess | AuthError;
 
-/** Build a verification URL from env — never falls back to localhost. */
+/** Build a verification URL. Checks all common env var patterns so it works
+ *  both locally and on Vercel (which sets AUTH_URL automatically for Auth.js v5). */
 function buildVerifyUrl(token: string, email: string): string {
-  const appUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
-  const base = appUrl ?? "";
-  return `${base}/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+  const appUrl =
+    process.env.NEXTAUTH_URL ??
+    process.env.AUTH_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "";
+  return `${appUrl}/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 }
 
 async function getClientIp(): Promise<string> {
@@ -168,34 +172,8 @@ export async function signInAction(data: { email: string; password: string }): P
       return { success: false, error: "Invalid input", code: "VALIDATION_ERROR" };
     }
 
-    // Block sign-in only when there is an active verification token — same check as signup.
-    // Legacy users (emailVerified=null, no token) can still sign in normally.
-    // Skipped entirely when SKIP_EMAIL_VERIFICATION=true.
-    const skipVerification = process.env.SKIP_EMAIL_VERIFICATION === "true";
-
-    if (!skipVerification) {
-      const user = await db.query.users.findFirst({
-        where: eq(users.email, parsed.data.email),
-      });
-
-      if (user?.passwordHash && !user.emailVerified) {
-        const activeToken = await db.query.verificationTokens.findFirst({
-          where: and(
-            eq(verificationTokens.identifier, user.email),
-            gt(verificationTokens.expires, new Date()),
-          ),
-        });
-
-        if (activeToken) {
-          return {
-            success: false,
-            error: "Please verify your email before signing in. Check your inbox for the confirmation link.",
-            code: "UNAUTHORIZED",
-          };
-        }
-      }
-    }
-
+    // Email verification is NOT a login gate — unverified users can play.
+    // Purchases / referrals / payment methods are gated in their own server actions.
     await signIn("credentials", {
       email: data.email,
       password: data.password,

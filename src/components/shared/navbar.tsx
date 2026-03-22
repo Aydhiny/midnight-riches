@@ -172,9 +172,9 @@ export function Navbar() {
                         <DropdownLink href="/settings" icon={Settings} label={t("settings")} onClick={() => setAvatarOpen(false)} />
                         <DropdownLink href="/wallet" icon={Wallet} label={t("wallet")} onClick={() => setAvatarOpen(false)} />
                         <DropdownLink href="/history" icon={History} label={t("betHistory")} onClick={() => setAvatarOpen(false)} />
-                        <DropdownLink href="/stats" icon={BarChart3} label="My Stats" onClick={() => setAvatarOpen(false)} />
+                        <DropdownLink href="/stats" icon={BarChart3} label={t("myStats")} onClick={() => setAvatarOpen(false)} />
                         {session.user.role === "admin" && (
-                          <DropdownLink href="/admin" icon={LayoutDashboard} label="Admin Dashboard" onClick={() => setAvatarOpen(false)} />
+                          <DropdownLink href="/admin" icon={LayoutDashboard} label={t("adminDashboard")} onClick={() => setAvatarOpen(false)} />
                         )}
                       </div>
 

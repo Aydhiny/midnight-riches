@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { DailyChallengesWidget } from "@/components/game/daily-challenges-widget";
 import { HowToPlayModal } from "@/components/game/how-to-play-modal";
 import { GameOptionsPanel, loadGameSize, SIZE_CLASS, type GameSize } from "@/components/game/game-options-panel";
 import { seedCommunityWinsAction } from "@/server/actions/seed-notifications";
+import { useGameStore } from "@/store/game-store";
 
 const SlotMachine = dynamic(
   () => import("@/components/game/slot-machine").then((mod) => mod.SlotMachine),
@@ -475,8 +477,16 @@ function SidebarButton({ icon, label, sub, color, href }: { icon: string; label:
     : <button className={cls}>{inner}</button>;
 }
 
-// ─── Home confirm modal ────────────────────────────────────────────────────────
-function HomeConfirmModal({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
+// ─── Navigation / home confirm modal ──────────────────────────────────────────
+function HomeConfirmModal({
+  onStay,
+  onLeave,
+  spinning = false,
+}: {
+  onStay: () => void;
+  onLeave: () => void;
+  spinning?: boolean;
+}) {
   const t = useTranslations("game.homeConfirm");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onStay}>
@@ -495,21 +505,25 @@ function HomeConfirmModal({ onStay, onLeave }: { onStay: () => void; onLeave: ()
         className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-violet-500/30 bg-[var(--bg-card)] p-6 shadow-2xl text-center"
         style={{ boxShadow: "0 0 60px rgba(139,92,246,0.15)" }}
       >
-        <div className="mb-3 text-4xl">🎰</div>
-        <h2 className="text-xl font-black text-[var(--text-primary)]">{t("title")}</h2>
-        <p className="mt-2 text-sm text-[var(--text-muted)] leading-relaxed">{t("message")}</p>
+        <div className="mb-3 text-4xl">{spinning ? "⚠️" : "🎰"}</div>
+        <h2 className="text-xl font-black text-[var(--text-primary)]">
+          {spinning ? t("spinTitle") : t("title")}
+        </h2>
+        <p className="mt-2 text-sm text-[var(--text-muted)] leading-relaxed">
+          {spinning ? t("spinMessage") : t("message")}
+        </p>
         <div className="mt-6 flex flex-col gap-2">
           <button
             onClick={onStay}
             className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-500 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-all hover:from-violet-500 hover:to-purple-400 active:scale-95"
           >
-            {t("stay")}
+            {spinning ? t("spinStay") : t("stay")}
           </button>
           <button
             onClick={onLeave}
             className="w-full rounded-xl py-2.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
           >
-            {t("leave")}
+            {spinning ? t("spinLeave") : t("leave")}
           </button>
         </div>
       </motion.div>
@@ -526,6 +540,11 @@ export default function GamePage() {
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [gameSize, setGameSize] = useState<GameSize>("large");
   const [showHomeConfirm, setShowHomeConfirm] = useState(false);
+  // null = back-button flow; string = intercepted link URL
+  const [pendingNav, setPendingNav] = useState<string | null>(null);
+
+  const spinState = useGameStore((s) => s.spinState);
+  const isSpinning = spinState !== "idle";
 
   useEffect(() => {
     setGameSize(loadGameSize());
@@ -537,13 +556,90 @@ export default function GamePage() {
     seedCommunityWinsAction();
   }, []);
 
+  // ── Welcome toast for brand-new registrations ─────────────────────────────
+  useEffect(() => {
+    try {
+      const isNewUser = sessionStorage.getItem("mr:newUser");
+      if (isNewUser) {
+        sessionStorage.removeItem("mr:newUser");
+        // Small delay so the page finishes mounting before the toast appears
+        setTimeout(() => {
+          toast(t("newUserToastTitle"), {
+            description: t("newUserToastDesc"),
+            duration: 8000,
+            icon: "📧",
+          });
+        }, 800);
+      }
+    } catch { /* safari private mode blocks sessionStorage */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Reset game state when leaving the page so it's never "stuck" ─────────
+  useEffect(() => {
+    return () => {
+      const store = useGameStore.getState();
+      store.setSpinState("idle");
+      store.setAutoSpin(null);
+    };
+  }, []);
+
+  // ── Block browser-level unload (refresh / tab close) while spinning ───────
+  useEffect(() => {
+    if (!isSpinning) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isSpinning]);
+
+  // ── Intercept ALL in-app link clicks while spinning ───────────────────────
+  useEffect(() => {
+    if (!isSpinning) return;
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as Element).closest("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("http")) return;
+      // Strip locale prefix if present (e.g. /bs/wallet → /wallet)
+      const cleanPath = href.replace(/^\/(bs|en)(?=\/)/, "");
+      if (cleanPath === window.location.pathname) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setPendingNav(href);
+    };
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
+  }, [isSpinning]);
+
+  const handleModalStay = useCallback(() => {
+    setShowHomeConfirm(false);
+    setPendingNav(null);
+  }, []);
+
+  const handleModalLeave = useCallback(() => {
+    // Reset game state before navigating so the page is clean on return
+    const store = useGameStore.getState();
+    store.setSpinState("idle");
+    store.setAutoSpin(null);
+    setShowHomeConfirm(false);
+    const dest = pendingNav ?? "/";
+    setPendingNav(null);
+    router.push(dest);
+  }, [pendingNav, router]);
+
+  const showModal = showHomeConfirm || pendingNav !== null;
+
   return (
     <div className="-mx-4 -mb-8 -mt-6 relative flex h-[calc(100vh-56px)] overflow-hidden bg-[var(--bg-primary)]">
       <AnimatePresence>
-        {showHomeConfirm && (
+        {showModal && (
           <HomeConfirmModal
-            onStay={() => setShowHomeConfirm(false)}
-            onLeave={() => router.push("/")}
+            onStay={handleModalStay}
+            onLeave={handleModalLeave}
+            spinning={isSpinning}
           />
         )}
       </AnimatePresence>
