@@ -169,16 +169,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
      * so we stamp emailVerified immediately — no email confirmation step needed.
      */
     async signIn({ user, account }) {
-      if (account?.provider && account.provider !== "credentials" && user.id) {
+      const isOAuth = account?.provider &&
+        account.provider !== "credentials" &&
+        account.provider !== "2fa-bypass";
+      if (isOAuth && user.id) {
         const dbUser = await db.query.users.findFirst({
           where: eq(users.id, user.id),
-          columns: { emailVerified: true },
+          columns: { emailVerified: true, image: true },
         });
+
+        const updates: Partial<typeof users.$inferInsert> = {};
+
         if (dbUser && !dbUser.emailVerified) {
-          await db
-            .update(users)
-            .set({ emailVerified: new Date() })
-            .where(eq(users.id, user.id));
+          updates.emailVerified = new Date();
+        }
+
+        // Persist the OAuth provider's profile picture unless the user has
+        // a custom base64 avatar uploaded through settings.
+        if (
+          user.image &&
+          !user.image.startsWith("data:") &&
+          (!dbUser?.image || !dbUser.image.startsWith("data:"))
+        ) {
+          updates.image = user.image;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await db.update(users).set(updates).where(eq(users.id, user.id));
         }
       }
     },

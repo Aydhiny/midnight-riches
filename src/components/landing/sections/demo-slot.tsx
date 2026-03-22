@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import ShinyButton from "@/components/ui/shiny-button";
@@ -153,8 +154,7 @@ function DemoReelCell({
           transition: "filter 0.15s ease",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={symbol.src}
           alt={symbol.label}
           width={DEMO_SYMBOL}
@@ -400,8 +400,7 @@ export function DemoSlot() {
           <div className="flex items-center justify-between px-4 py-2.5">
             {/* Left: logo + brand */}
             <div className="flex items-center gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/images/midnight-riches-logo.png"
                 alt=""
                 width={22}

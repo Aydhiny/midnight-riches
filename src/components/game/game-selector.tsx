@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { useGameStore } from "@/store/game-store";
 import type { GameType } from "@/types";
 import { getEngine } from "@/lib/game/engines";
@@ -143,11 +144,12 @@ export function GameSelector() {
 
               {/* Game thumbnail image */}
               <div className="pointer-events-none relative h-20 w-full overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={variant.thumbnail}
                   alt={variant.label}
-                  className="absolute inset-0 h-full w-full object-cover object-center"
+                  fill
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="object-cover object-center"
                   style={{ filter: "brightness(0.85) saturate(1.2)" }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
