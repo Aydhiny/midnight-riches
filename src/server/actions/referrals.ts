@@ -25,7 +25,7 @@ export async function getReferralInfoAction(): Promise<{
     if (!session?.user?.id) return { success: false };
     const userId = session.user.id;
 
-    let user = await db.query.users.findFirst({
+    const user = await db.query.users.findFirst({
       where: eq(users.id, userId),
       columns: { referralCode: true },
     });

@@ -347,7 +347,6 @@ function EmailVerificationBanner({ emailVerified }: { emailVerified: boolean | n
 
 export default function WalletPage() {
   const t = useTranslations("wallet");
-  const { data: session } = useSession();
   const { balance, setBalance } = useWalletStore();
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [claimingBonus, setClaimingBonus] = useState(false);

@@ -355,7 +355,6 @@ export default function ShopPage() {
       loadOwned();
       showToast("Payment successful! Your item has been added to your collection.", true);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredItems = activeFilter === "all"
