@@ -53,6 +53,7 @@ function formatAction(action: string): string {
 // ── Details renderer ─────────────────────────────────────────────────────────
 
 function DetailsRow({ details }: { details: unknown }) {
+  const t = useTranslations("admin.auditPage");
   const [open, setOpen] = useState(false);
   if (details == null) return null;
 
@@ -68,7 +69,7 @@ function DetailsRow({ details }: { details: unknown }) {
         <ChevronDown
           className={`h-3 w-3 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
-        Details
+        {t("detailsLabel")}
       </button>
 
       {open && (

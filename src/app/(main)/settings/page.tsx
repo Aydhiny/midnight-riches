@@ -14,6 +14,7 @@ import {
   getExclusionStatus,
 } from "@/server/actions/responsible-gambling";
 import { updateProfileAction } from "@/server/actions/profile";
+import { getPlayerStatsAction } from "@/server/actions/stats";
 import { ReferralSection } from "@/components/settings/referral-section";
 import { TwoFactorSection } from "@/components/settings/two-factor-section";
 import type { GamblingLimit, SelfExclusion } from "@/types";
@@ -169,12 +170,12 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-3xl space-y-6 p-4 pb-12">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("title")}</h1>
 
-      <div className="flex gap-1 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-1 sm:grid-cols-4">
         {tabs.map((tb) => (
           <button
             key={tb.id}
             onClick={() => setTab(tb.id)}
-            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+            className={`rounded-lg px-3 py-2 text-center text-xs font-medium transition-all sm:px-4 sm:text-sm ${
               tab === tb.id
                 ? "bg-violet-600 text-white shadow-sm"
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-hover)]"
@@ -207,6 +208,17 @@ function ProfileTab({
   const [avatarData, setAvatarData] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+
+  // Player stats
+  const [playerStats, setPlayerStats] = useState<{ totalSpins: number; totalWon: number; achievements: number } | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    getPlayerStatsAction().then((res) => {
+      if (res.success) setPlayerStats(res.data);
+      setStatsLoading(false);
+    });
+  }, []);
 
   useEffect(() => {
     setName(session?.user?.name ?? "");
@@ -336,12 +348,24 @@ function ProfileTab({
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             {[
-              { label: "Total Spins",   value: "0",  color: "text-amber-400"   },
-              { label: "Total Won",     value: "$0", color: "text-emerald-400" },
-              { label: "Achievements",  value: "0",  color: "text-violet-400"  },
+              {
+                label: t("playerStatSpins"),
+                value: statsLoading ? "—" : playerStats?.totalSpins.toLocaleString() ?? "0",
+                color: "text-amber-400",
+              },
+              {
+                label: t("playerStatWon"),
+                value: statsLoading ? "—" : `$${(playerStats?.totalWon ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                color: "text-emerald-400",
+              },
+              {
+                label: t("playerStatAchievements"),
+                value: statsLoading ? "—" : playerStats?.achievements.toLocaleString() ?? "0",
+                color: "text-violet-400",
+              },
             ].map(({ label, value, color }) => (
               <div key={label} className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3">
-                <div className={`text-2xl font-black ${color}`}>{value}</div>
+                <div className={`text-2xl font-black ${color} ${statsLoading ? "animate-pulse" : ""}`}>{value}</div>
                 <div className="text-xs text-[var(--text-muted)] mt-0.5">{label}</div>
               </div>
             ))}
@@ -466,7 +490,7 @@ function SecurityTabContent() {
   }
 
   async function handleSelfExclude() {
-    if (!confirm(`Are you sure you want to self-exclude for ${exclusionDays} days? This cannot be undone.`)) return;
+    if (!confirm(t("selfExcludeConfirm", { days: exclusionDays }))) return;
     await selfExclude({ exclusionType: "temporary", durationDays: exclusionDays, reason: "voluntary" });
     const updated = await getExclusionStatus();
     if (updated.success) setExclusion(updated.data);
@@ -483,13 +507,13 @@ function SecurityTabContent() {
             <div className="space-y-2">
               {limits.map((limit, i) => (
                 <div key={i} className="flex items-center justify-between rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] px-4 py-2.5">
-                  <span className="text-sm text-[var(--text-secondary)] capitalize">{limit.limitType.replace("_", " ")} limit</span>
+                  <span className="text-sm text-[var(--text-secondary)] capitalize">{limit.limitType.replace("_", " ")} {t("limitSuffix")}</span>
                   <span className="text-sm font-bold text-amber-400">${limit.limitValue}</span>
                 </div>
               ))}
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <CustomSelect
               value={newLimit.type}
               onChange={(v) => setNewLimit((p) => ({ ...p, type: v as GamblingLimit["limitType"] }))}
@@ -505,7 +529,7 @@ function SecurityTabContent() {
               placeholder={t("limitAmount")}
               value={newLimit.amount}
               onChange={(e) => setNewLimit((p) => ({ ...p, amount: e.target.value }))}
-              className="w-28"
+              className="w-24 min-w-0"
             />
             <Button onClick={handleSetLimit} className="bg-violet-600 hover:bg-violet-700 text-white">{t("setLimit")}</Button>
           </div>
@@ -515,17 +539,17 @@ function SecurityTabContent() {
       {!exclusion && (
         <details className="rounded-xl border border-red-900/30 bg-red-950/10">
           <summary className="cursor-pointer px-4 py-3 text-xs text-red-400/60 hover:text-red-400 transition-colors list-none">
-            ⚠ Self-Exclusion (for problem gambling support)
+            ⚠ {t("selfExclusion")} — {t("selfExclusionSupportHint")}
           </summary>
           <div className="px-4 pb-4 pt-2 space-y-3">
             <p className="text-xs text-[var(--text-muted)]">
               {t("selfExclusionDescription")}
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <CustomSelect
                 value={String(exclusionDays)}
                 onChange={(v) => setExclusionDays(Number(v))}
-                options={[7, 30, 90, 180, 365].map((d) => ({ value: String(d), label: `${d} days` }))}
+                options={[7, 30, 90, 180, 365].map((d) => ({ value: String(d), label: `${d} ${t("days")}` }))}
                 variant="danger"
               />
               <Button
@@ -533,7 +557,7 @@ function SecurityTabContent() {
                 variant="outline"
                 className="border-red-900/40 text-red-400 hover:bg-red-950/40"
               >
-                Exclude
+                {t("selfExcludeAction")}
               </Button>
             </div>
           </div>

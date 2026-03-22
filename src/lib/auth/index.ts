@@ -13,6 +13,9 @@ import { signInSchema } from "@/lib/validators";
 const THIRTY_DAYS = 30 * 24 * 60 * 60;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Required on Vercel and any reverse-proxy: Auth.js v5 must trust the
+  // forwarded host header so CSRF validation and redirect URLs are correct.
+  trustHost: true,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,

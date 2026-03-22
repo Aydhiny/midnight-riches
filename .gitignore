@@ -16,3 +16,6 @@ next-env.d.ts
 
 # Claude Code internal — never commit
 .claude/
+
+# Generated reports
+audit-report.html

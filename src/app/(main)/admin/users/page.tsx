@@ -289,91 +289,165 @@ export default function AdminUsersPage() {
             {Array.from({ length: 8 }).map((_, i) => <Sk key={i} className="h-12" />)}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--glass-border)]">
-                  {[t("email"), t("name"), t("role"), t("balance"), t("joined"), t("actions")].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => {
+          <>
+            {/* ── Desktop table ──────────────────────────────────────────── */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--glass-border)]">
+                    {[t("email"), t("name"), t("role"), t("balance"), t("joined"), t("actions")].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => {
+                    const isSelf = u.id === currentUserId;
+                    return (
+                      <tr
+                        key={u.id}
+                        className="border-b border-[var(--glass-border)] border-opacity-40 transition-colors hover:bg-white/[0.02]"
+                      >
+                        <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">
+                          <span className="flex items-center gap-1.5">
+                            {u.email}
+                            {isSelf && (
+                              <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-violet-400">
+                                {t("you")}
+                              </span>
+                            )}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)]">{u.name || "—"}</td>
+                        <td className="px-4 py-3">
+                          <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
+                            u.role === "admin"
+                              ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                              : "bg-white/[0.05] text-[var(--text-muted)]"
+                          }`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-black tabular-nums text-amber-400">
+                          {fmtBalance(u.balance)}
+                        </td>
+                        <td className="px-4 py-3 text-[var(--text-muted)]">
+                          {new Date(u.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => setBalanceTarget(u)}
+                              className="flex items-center gap-1 rounded-lg border border-amber-500/20 bg-amber-500/8 px-2 py-1 text-[10px] font-bold text-amber-400 hover:bg-amber-500/15 transition-colors"
+                              title={t("adjustBalance")}
+                            >
+                              <DollarSign className="h-3 w-3" />
+                              {t("adjust")}
+                            </button>
+                            <button
+                              onClick={() => setRoleTarget(u)}
+                              disabled={isSelf}
+                              className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors ${
+                                isSelf
+                                  ? "cursor-not-allowed border-[var(--glass-border)] text-[var(--text-muted)] opacity-40"
+                                  : u.role === "admin"
+                                  ? "border-red-500/20 bg-red-500/8 text-red-400 hover:bg-red-500/15"
+                                  : "border-violet-500/20 bg-violet-500/8 text-violet-400 hover:bg-violet-500/15"
+                              }`}
+                              title={isSelf ? t("selfDemoteError") : t("toggleRole")}
+                            >
+                              <Shield className="h-3 w-3" />
+                              {t("role")}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-sm text-[var(--text-muted)] opacity-50">
+                        {t("noUsers")}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Mobile card list ───────────────────────────────────────── */}
+            <div className="divide-y divide-[var(--glass-border)] md:hidden">
+              {users.length === 0 ? (
+                <p className="py-12 text-center text-sm text-[var(--text-muted)] opacity-50">{t("noUsers")}</p>
+              ) : (
+                users.map((u) => {
                   const isSelf = u.id === currentUserId;
                   return (
-                    <tr
-                      key={u.id}
-                      className="border-b border-[var(--glass-border)] border-opacity-40 transition-colors hover:bg-white/[0.02]"
-                    >
-                      <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">
-                        <span className="flex items-center gap-1.5">
-                          {u.email}
-                          {isSelf && (
-                            <span className="rounded-full border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-violet-400">
-                              {t("you")}
-                            </span>
+                    <div key={u.id} className="px-4 py-4 transition-colors hover:bg-white/[0.02]">
+                      {/* Email + role row */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-mono text-xs text-[var(--text-muted)]">
+                            {u.email}
+                            {isSelf && (
+                              <span className="ml-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-violet-400">
+                                {t("you")}
+                              </span>
+                            )}
+                          </p>
+                          {u.name && (
+                            <p className="mt-0.5 text-xs font-medium text-[var(--text-secondary)]">{u.name}</p>
                           )}
+                        </div>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
+                            u.role === "admin"
+                              ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                              : "bg-white/[0.05] text-[var(--text-muted)]"
+                          }`}>
+                            {u.role}
+                          </span>
+                          <span className="text-xs font-black tabular-nums text-amber-400">{fmtBalance(u.balance)}</span>
+                        </div>
+                      </div>
+
+                      {/* Joined + actions row */}
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-[var(--text-muted)]">
+                          {t("joined")}: {new Date(u.createdAt).toLocaleDateString()}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)]">{u.name || "—"}</td>
-                      <td className="px-4 py-3">
-                        <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
-                          u.role === "admin"
-                            ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                            : "bg-white/[0.05] text-[var(--text-muted)]"
-                        }`}>
-                          {u.role}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-black tabular-nums text-amber-400">
-                        {fmtBalance(u.balance)}
-                      </td>
-                      <td className="px-4 py-3 text-[var(--text-muted)]">
-                        {new Date(u.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setBalanceTarget(u)}
-                            className="flex items-center gap-1 rounded-lg border border-amber-500/20 bg-amber-500/8 px-2 py-1 text-[10px] font-bold text-amber-400 hover:bg-amber-500/15 transition-colors"
-                            title={t("adjustBalance")}
+                            className="flex items-center gap-1 rounded-lg border border-amber-500/20 bg-amber-500/8 px-2.5 py-1.5 text-[11px] font-bold text-amber-400 hover:bg-amber-500/15 transition-colors"
                           >
-                            <DollarSign className="h-3 w-3" />
+                            <DollarSign className="h-3.5 w-3.5" />
                             {t("adjust")}
                           </button>
                           <button
                             onClick={() => setRoleTarget(u)}
                             disabled={isSelf}
-                            className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors ${
+                            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
                               isSelf
                                 ? "cursor-not-allowed border-[var(--glass-border)] text-[var(--text-muted)] opacity-40"
                                 : u.role === "admin"
                                 ? "border-red-500/20 bg-red-500/8 text-red-400 hover:bg-red-500/15"
                                 : "border-violet-500/20 bg-violet-500/8 text-violet-400 hover:bg-violet-500/15"
                             }`}
-                            title={isSelf ? t("selfDemoteError") : t("toggleRole")}
                           >
-                            <Shield className="h-3 w-3" />
+                            <Shield className="h-3.5 w-3.5" />
                             {t("role")}
                           </button>
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   );
-                })}
-                {users.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-sm text-[var(--text-muted)] opacity-50">
-                      {t("noUsers")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                })
+              )}
+            </div>
+          </>
         )}
       </div>
 

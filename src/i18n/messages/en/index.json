@@ -201,6 +201,27 @@
       "title": "Credits Added!",
       "message": "Your credits have been added to your account. Time to spin and win!",
       "close": "Start Playing"
+    },
+    "withdrawal": {
+      "sectionTitle": "Withdraw Funds",
+      "sectionDesc": "Submit a withdrawal request. Our team processes requests within 1–3 business days.",
+      "amountLabel": "Amount (USD)",
+      "amountPlaceholder": "e.g. 100.00",
+      "minNote": "Minimum: $10.00",
+      "submitBtn": "Request Withdrawal",
+      "submitting": "Submitting…",
+      "pendingBlock": "You already have a pending withdrawal request.",
+      "historyTitle": "Withdrawal History",
+      "noHistory": "No withdrawal requests yet.",
+      "statusPending": "Pending",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "statusProcessing": "Processing",
+      "cancelBtn": "Cancel",
+      "cancelling": "Cancelling…",
+      "notesLabel": "Admin note",
+      "requestedOn": "Requested",
+      "processedOn": "Processed"
     }
   },
   "history": {
@@ -328,6 +349,13 @@
     "jackpotAlerts": "Jackpot Alerts",
     "jackpotAlertsDesc": "Notify when jackpot reaches high amounts",
     "selectOption": "Select option",
+    "selfExclusionSupportHint": "for problem gambling support",
+    "selfExcludeAction": "Exclude",
+    "selfExcludeConfirm": "Are you sure you want to self-exclude for {days} days? This cannot be undone.",
+    "limitSuffix": "limit",
+    "playerStatSpins": "Total Spins",
+    "playerStatWon": "Total Won",
+    "playerStatAchievements": "Achievements",
     "referral": {
       "tab": "Referrals",
       "title": "Referral Program",
@@ -738,6 +766,39 @@
       "filterLoss": "Loss",
       "filterBonus": "Bonus"
     },
+    "withdrawals": "Withdrawals",
+    "withdrawalsPage": {
+      "title": "Withdrawal Requests",
+      "subtitle": "Review and process player withdrawal requests",
+      "filterAll": "All",
+      "filterPending": "Pending",
+      "filterApproved": "Approved",
+      "filterRejected": "Rejected",
+      "filterProcessing": "Processing",
+      "totalRequests": "requests",
+      "noRequests": "No withdrawal requests",
+      "colPlayer": "Player",
+      "colAmount": "Amount",
+      "colStatus": "Status",
+      "colRequested": "Requested",
+      "colProcessed": "Processed",
+      "colActions": "Actions",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approving": "Approving…",
+      "rejecting": "Rejecting…",
+      "approveConfirm": "Approve withdrawal of ${amount} for {email}?",
+      "rejectConfirm": "Reject withdrawal of ${amount} for {email}? (Balance will be refunded)",
+      "notesPlaceholder": "Optional note (shown to player)",
+      "page": "Page",
+      "of": "of",
+      "refresh": "Refresh",
+      "noNotes": "—",
+      "statusPending": "Pending",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "statusProcessing": "Processing"
+    },
     "auditLogs": "Audit Log",
     "auditPage": {
       "title": "Admin Audit Log",
@@ -754,7 +815,8 @@
       "colDetails": "Details",
       "colTime": "Time",
       "page": "Page",
-      "of": "of"
+      "of": "of",
+      "detailsLabel": "Details"
     }
   },
   "howToPlay": {

@@ -358,6 +358,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   notifications: many(notifications),
   userCollectibles: many(userCollectibles),
   referrals: many(referrals),
+  withdrawalRequests: many(withdrawalRequests),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -483,6 +484,30 @@ export const adminAuditLogs = pgTable(
   ]
 );
 
+export const withdrawalRequests = pgTable(
+  "withdrawal_requests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+    status: text("status")
+      .$type<"pending" | "approved" | "rejected" | "processing">()
+      .notNull()
+      .default("pending"),
+    /** Admin who processed the request (nullable until processed) */
+    adminId: uuid("admin_id").references(() => users.id, { onDelete: "set null" }),
+    notes: text("notes"),
+    requestedAt: timestamp("requested_at", { mode: "date" }).defaultNow().notNull(),
+    processedAt: timestamp("processed_at", { mode: "date" }),
+  },
+  (table) => [
+    index("withdrawal_requests_user_idx").on(table.userId, table.requestedAt),
+    index("withdrawal_requests_status_idx").on(table.status, table.requestedAt),
+  ]
+);
+
 export const referrals = pgTable(
   "referrals",
   {
@@ -508,4 +533,9 @@ export const referralsRelations = relations(referrals, ({ one }) => ({
 export const adminAuditLogsRelations = relations(adminAuditLogs, ({ one }) => ({
   admin: one(users, { fields: [adminAuditLogs.adminId], references: [users.id] }),
   targetUser: one(users, { fields: [adminAuditLogs.targetUserId], references: [users.id] }),
+}));
+
+export const withdrawalRequestsRelations = relations(withdrawalRequests, ({ one }) => ({
+  user: one(users, { fields: [withdrawalRequests.userId], references: [users.id] }),
+  admin: one(users, { fields: [withdrawalRequests.adminId], references: [users.id] }),
 }));

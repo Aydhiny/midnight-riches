@@ -16,11 +16,17 @@ import {
   type SavedPaymentMethod,
 } from "@/server/actions/payment-methods";
 import { getWalletAction } from "@/server/actions/wallet";
+import {
+  requestWithdrawalAction,
+  cancelWithdrawalAction,
+  getWithdrawalsAction,
+  type WithdrawalRow,
+} from "@/server/actions/withdrawal";
 import { CREDIT_BUNDLES } from "@/lib/stripe";
 import type { CreditBundle } from "@/types";
 import { useSession } from "next-auth/react";
 import { sendVerificationEmailAction } from "@/server/actions/email-verification";
-import { CheckCircle2, X, MailWarning, Send } from "lucide-react";
+import { CheckCircle2, X, MailWarning, Send, ArrowUpFromLine, Clock, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 
 // ── Purchase success modal ──────────────────────────────────────────────────
 
@@ -291,6 +297,185 @@ function PaymentMethodsSection({ emailVerified }: { emailVerified: boolean | nul
   );
 }
 
+// ── Withdrawal section ────────────────────────────────────────────────────────
+
+const STATUS_STYLE: Record<string, { bg: string; text: string; border: string; icon: React.ElementType }> = {
+  pending:    { bg: "bg-amber-500/10",   text: "text-amber-400",   border: "border-amber-500/20",   icon: Clock       },
+  processing: { bg: "bg-blue-500/10",    text: "text-blue-400",    border: "border-blue-500/20",    icon: RefreshCw   },
+  approved:   { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", icon: CheckCircle },
+  rejected:   { bg: "bg-red-500/10",     text: "text-red-400",     border: "border-red-500/20",     icon: XCircle     },
+};
+
+function WithdrawalSection({ onBalanceChange }: { onBalanceChange: (b: number) => void }) {
+  const t = useTranslations("wallet");
+  const [amount, setAmount] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<WithdrawalRow[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [hasPending, setHasPending] = useState(false);
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    const res = await getWithdrawalsAction({ limit: 20 });
+    if (res.success) {
+      setHistory(res.data.withdrawals);
+      setHasPending(res.data.withdrawals.some((w) => w.status === "pending" || w.status === "processing"));
+    }
+    setHistoryLoading(false);
+  }, []);
+
+  useEffect(() => { loadHistory(); }, [loadHistory]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const parsed = parseFloat(amount);
+    if (isNaN(parsed) || parsed < 10) {
+      setError("Minimum withdrawal is $10.00");
+      return;
+    }
+    setSubmitting(true);
+    const res = await requestWithdrawalAction({ amount: parsed });
+    if (res.success) {
+      onBalanceChange(res.data.newBalance);
+      setAmount("");
+      await loadHistory();
+    } else {
+      setError(res.error);
+    }
+    setSubmitting(false);
+  }
+
+  async function handleCancel(id: string) {
+    setCancellingId(id);
+    const res = await cancelWithdrawalAction(id);
+    if (res.success) {
+      onBalanceChange(res.data.newBalance);
+      await loadHistory();
+    }
+    setCancellingId(null);
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Request form */}
+      <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-[var(--text-primary)]">
+            <ArrowUpFromLine className="h-5 w-5 text-violet-400" />
+            {t("withdrawal.sectionTitle")}
+          </CardTitle>
+          <p className="text-sm text-[var(--text-muted)]">{t("withdrawal.sectionDesc")}</p>
+        </CardHeader>
+        <CardContent>
+          {hasPending ? (
+            <div className="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/8 px-4 py-3 text-sm text-amber-400">
+              <Clock className="h-4 w-4 shrink-0" />
+              {t("withdrawal.pendingBlock")}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="flex-1">
+                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                  {t("withdrawal.amountLabel")}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]">$</span>
+                  <input
+                    type="number"
+                    min="10"
+                    max="10000"
+                    step="0.01"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder={t("withdrawal.amountPlaceholder")}
+                    className="w-full rounded-lg border border-[var(--glass-border)] bg-[var(--glass-bg)] py-2 pl-7 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-violet-500/50 focus:outline-none"
+                    required
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-[var(--text-muted)]">{t("withdrawal.minNote")}</p>
+              </div>
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={submitting}
+                className="shrink-0 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300"
+              >
+                {submitting ? t("withdrawal.submitting") : t("withdrawal.submitBtn")}
+              </Button>
+            </form>
+          )}
+
+          {error && (
+            <div className="mt-3 rounded-lg bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* History */}
+      <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
+        <CardHeader>
+          <CardTitle className="text-[var(--text-primary)]">{t("withdrawal.historyTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {historyLoading ? (
+            <div className="flex h-24 items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-violet-500/30 border-t-violet-500" />
+            </div>
+          ) : history.length === 0 ? (
+            <p className="px-6 py-6 text-center text-sm text-[var(--text-muted)]">{t("withdrawal.noHistory")}</p>
+          ) : (
+            <div className="divide-y divide-[var(--glass-border)]">
+              {history.map((w) => {
+                const style = STATUS_STYLE[w.status] ?? STATUS_STYLE.pending;
+                const Icon = style.icon;
+                return (
+                  <div key={w.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${style.bg} ${style.text} ${style.border}`}
+                      >
+                        <Icon className="h-3 w-3 shrink-0" />
+                        {t(`withdrawal.status${w.status.charAt(0).toUpperCase()}${w.status.slice(1)}` as Parameters<typeof t>[0])}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--text-muted)]">
+                          {t("withdrawal.requestedOn")}: {new Date(w.requestedAt).toLocaleDateString()}
+                        </p>
+                        {w.notes && (
+                          <p className="truncate text-[11px] text-[var(--text-muted)] italic">{w.notes}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span className="font-mono font-bold text-[var(--text-primary)]">
+                        ${w.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      {w.status === "pending" && (
+                        <button
+                          onClick={() => handleCancel(w.id)}
+                          disabled={cancellingId === w.id}
+                          className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                        >
+                          {cancellingId === w.id ? t("withdrawal.cancelling") : t("withdrawal.cancelBtn")}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Main page ────────────────────────────────────────────────────────────────
 
 // ── Email verification banner ───────────────────────────────────────────────
@@ -442,6 +627,8 @@ export default function WalletPage() {
       </Card>
 
       <PaymentMethodsSection emailVerified={emailVerified} />
+
+      <WithdrawalSection onBalanceChange={setBalance} />
 
       <div>
         <h2 className="mb-4 text-xl font-bold text-[var(--text-primary)]">{t("creditBundles")}</h2>

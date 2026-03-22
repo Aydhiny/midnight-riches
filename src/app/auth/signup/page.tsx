@@ -77,8 +77,10 @@ export default function SignUpPage() {
         redirect: false,
       });
 
-      if (signInResult?.error) {
-        // Fallback: shouldn't happen, but send them to sign-in just in case
+      // signIn returns undefined on success in some NextAuth v5 builds,
+      // and { ok: false, error: "..." } on failure. Guard both shapes.
+      if (signInResult && (!signInResult.ok || signInResult.error)) {
+        // Fallback: send them to sign-in pre-filled with their email
         router.push("/auth/signin?registered=1");
         return;
       }
@@ -86,8 +88,10 @@ export default function SignUpPage() {
       // Step 3: tag as new user so the game page can show the inbox toast
       try { sessionStorage.setItem("mr:newUser", "1"); } catch { /* safari private */ }
 
-      // Step 4: go straight into the app
-      router.push("/game");
+      // Step 4: hard redirect — forces a full browser request so the new
+      // session cookie is guaranteed to be sent with the /game request.
+      // router.push() is a soft navigation that can race ahead of Set-Cookie.
+      window.location.href = "/game";
     } catch {
       setError("Something went wrong. Please try again.");
       setIsLoading(false);

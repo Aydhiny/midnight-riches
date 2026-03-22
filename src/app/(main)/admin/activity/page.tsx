@@ -150,55 +150,96 @@ export default function AdminActivityPage() {
         {loading ? (
           <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Sk key={i} className="h-10" />)}</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-[var(--glass-border)]">
-                  {[
-                    t("activityPage.player"),
-                    t("activityPage.game"),
-                    t("activityPage.bet"),
-                    t("activityPage.win"),
-                    t("activityPage.outcome"),
-                    t("activityPage.time"),
-                  ].map((h) => (
-                    <th key={h} className="pb-2 pr-3 text-left font-semibold text-[var(--text-muted)]">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((s) => (
-                  <tr key={s.id} className="border-b border-[var(--glass-border)] border-opacity-30 hover:bg-white/[0.02]">
-                    <td className="py-2.5 pr-3 font-mono text-[10px] text-[var(--text-muted)] max-w-[140px] truncate">
-                      {s.email}
-                    </td>
-                    <td className="py-2.5 pr-3 text-[var(--text-secondary)] capitalize">
-                      {s.gameId.replace(/-/g, " ")}
-                    </td>
-                    <td className="py-2.5 pr-3 tabular-nums text-[var(--text-secondary)]">
-                      {fmtCurrency(s.betAmount)}
-                    </td>
-                    <td className={`py-2.5 pr-3 tabular-nums font-bold ${s.winAmount > 0 ? "text-emerald-400" : "text-[var(--text-muted)] opacity-40"}`}>
-                      {s.winAmount > 0 ? `+${fmtCurrency(s.winAmount)}` : "—"}
-                    </td>
-                    <td className="py-2.5 pr-3">
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                        s.outcome === "win"   ? "bg-emerald-500/15 text-emerald-400" :
-                        s.outcome === "bonus" ? "bg-amber-500/15 text-amber-400"    :
-                        "bg-white/[0.05] text-[var(--text-muted)]"
-                      }`}>
-                        {s.outcome}
-                      </span>
-                    </td>
-                    <td className="py-2.5 text-[var(--text-muted)]">{fmtTime(s.createdAt)}</td>
+          <>
+            {/* ── Desktop table ────────────────────────────────────── */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-[var(--glass-border)]">
+                    {[
+                      t("activityPage.player"),
+                      t("activityPage.game"),
+                      t("activityPage.bet"),
+                      t("activityPage.win"),
+                      t("activityPage.outcome"),
+                      t("activityPage.time"),
+                    ].map((h) => (
+                      <th key={h} className="pb-2 pr-3 text-left font-semibold text-[var(--text-muted)]">{h}</th>
+                    ))}
                   </tr>
-                ))}
-                {filtered.length === 0 && (
-                  <tr><td colSpan={6} className="py-8 text-center text-sm text-[var(--text-muted)] opacity-50">{t("activityPage.noSessionsFilter")}</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((s) => (
+                    <tr key={s.id} className="border-b border-[var(--glass-border)] border-opacity-30 hover:bg-white/[0.02]">
+                      <td className="py-2.5 pr-3 font-mono text-[10px] text-[var(--text-muted)] max-w-[140px] truncate">
+                        {s.email}
+                      </td>
+                      <td className="py-2.5 pr-3 text-[var(--text-secondary)] capitalize">
+                        {s.gameId.replace(/-/g, " ")}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums text-[var(--text-secondary)]">
+                        {fmtCurrency(s.betAmount)}
+                      </td>
+                      <td className={`py-2.5 pr-3 tabular-nums font-bold ${s.winAmount > 0 ? "text-emerald-400" : "text-[var(--text-muted)] opacity-40"}`}>
+                        {s.winAmount > 0 ? `+${fmtCurrency(s.winAmount)}` : "—"}
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                          s.outcome === "win"   ? "bg-emerald-500/15 text-emerald-400" :
+                          s.outcome === "bonus" ? "bg-amber-500/15 text-amber-400"    :
+                          "bg-white/[0.05] text-[var(--text-muted)]"
+                        }`}>
+                          {s.outcome}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-[var(--text-muted)]">{fmtTime(s.createdAt)}</td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={6} className="py-8 text-center text-sm text-[var(--text-muted)] opacity-50">{t("activityPage.noSessionsFilter")}</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Mobile card list ─────────────────────────────────── */}
+            <div className="divide-y divide-[var(--glass-border)] md:hidden">
+              {filtered.length === 0 ? (
+                <p className="py-8 text-center text-sm text-[var(--text-muted)] opacity-50">{t("activityPage.noSessionsFilter")}</p>
+              ) : (
+                filtered.map((s) => (
+                  <div key={s.id} className="px-4 py-3 hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-mono text-[11px] text-[var(--text-muted)]">{s.email}</p>
+                        <p className="mt-0.5 text-xs capitalize text-[var(--text-secondary)]">
+                          {s.gameId.replace(/-/g, " ")}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                          s.outcome === "win"   ? "bg-emerald-500/15 text-emerald-400" :
+                          s.outcome === "bonus" ? "bg-amber-500/15 text-amber-400"    :
+                          "bg-white/[0.05] text-[var(--text-muted)]"
+                        }`}>
+                          {s.outcome}
+                        </span>
+                        <span className="text-[11px] text-[var(--text-muted)]">{fmtTime(s.createdAt)}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center gap-3 text-xs">
+                      <span className="text-[var(--text-muted)]">
+                        {t("activityPage.bet")}: <span className="tabular-nums text-[var(--text-secondary)]">{fmtCurrency(s.betAmount)}</span>
+                      </span>
+                      <span className={`tabular-nums font-bold ${s.winAmount > 0 ? "text-emerald-400" : "text-[var(--text-muted)] opacity-40"}`}>
+                        {t("activityPage.win")}: {s.winAmount > 0 ? `+${fmtCurrency(s.winAmount)}` : "—"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

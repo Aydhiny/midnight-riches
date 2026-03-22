@@ -202,6 +202,27 @@
       "title": "Krediti Dodani!",
       "message": "Vaši krediti su dodani na račun. Vrijeme je za okretanje i dobitke!",
       "close": "Počni Igrati"
+    },
+    "withdrawal": {
+      "sectionTitle": "Povuci Sredstva",
+      "sectionDesc": "Pošaljite zahtjev za povlačenje. Naš tim obrađuje zahtjeve u roku od 1–3 radna dana.",
+      "amountLabel": "Iznos (USD)",
+      "amountPlaceholder": "npr. 100.00",
+      "minNote": "Minimum: $10.00",
+      "submitBtn": "Zatraži Isplatu",
+      "submitting": "Slanje…",
+      "pendingBlock": "Već imate zahtjev za isplatu na čekanju.",
+      "historyTitle": "Historija Isplata",
+      "noHistory": "Još nema zahtjeva za isplatu.",
+      "statusPending": "Na čekanju",
+      "statusApproved": "Odobreno",
+      "statusRejected": "Odbijeno",
+      "statusProcessing": "U obradi",
+      "cancelBtn": "Otkaži",
+      "cancelling": "Otkazivanje…",
+      "notesLabel": "Napomena admina",
+      "requestedOn": "Zatraženo",
+      "processedOn": "Obrađeno"
     }
   },
   "history": {
@@ -329,6 +350,13 @@
     "jackpotAlerts": "Upozorenja za jackpot",
     "jackpotAlertsDesc": "Obavijesti kada jackpot dostigne visoke iznose",
     "selectOption": "Odaberi opciju",
+    "selfExclusionSupportHint": "podrška za problem kockanja",
+    "selfExcludeAction": "Isključi",
+    "selfExcludeConfirm": "Jeste li sigurni da se želite samoiskključiti na {days} dana? Ovo se ne može poništiti.",
+    "limitSuffix": "limit",
+    "playerStatSpins": "Ukupno okretaja",
+    "playerStatWon": "Ukupno dobijeno",
+    "playerStatAchievements": "Dostignuća",
     "referral": {
       "tab": "Preporuke",
       "title": "Program Preporuka",
@@ -738,6 +766,39 @@
       "filterLoss": "Gubitak",
       "filterBonus": "Bonus"
     },
+    "withdrawals": "Isplate",
+    "withdrawalsPage": {
+      "title": "Zahtjevi za Isplatu",
+      "subtitle": "Pregledajte i obradite zahtjeve igrača za isplatu",
+      "filterAll": "Sve",
+      "filterPending": "Na čekanju",
+      "filterApproved": "Odobreno",
+      "filterRejected": "Odbijeno",
+      "filterProcessing": "U obradi",
+      "totalRequests": "zahtjeva",
+      "noRequests": "Nema zahtjeva za isplatu",
+      "colPlayer": "Igrač",
+      "colAmount": "Iznos",
+      "colStatus": "Status",
+      "colRequested": "Zatraženo",
+      "colProcessed": "Obrađeno",
+      "colActions": "Akcije",
+      "approve": "Odobri",
+      "reject": "Odbij",
+      "approving": "Odobravanje…",
+      "rejecting": "Odbijanje…",
+      "approveConfirm": "Odobrite isplatu od ${amount} za {email}?",
+      "rejectConfirm": "Odbijte isplatu od ${amount} za {email}? (Balans će biti vraćen)",
+      "notesPlaceholder": "Opcionalna napomena (vidljiva igraču)",
+      "page": "Stranica",
+      "of": "od",
+      "refresh": "Osvježi",
+      "noNotes": "—",
+      "statusPending": "Na čekanju",
+      "statusApproved": "Odobreno",
+      "statusRejected": "Odbijeno",
+      "statusProcessing": "U obradi"
+    },
     "auditLogs": "Revizijski Dnevnik",
     "auditPage": {
       "title": "Admin Revizijski Dnevnik",
@@ -754,7 +815,8 @@
       "colDetails": "Detalji",
       "colTime": "Vrijeme",
       "page": "Stranica",
-      "of": "od"
+      "of": "od",
+      "detailsLabel": "Detalji"
     }
   },
   "howToPlay": {

@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { LayoutDashboard, Users, Shield, Activity, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Activity, ClipboardList, ArrowUpFromLine } from "lucide-react";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -22,7 +22,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: "/admin/users",       label: t("users"),      icon: Users           },
     { href: "/admin/activity",    label: t("activity"),   icon: Activity        },
     { href: "/admin/security",    label: t("security"),   icon: Shield          },
-    { href: "/admin/audit-logs",  label: t("auditLogs"),  icon: ClipboardList   },
+    { href: "/admin/audit-logs",  label: t("auditLogs"),    icon: ClipboardList      },
+    { href: "/admin/withdrawals", label: t("withdrawals"),  icon: ArrowUpFromLine   },
   ];
 
   return (
@@ -32,9 +33,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         className="sticky top-14 z-40 border-b border-[var(--glass-border)]"
         style={{ background: "var(--nav-bg)", backdropFilter: "blur(20px)" }}
       >
-        <div className="mx-auto flex h-12 max-w-7xl items-center gap-4 px-4">
-          {/* Brand */}
-          <Link href="/admin" className="flex items-center gap-2 shrink-0 mr-2">
+        <div className="mx-auto flex h-12 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-4">
+          {/* Brand — logo always visible, text hidden on mobile */}
+          <Link href="/admin" className="flex items-center gap-1.5 shrink-0">
             <Image
               src="/images/midnight-riches-logo.png"
               alt=""
@@ -43,7 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               className="object-contain opacity-80"
             />
             <span
-              className="text-[11px] font-black uppercase tracking-[0.25em]"
+              className="hidden text-[11px] font-black uppercase tracking-[0.25em] sm:inline"
               style={{
                 background: "linear-gradient(90deg, #fbbf24, #f472b6)",
                 WebkitBackgroundClip: "text",
@@ -55,29 +56,33 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </span>
           </Link>
 
-          {/* Nav tabs */}
+          {/* Nav tabs — icons only on mobile, icons + labels on sm+ */}
           <nav className="flex items-center gap-0.5 overflow-x-auto">
             {NAV.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] whitespace-nowrap transition-all hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)]"
+                title={label}
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-[var(--text-muted)] whitespace-nowrap transition-all hover:bg-[var(--glass-bg)] hover:text-[var(--text-primary)] sm:px-3"
               >
                 <Icon className="h-3.5 w-3.5 shrink-0" />
-                {label}
+                <span className="hidden sm:inline">{label}</span>
               </Link>
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-400">
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            {/* Badge — hidden on mobile */}
+            <span className="hidden rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-400 sm:inline">
               {t("adminMode")}
             </span>
             <Link
               href="/game"
-              className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+              title={t("backToGame")}
+              className="flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
             >
-              ← {t("backToGame")}
+              <span>←</span>
+              <span className="hidden sm:inline">{t("backToGame")}</span>
             </Link>
           </div>
         </div>
