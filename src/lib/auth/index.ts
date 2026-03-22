@@ -71,11 +71,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("EmailNotVerified");
         }
 
+        // If 2FA is enabled, signal the client to redirect to the 2FA page.
+        // We encode the userId in the error so the /auth/verify-2fa page can
+        // retrieve the pending state from its server action.
+        if (user.twoFactorEnabled) {
+          throw new Error(`2FARequired:${user.id}`);
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
         };
+      },
+    }),
+    // ── 2FA bypass: called after TOTP is verified client-side ─────────────────
+    // The /auth/verify-2fa page calls verifyLogin2FAAction() first (server action),
+    // then calls signIn("2fa-bypass", { userId }) to complete the session.
+    Credentials({
+      id: "2fa-bypass",
+      name: "2fa-bypass",
+      credentials: { userId: { label: "User ID", type: "text" } },
+      async authorize(credentials) {
+        if (!credentials?.userId) return null;
+        const userId = credentials.userId as string;
+        const user = await db.query.users.findFirst({
+          where: eq(users.id, userId),
+          columns: { id: true, email: true, name: true, twoFactorEnabled: true },
+        });
+        // Only allow users that actually have 2FA enabled through this provider
+        if (!user?.twoFactorEnabled) return null;
+        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   ],
@@ -84,18 +110,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.name = user.name ?? undefined;
-        // Don't store base64 images in JWT (4 KB cookie limit)
-        if (user.image && !user.image.startsWith("data:")) {
-          token.image = user.image;
-        }
         delete token.picture;
-        // Fetch role from DB on first sign-in
+        // Fetch role + image from DB on first sign-in
         if (user.id) {
           const dbUser = await db.query.users.findFirst({
             where: eq(users.id, user.id),
-            columns: { role: true },
+            columns: { role: true, image: true },
           });
-          if (dbUser) token.role = dbUser.role;
+          if (dbUser) {
+            token.role = dbUser.role;
+            if (dbUser.image) {
+              if (dbUser.image.startsWith("data:")) {
+                // Base64 is too large for the JWT cookie — serve via API route
+                token.image = `/api/profile/avatar`;
+              } else {
+                // Plain URL (Google, GitHub, custom upload) — store directly
+                token.image = dbUser.image;
+              }
+            } else if (user.image && !user.image.startsWith("data:")) {
+              // No DB image yet — fall back to OAuth provider picture
+              token.image = user.image;
+            }
+          }
         }
       }
       // Backfill role for sessions created before role was added to JWT

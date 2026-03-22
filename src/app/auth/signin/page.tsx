@@ -16,11 +16,11 @@ function SignInForm() {
   const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   // Only allow same-origin relative paths as callback — prevents open redirect
   const rawCallback = searchParams.get("callbackUrl") ?? "";
-  const callbackUrl = rawCallback.startsWith("/") && !rawCallback.startsWith("//") ? rawCallback : "/game";
+  const callbackUrl = rawCallback.startsWith("/") && !rawCallback.startsWith("//") ? rawCallback : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,9 +34,12 @@ function SignInForm() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace(callbackUrl);
+      // Admins with no specific destination go to the admin dashboard
+      const isAdmin = (session?.user as { role?: string })?.role === "admin";
+      const dest = callbackUrl || (isAdmin ? "/admin" : "/game");
+      router.replace(dest);
     }
-  }, [status, router, callbackUrl]);
+  }, [status, session, router, callbackUrl]);
 
   useEffect(() => {
     for (let i = 0; i < 10; i++) {
@@ -71,12 +74,23 @@ function SignInForm() {
         rememberMe: rememberMe ? "true" : "false",
         redirect: false,
       });
-      if (result?.error || result?.ok === false) {
-        setError("Invalid credentials");
-      } else {
-        router.push(callbackUrl);
-        return;
+      if (result?.error) {
+        // 2FA required — error contains "2FARequired:<userId>"
+        if (result.error.includes("2FARequired:")) {
+          const userId = result.error.split("2FARequired:")[1];
+          const dest = callbackUrl ? `/auth/verify-2fa?userId=${userId}&cb=${encodeURIComponent(callbackUrl)}` : `/auth/verify-2fa?userId=${userId}`;
+          router.push(dest);
+          return;
+        }
+        if (result.error === "EmailNotVerified") {
+          setError(t("emailNotVerified"));
+        } else {
+          setError(t("error"));
+        }
+      } else if (result?.ok === false) {
+        setError(t("error"));
       }
+      // On success the useEffect watching status === "authenticated" handles the redirect
     } catch {
       setError("Something went wrong. Please try again.");
     }

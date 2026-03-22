@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { DailyChallengesWidget } from "@/components/game/daily-challenges-widget";
@@ -15,8 +17,10 @@ const SlotMachine = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[500px] items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-500/30 border-t-yellow-400" />
+      <div className="mx-auto w-full" style={{ maxWidth: 482, aspectRatio: "482 / 530" }}>
+        <div className="flex h-full items-center justify-center rounded-lg bg-black/20">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-purple-500/30 border-t-yellow-400" />
+        </div>
       </div>
     ),
   }
@@ -471,13 +475,57 @@ function SidebarButton({ icon, label, sub, color, href }: { icon: string; label:
     : <button className={cls}>{inner}</button>;
 }
 
+// ─── Home confirm modal ────────────────────────────────────────────────────────
+function HomeConfirmModal({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
+  const t = useTranslations("game.homeConfirm");
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onStay}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.88, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 8 }}
+        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-violet-500/30 bg-[var(--bg-card)] p-6 shadow-2xl text-center"
+        style={{ boxShadow: "0 0 60px rgba(139,92,246,0.15)" }}
+      >
+        <div className="mb-3 text-4xl">🎰</div>
+        <h2 className="text-xl font-black text-[var(--text-primary)]">{t("title")}</h2>
+        <p className="mt-2 text-sm text-[var(--text-muted)] leading-relaxed">{t("message")}</p>
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            onClick={onStay}
+            className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-500 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-all hover:from-violet-500 hover:to-purple-400 active:scale-95"
+          >
+            {t("stay")}
+          </button>
+          <button
+            onClick={onLeave}
+            className="w-full rounded-xl py-2.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
+          >
+            {t("leave")}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function GamePage() {
   const t  = useTranslations("game");
   const tc = useTranslations("common");
+  const router = useRouter();
   const seededRef = useRef(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [gameSize, setGameSize] = useState<GameSize>("large");
+  const [showHomeConfirm, setShowHomeConfirm] = useState(false);
 
   useEffect(() => {
     setGameSize(loadGameSize());
@@ -491,6 +539,15 @@ export default function GamePage() {
 
   return (
     <div className="-mx-4 -mb-8 -mt-6 relative flex h-[calc(100vh-56px)] overflow-hidden bg-[var(--bg-primary)]">
+      <AnimatePresence>
+        {showHomeConfirm && (
+          <HomeConfirmModal
+            onStay={() => setShowHomeConfirm(false)}
+            onLeave={() => router.push("/")}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="hidden lg:block"><AmbientFruits /></div>
       <GameSpotlight />
 
@@ -504,13 +561,13 @@ export default function GamePage() {
         <div className={`w-full ${SIZE_CLASS[gameSize]} flex flex-col min-h-full gap-3 transition-all duration-300`}>
           {/* Back button — always visible at top */}
           <div className="shrink-0">
-            <Link
-              href="/"
+            <button
+              onClick={() => setShowHomeConfirm(true)}
               className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 border-violet-400/60 bg-violet-100 text-violet-700 hover:bg-violet-200 hover:text-violet-800 dark:border-violet-500/40 dark:bg-violet-500/15 dark:text-violet-300 dark:hover:bg-violet-500/25 dark:hover:text-violet-200"
             >
               <ArrowLeft className="h-3 w-3" />
               {tc("home")}
-            </Link>
+            </button>
           </div>
           {/* Slot machine — centred in remaining vertical space */}
           <div className="flex flex-1 items-center justify-center">
@@ -537,6 +594,7 @@ export default function GamePage() {
         <DailyChallengesWidget />
 
         <SidebarButton icon="🛍️" label={t("collectiblesShop")} sub={t("collectiblesDesc")} color="bg-fuchsia-500/20" href="/shop" />
+        <SidebarButton icon="🏅" label={t("achievements")}     sub={t("achievementsDesc")} color="bg-amber-500/20"   href="/achievements" />
         <button
           onClick={() => setHowToPlayOpen(true)}
           className="flex w-full items-center gap-2.5 rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] px-3 py-2.5 text-left backdrop-blur-md transition-all duration-200 hover:bg-white/[0.06] hover:-translate-y-px active:translate-y-0"
@@ -549,7 +607,7 @@ export default function GamePage() {
         </button>
         <HowToPlayModal open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
         <SidebarButton icon="🏆" label={t("leaderboard")}    sub={t("leaderboardDesc")}  color="bg-amber-500/20"  />
-        <SidebarButton icon="✅" label={t("provablyFair")}   sub={t("provablyFairDesc")} color="bg-emerald-500/20"/>
+        <SidebarButton icon="✅" label={t("provablyFair")}   sub={t("provablyFairDesc")} color="bg-emerald-500/20" href="/provably-fair" />
         <SidebarButton icon="🎁" label={t("claimBonus")}     sub={t("claimBonusDesc")}   color="bg-pink-500/20"   />
         <SidebarButton icon="💬" label={t("liveSupport")}    sub={t("liveSupportDesc")}  color="bg-sky-500/20"    />
 

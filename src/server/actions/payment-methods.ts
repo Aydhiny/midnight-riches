@@ -59,6 +59,23 @@ type RemoveResponse = RemoveSuccess | RemoveError;
 // ── Actions ──
 
 /**
+ * Check whether the current user's email is verified.
+ */
+export async function getEmailVerifiedAction(): Promise<{ verified: boolean }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { verified: false };
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, session.user.id),
+      columns: { emailVerified: true },
+    });
+    return { verified: !!user?.emailVerified };
+  } catch {
+    return { verified: false };
+  }
+}
+
+/**
  * List all saved payment methods for the current user.
  */
 export async function getPaymentMethodsAction(): Promise<PaymentMethodsResponse> {
@@ -120,6 +137,12 @@ export async function createSetupIntentAction(): Promise<SetupIntentResponse> {
     const session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: "Unauthorized", code: "UNAUTHORIZED" };
+    }
+
+    // Require verified email before allowing payment method setup
+    const dbPm = await db.query.users.findFirst({ where: eq(users.id, session.user.id), columns: { emailVerified: true } });
+    if (!dbPm?.emailVerified) {
+      return { success: false, error: "EMAIL_NOT_VERIFIED", code: "UNAUTHORIZED" };
     }
 
     const rateLimitResult = checkRateLimit(`setupIntent:${session.user.id}`, {

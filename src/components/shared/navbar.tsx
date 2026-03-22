@@ -57,6 +57,7 @@ export function Navbar() {
             alt="Midnight Riches"
             width={32}
             height={32}
+            priority
             className="object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]"
           />
           <span className="hidden sm:block text-[15px] font-bold tracking-tight text-[var(--text-primary)]">

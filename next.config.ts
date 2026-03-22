@@ -50,6 +50,10 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31536000, // 1 year
+  },
   eslint: {
     ignoreDuringBuilds: false,
   },

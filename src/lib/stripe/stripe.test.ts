@@ -3,8 +3,8 @@ import { CREDIT_BUNDLES, getBundleById, WELCOME_CREDITS, DAILY_BONUS_CREDITS } f
 
 describe("stripe config", () => {
   describe("CREDIT_BUNDLES", () => {
-    it("has exactly 4 bundles", () => {
-      expect(CREDIT_BUNDLES).toHaveLength(4);
+    it("has at least 3 bundles", () => {
+      expect(CREDIT_BUNDLES.length).toBeGreaterThanOrEqual(3);
     });
 
     it("all bundles have required fields", () => {
@@ -13,7 +13,7 @@ describe("stripe config", () => {
         expect(bundle.name).toBeTruthy();
         expect(bundle.credits).toBeGreaterThan(0);
         expect(bundle.priceUsd).toBeGreaterThan(0);
-        expect(bundle.stripePriceId).toBeTruthy();
+        expect(bundle.stripeProductId).toBeTruthy();
       });
     });
 

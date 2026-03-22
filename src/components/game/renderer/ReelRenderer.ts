@@ -33,6 +33,9 @@ export class ReelRenderer {
   private anticipationOverlay: Graphics;
   private anticipationPhase = 0;
 
+  private destroyed = false;
+  private stopTimeout: ReturnType<typeof setTimeout> | null = null;
+
   constructor(config: ReelConfig) {
     this.config = config;
     this.container = new Container();
@@ -162,6 +165,7 @@ export class ReelRenderer {
   }
 
   setSymbols(symbols: GameSymbol[]): void {
+    if (this.destroyed) return;
     this.currentSymbols = symbols;
     this.strip.removeChildren();
     this.strip.y = 0;
@@ -205,7 +209,9 @@ export class ReelRenderer {
     // After deceleration period, place final symbols and enter spring-snap
     const decelerationDelay = anticipation ? 700 : 320;
 
-    setTimeout(() => {
+    this.stopTimeout = setTimeout(() => {
+      this.stopTimeout = null;
+      if (this.destroyed) return;
       this.setSymbols(finalSymbols);
       // Start slightly above final position for bounce effect
       this.strip.y = -(this.config.symbolSize * 0.18);
@@ -292,6 +298,16 @@ export class ReelRenderer {
   }
 
   destroy(): void {
+    this.destroyed = true;
+    if (this.stopTimeout !== null) {
+      clearTimeout(this.stopTimeout);
+      this.stopTimeout = null;
+    }
+    // Resolve any pending spin promise so callers don't hang
+    this.resolveStop?.();
+    this.resolveStop = null;
+    this.spinning = false;
+    this.phase = "idle";
     this.container.destroy({ children: true });
   }
 }

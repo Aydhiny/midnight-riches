@@ -1,12 +1,16 @@
 {
   "name": "Midnight Riches",
   "short_name": "Midnight Riches",
-  "description": "Premium fruit slot machine with provably fair gameplay",
+  "description": "Premium fruit slot machine with provably fair gameplay. Claim 500 free credits instantly.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#06010f",
   "theme_color": "#7c3aed",
+  "categories": ["games", "entertainment"],
+  "lang": "en",
   "icons": [
-    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "/images/midnight-riches-logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/images/midnight-riches-logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

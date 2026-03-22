@@ -509,6 +509,11 @@ export async function adminSetUserRole(userId: string, role: "user" | "admin"): 
   const adminCheck = await requireAdmin();
   if ("error" in adminCheck) return adminCheck.error;
 
+  // Prevent admins from removing their own admin status
+  if (userId === adminCheck.userId && role !== "admin") {
+    return { success: false, error: "You cannot remove your own admin status", code: "UNAUTHORIZED" };
+  }
+
   try {
     await db.update(users).set({ role }).where(eq(users.id, userId));
     logger.action("adminSetUserRole", adminCheck.userId, 0, { targetUserId: userId, role });

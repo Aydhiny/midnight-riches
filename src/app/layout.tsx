@@ -112,10 +112,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="alternate" hrefLang="en" href={`${BASE_URL}/en`} />
         <link rel="alternate" hrefLang="bs" href={`${BASE_URL}/bs`} />
         <link rel="alternate" hrefLang="x-default" href={BASE_URL} />
+        {/* Preconnect to Google Fonts (used by next/font) */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* DNS prefetch for third-party services */}
+        <link rel="dns-prefetch" href="https://js.stripe.com" />
+        <link rel="dns-prefetch" href="https://api.stripe.com" />
+        {/* Preload app logo — rendered on every page in the navbar */}
+        <link rel="preload" as="image" href="/images/midnight-riches-logo.png" type="image/png" />
+        {/* Mobile browser chrome color */}
+        <meta name="theme-color" content="#7c3aed" />
+        <meta name="color-scheme" content="dark light" />
       </head>
       <body className="min-h-screen antialiased" style={{ fontFamily: "var(--font-sans)" }}>
         <NextIntlClientProvider messages={messages}>
-          <CookieConsent />
+          {/*           <CookieConsent /> */}
           <SessionProvider>
             <ThemeProvider>{children}</ThemeProvider>
           </SessionProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getRecentSessions, getSpinChartData } from "@/server/actions/admin";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -26,6 +27,7 @@ function Sk({ className = "" }: { className?: string }) {
 }
 
 export default function AdminActivityPage() {
+  const t = useTranslations("admin");
   const [sessions, setSessions]   = useState<Session[]>([]);
   const [spinData, setSpinData]   = useState<Array<{ date: string; spins: number; wagered: number; payouts: number }>>([]);
   const [loading,  setLoading]    = useState(true);
@@ -48,20 +50,27 @@ export default function AdminActivityPage() {
   const bonusCount = sessions.filter((s) => s.outcome === "bonus").length;
   const winRate   = sessions.length > 0 ? (winCount / sessions.length) * 100 : 0;
 
+  const FILTERS: { key: "all" | "win" | "loss" | "bonus"; label: string }[] = [
+    { key: "all",   label: t("activityPage.filterAll") },
+    { key: "win",   label: t("activityPage.filterWin") },
+    { key: "loss",  label: t("activityPage.filterLoss") },
+    { key: "bonus", label: t("activityPage.filterBonus") },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-[var(--text-primary)]">Activity Feed</h1>
-        <p className="mt-0.5 text-sm text-[var(--text-muted)]">Live game sessions and spin patterns</p>
+        <h1 className="text-2xl font-black text-[var(--text-primary)]">{t("activityPage.title")}</h1>
+        <p className="mt-0.5 text-sm text-[var(--text-muted)]">{t("activityPage.subtitle")}</p>
       </div>
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: "Total Sessions", value: sessions.length.toLocaleString(), color: "#7c3aed" },
-          { label: "Win Rate",       value: `${winRate.toFixed(1)}%`,          color: "#22c55e" },
-          { label: "Bonus Rounds",   value: bonusCount.toLocaleString(),       color: "#f59e0b" },
-          { label: "Total Volume",   value: fmtCurrency(sessions.reduce((a, s) => a + s.betAmount, 0)), color: "#fbbf24" },
+          { label: t("activityPage.totalSessions"), value: sessions.length.toLocaleString(), color: "#7c3aed" },
+          { label: t("activityPage.winRate"),       value: `${winRate.toFixed(1)}%`,          color: "#22c55e" },
+          { label: t("activityPage.bonusRounds"),   value: bonusCount.toLocaleString(),       color: "#f59e0b" },
+          { label: t("activityPage.totalVolume"),   value: fmtCurrency(sessions.reduce((a, s) => a + s.betAmount, 0)), color: "#fbbf24" },
         ].map((s) => (
           <div
             key={s.label}
@@ -84,7 +93,7 @@ export default function AdminActivityPage() {
         className="rounded-2xl border border-[var(--glass-border)] p-5"
         style={{ background: "var(--glass-bg)" }}
       >
-        <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">Volume — Last 30 Days</p>
+        <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">{t("activityPage.volumeChart")}</p>
         {loading ? (
           <Sk className="h-48" />
         ) : (
@@ -120,19 +129,19 @@ export default function AdminActivityPage() {
         style={{ background: "var(--glass-bg)" }}
       >
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-bold text-[var(--text-primary)]">Recent Sessions</p>
+          <p className="text-sm font-bold text-[var(--text-primary)]">{t("activityPage.recentSessions")}</p>
           <div className="flex gap-1">
-            {(["all", "win", "loss", "bonus"] as const).map((f) => (
+            {FILTERS.map((f) => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
+                key={f.key}
+                onClick={() => setFilter(f.key)}
                 className={`rounded-lg px-2.5 py-1 text-[10px] font-bold capitalize transition-all ${
-                  filter === f
+                  filter === f.key
                     ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                {f}
+                {f.label}
               </button>
             ))}
           </div>
@@ -145,7 +154,14 @@ export default function AdminActivityPage() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-[var(--glass-border)]">
-                  {["Player", "Game", "Bet", "Win", "Outcome", "Time"].map((h) => (
+                  {[
+                    t("activityPage.player"),
+                    t("activityPage.game"),
+                    t("activityPage.bet"),
+                    t("activityPage.win"),
+                    t("activityPage.outcome"),
+                    t("activityPage.time"),
+                  ].map((h) => (
                     <th key={h} className="pb-2 pr-3 text-left font-semibold text-[var(--text-muted)]">{h}</th>
                   ))}
                 </tr>
@@ -178,7 +194,7 @@ export default function AdminActivityPage() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={6} className="py-8 text-center text-sm text-[var(--text-muted)] opacity-50">No sessions match this filter.</td></tr>
+                  <tr><td colSpan={6} className="py-8 text-center text-sm text-[var(--text-muted)] opacity-50">{t("activityPage.noSessionsFilter")}</td></tr>
                 )}
               </tbody>
             </table>

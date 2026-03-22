@@ -9,6 +9,7 @@ import {
   primaryKey,
   uuid,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { AdapterAccountType } from "next-auth/adapters";
@@ -22,6 +23,9 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"),
   role: text("role").$type<"user" | "admin">().notNull().default("user"),
   stripeCustomerId: text("stripe_customer_id"),
+  referralCode: text("referral_code").unique(),
+  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
+  twoFactorSecret: text("two_factor_secret"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -353,6 +357,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   dailyChallengeProgress: many(dailyChallengeProgress),
   notifications: many(notifications),
   userCollectibles: many(userCollectibles),
+  referrals: many(referrals),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -456,4 +461,26 @@ export const collectiblesRelations = relations(collectibles, ({ many }) => ({
 export const userCollectiblesRelations = relations(userCollectibles, ({ one }) => ({
   user: one(users, { fields: [userCollectibles.userId], references: [users.id] }),
   collectible: one(collectibles, { fields: [userCollectibles.collectibleId], references: [collectibles.id] }),
+}));
+
+export const referrals = pgTable(
+  "referrals",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    referrerId: uuid("referrer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    referredId: uuid("referred_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    code: text("code").notNull(),
+    bonusCredited: boolean("bonus_credited").notNull().default(false),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("referrals_referrer_idx").on(table.referrerId),
+    index("referrals_code_idx").on(table.code),
+    uniqueIndex("referrals_referred_unique").on(table.referredId),
+  ]
+);
+
+export const referralsRelations = relations(referrals, ({ one }) => ({
+  referrer: one(users, { fields: [referrals.referrerId], references: [users.id] }),
+  referred: one(users, { fields: [referrals.referredId], references: [users.id] }),
 }));

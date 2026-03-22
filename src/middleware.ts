@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PROTECTED = ["/game", "/wallet", "/history", "/settings", "/shop"];
+const PROTECTED = ["/game", "/wallet", "/history", "/settings", "/shop", "/admin", "/achievements"];
 const SUPPORTED_LOCALES = ["en", "bs"];
 const DEFAULT_LOCALE = "en";
 const LOCALE_COOKIE = "NEXT_LOCALE";

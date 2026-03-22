@@ -15,7 +15,7 @@ import {
   equipCollectible,
   unequipCollectible,
 } from "@/server/actions/collectibles";
-import { createCollectibleCheckoutAction } from "@/server/actions/stripe";
+import { createCollectibleCheckoutAction, verifyCollectiblePurchaseAction } from "@/server/actions/stripe";
 
 function useShopSfx() {
   const sfxEnabled = useIsSfxEnabled();
@@ -30,6 +30,9 @@ function useShopSfx() {
 }
 
 type CollectibleType = "avatar_frame" | "reel_theme" | "symbol_skin" | "sound_pack";
+
+/** Types that are visually implemented in-game. Others show "Coming Soon". */
+const IMPLEMENTED_TYPES: Set<CollectibleType> = new Set(["sound_pack", "avatar_frame"]);
 type Rarity = "common" | "rare" | "epic" | "legendary";
 type FilterTab = "all" | CollectibleType;
 
@@ -126,6 +129,7 @@ function CollectibleCard({
   const t = useTranslations("shop");
   const rc = RARITY_CONFIG[item.rarity];
   const isLegendary = item.rarity === "legendary";
+  const isComingSoon = !IMPLEMENTED_TYPES.has(item.type);
 
   return (
     <motion.div
@@ -158,11 +162,15 @@ function CollectibleCard({
             {"★".repeat(rc.stars)} {rc.label}
           </span>
         </div>
-        {isOwned && (
+        {isOwned ? (
           <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-emerald-500/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
             ✓ {t("owned")}
           </div>
-        )}
+        ) : isComingSoon ? (
+          <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-slate-700/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-300">
+            🚧 Coming Soon
+          </div>
+        ) : null}
         <div className="absolute inset-x-0 bottom-0 h-8" style={{ background: "linear-gradient(0deg, rgba(8,2,22,0.82) 0%, transparent 100%)" }} />
       </div>
 
@@ -198,7 +206,11 @@ function CollectibleCard({
           )}
         </div>
 
-        {isOwned ? (
+        {isComingSoon && !isOwned ? (
+          <div className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] py-2.5 text-center text-xs font-bold text-[var(--text-muted)]">
+            🚧 Coming Soon
+          </div>
+        ) : isOwned ? (
           isEquipped ? (
             <button
               onClick={() => onEquip(item.id)}
@@ -271,56 +283,79 @@ export default function ShopPage() {
   const [, startTransition] = useTransition();
   const successShownRef = useRef(false);
 
-  // Show success toast if redirected back from Stripe
-  useEffect(() => {
-    if (successShownRef.current) return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("purchase") === "success") {
-      successShownRef.current = true;
-      showToast("Payment successful! Your item has been added to your collection.", true);
-      // Clean up the URL
-      window.history.replaceState({}, "", "/shop");
+  async function loadOwned() {
+    const userRes = await getUserCollectibles();
+    if (userRes.success) {
+      setOwnedIds(new Set(userRes.data.map((c) => c.collectibleId)));
+      setEquippedIds(
+        new Set(userRes.data.filter((c) => c.equippedSlot !== null).map((c) => c.collectibleId))
+      );
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
   // Load collectibles + owned items from DB on mount
   useEffect(() => {
     async function load() {
-      const [collectiblesRes, userRes] = await Promise.all([
-        getCollectibles(),
-        getUserCollectibles(),
-      ]);
+      try {
+        const [collectiblesRes, userRes] = await Promise.all([
+          getCollectibles(),
+          getUserCollectibles(),
+        ]);
 
-      if (collectiblesRes.success) {
-        setItems(
-          collectiblesRes.data.map((c) => {
-            const vis = VISUAL_CONFIG[c.name] ?? DEFAULT_VISUAL;
-            return {
-              id: c.id,
-              name: c.name,
-              type: c.type,
-              rarity: c.rarity,
-              priceCredits: c.priceCredits ? parseFloat(c.priceCredits) : null,
-              priceUsd: c.priceUsd ? parseFloat(c.priceUsd) : null,
-              description: c.description ?? "",
-              emoji: vis.emoji,
-              preview: vis.preview,
-            };
-          })
-        );
+        if (collectiblesRes.success) {
+          setItems(
+            collectiblesRes.data.map((c) => {
+              const vis = VISUAL_CONFIG[c.name] ?? DEFAULT_VISUAL;
+              return {
+                id: c.id,
+                name: c.name,
+                type: c.type,
+                rarity: c.rarity,
+                priceCredits: c.priceCredits ? parseFloat(c.priceCredits) : null,
+                priceUsd: c.priceUsd ? parseFloat(c.priceUsd) : null,
+                description: c.description ?? "",
+                emoji: vis.emoji,
+                preview: vis.preview,
+              };
+            })
+          );
+        }
+
+        if (userRes.success) {
+          setOwnedIds(new Set(userRes.data.map((c) => c.collectibleId)));
+          setEquippedIds(
+            new Set(userRes.data.filter((c) => c.equippedSlot !== null).map((c) => c.collectibleId))
+          );
+        }
+      } finally {
+        setIsLoading(false);
       }
-
-      if (userRes.success) {
-        setOwnedIds(new Set(userRes.data.map((c) => c.collectibleId)));
-        setEquippedIds(
-          new Set(userRes.data.filter((c) => c.equippedSlot !== null).map((c) => c.collectibleId))
-        );
-      }
-
-      setIsLoading(false);
     }
     load();
+  }, []);
+
+  // Handle Stripe redirect — verify purchase and refresh ownership
+  useEffect(() => {
+    if (successShownRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("purchase") !== "success") return;
+
+    successShownRef.current = true;
+    window.history.replaceState({}, "", "/shop");
+
+    const sessionId = params.get("session_id");
+    if (!sessionId) {
+      showToast("Payment successful! Your item has been added to your collection.", true);
+      return;
+    }
+
+    // Belt-and-suspenders: fulfill the purchase if the webhook hasn't fired yet,
+    // then reload ownership so the item appears as owned immediately.
+    verifyCollectiblePurchaseAction(sessionId).then(() => {
+      loadOwned();
+      showToast("Payment successful! Your item has been added to your collection.", true);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredItems = activeFilter === "all"

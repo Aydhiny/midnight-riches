@@ -2,8 +2,8 @@
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { wallets, transactions } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { wallets, transactions, collectibles, userCollectibles, users } from "@/lib/db/schema";
+import { eq, sql, and } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/server/rate-limiter";
 import { logger } from "@/lib/logger";
 import { getStripe, getBundleById, DAILY_BONUS_CREDITS, getOrCreateStripeCustomer } from "@/lib/stripe";
@@ -37,6 +37,12 @@ export async function createCheckoutAction(data: {
       return { success: false, error: "Unauthorized", code: "UNAUTHORIZED" };
     }
     const userId = session.user.id;
+
+    // Require verified email before allowing purchases
+    const dbUser = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { emailVerified: true } });
+    if (!dbUser?.emailVerified) {
+      return { success: false, error: "EMAIL_NOT_VERIFIED", code: "UNAUTHORIZED" };
+    }
 
     const rateLimitResult = checkRateLimit(`checkout:${userId}`, {
       maxRequests: 5,
@@ -206,6 +212,12 @@ export async function createCollectibleCheckoutAction(data: {
     }
     const userId = session.user.id;
 
+    // Require verified email before allowing purchases
+    const dbUserC = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { emailVerified: true } });
+    if (!dbUserC?.emailVerified) {
+      return { success: false, error: "EMAIL_NOT_VERIFIED" };
+    }
+
     const rateLimitResult = checkRateLimit(`checkout:${userId}`, {
       maxRequests: 5,
       windowMs: 60_000,
@@ -245,7 +257,7 @@ export async function createCollectibleCheckoutAction(data: {
         collectibleId: data.collectibleId,
         collectibleName: data.name,
       },
-      success_url: `${appUrl}/shop?purchase=success`,
+      success_url: `${appUrl}/shop?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${appUrl}/shop`,
     });
 
@@ -262,6 +274,72 @@ export async function createCollectibleCheckoutAction(data: {
       metadata: { error: message },
     });
     return { success: false, error: "Internal error" };
+  }
+}
+
+/**
+ * Called when returning from Stripe collectible checkout.
+ * Acts as a belt-and-suspenders fallback in case the webhook hasn't fired yet.
+ */
+export async function verifyCollectiblePurchaseAction(
+  sessionId: string
+): Promise<{ success: boolean; alreadyOwned?: boolean }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false };
+
+    const stripe = getStripe();
+    const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (
+      checkoutSession.payment_status !== "paid" ||
+      checkoutSession.metadata?.type !== "collectible" ||
+      checkoutSession.metadata?.userId !== session.user.id
+    ) {
+      return { success: false };
+    }
+
+    const collectibleId = checkoutSession.metadata?.collectibleId;
+    if (!collectibleId) return { success: false };
+
+    // Idempotency — already granted (webhook fired first)
+    const [existing] = await db
+      .select({ id: userCollectibles.id })
+      .from(userCollectibles)
+      .where(
+        and(
+          eq(userCollectibles.userId, session.user.id),
+          eq(userCollectibles.collectibleId, collectibleId)
+        )
+      );
+
+    if (existing) return { success: true, alreadyOwned: true };
+
+    // Verify item exists
+    const [item] = await db
+      .select({ id: collectibles.id })
+      .from(collectibles)
+      .where(and(eq(collectibles.id, collectibleId), eq(collectibles.isActive, true)));
+
+    if (!item) return { success: false };
+
+    await db.insert(userCollectibles).values({
+      userId: session.user.id,
+      collectibleId,
+    });
+
+    logger.info("Collectible granted via client fallback", {
+      action: "verifyCollectiblePurchase",
+      metadata: { collectibleId, sessionId },
+    });
+
+    return { success: true };
+  } catch (err) {
+    logger.error("verifyCollectiblePurchase failed", {
+      action: "verifyCollectiblePurchase",
+      metadata: { error: String(err) },
+    });
+    return { success: false };
   }
 }
 

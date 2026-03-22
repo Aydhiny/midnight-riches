@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -30,11 +31,12 @@ function fmtDate(d: string) {
 
 // ── KPI card ─────────────────────────────────────────────────────────────────
 function KpiCard({
-  label, value, sub, icon: Icon, color, glow, trend,
+  label, value, icon: Icon, color, glow, trend, trendLabels,
 }: {
-  label: string; value: string; sub?: string;
+  label: string; value: string;
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   color: string; glow: string; trend?: "up" | "down" | null;
+  trendLabels?: { up: string; down: string };
 }) {
   return (
     <div
@@ -61,14 +63,13 @@ function KpiCard({
             }`}
           >
             {trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            {trend === "up" ? "Live" : "Low"}
+            {trend === "up" ? (trendLabels?.up ?? "Live") : (trendLabels?.down ?? "Low")}
           </div>
         )}
       </div>
       <div className="mt-3">
         <p className="text-2xl font-black tabular-nums" style={{ color }}>{value}</p>
         <p className="mt-0.5 text-xs font-semibold text-[var(--text-muted)]">{label}</p>
-        {sub && <p className="mt-1 text-[10px] text-[var(--text-muted)] opacity-60">{sub}</p>}
       </div>
     </div>
   );
@@ -99,6 +100,7 @@ function Sk({ className = "" }: { className?: string }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function AdminOverviewPage() {
+  const t = useTranslations("admin");
   const [kpis,     setKpis]     = useState<AdminKPIs | null>(null);
   const [spinData, setSpinData] = useState<Array<{ date: string; spins: number; wagered: number; payouts: number }>>([]);
   const [growData, setGrowData] = useState<Array<{ date: string; registrations: number }>>([]);
@@ -125,21 +127,22 @@ export default function AdminOverviewPage() {
 
   const houseProfit = kpis ? kpis.totalRevenue - kpis.totalPayouts : 0;
 
+  const trendLabels = { up: t("overviewPage.live"), down: t("overviewPage.low") };
   const KPI_CARDS = kpis ? [
-    { label: "Total Users",    value: fmt(kpis.totalUsers),              sub: "all time",             icon: Users,    color: "#7c3aed", glow: "rgba(124,58,237,0.15)", trend: null      },
-    { label: "Active Today",   value: fmt(kpis.activeUsersToday),        sub: "unique sessions",      icon: Activity, color: "#22c55e", glow: "rgba(34,197,94,0.12)",  trend: "up" as const },
-    { label: "House Edge",     value: `${kpis.houseEdge.toFixed(2)}%`,   sub: "net profitability",    icon: BarChart3,color: "#f59e0b", glow: "rgba(245,158,11,0.12)", trend: null      },
-    { label: "Total Revenue",  value: fmtCurrency(kpis.totalRevenue),    sub: "purchase transactions",icon: Zap,      color: "#fbbf24", glow: "rgba(251,191,36,0.12)", trend: null      },
-    { label: "Total Payouts",  value: fmtCurrency(kpis.totalPayouts),    sub: "player wins",          icon: Trophy,   color: "#ec4899", glow: "rgba(236,72,153,0.12)", trend: null      },
-    { label: "Active Jackpot", value: fmtCurrency(kpis.activeJackpot),   sub: "current pool",         icon: Shield,   color: "#38bdf8", glow: "rgba(56,189,248,0.12)", trend: null      },
+    { label: t("kpis.totalUsers"),    value: fmt(kpis.totalUsers),              icon: Users,    color: "#7c3aed", glow: "rgba(124,58,237,0.15)", trend: null,              trendLabels },
+    { label: t("kpis.activeToday"),   value: fmt(kpis.activeUsersToday),        icon: Activity, color: "#22c55e", glow: "rgba(34,197,94,0.12)",  trend: "up" as const,     trendLabels },
+    { label: t("kpis.houseEdge"),     value: `${kpis.houseEdge.toFixed(2)}%`,   icon: BarChart3,color: "#f59e0b", glow: "rgba(245,158,11,0.12)", trend: null,              trendLabels },
+    { label: t("kpis.totalRevenue"),  value: fmtCurrency(kpis.totalRevenue),    icon: Zap,      color: "#fbbf24", glow: "rgba(251,191,36,0.12)", trend: null,              trendLabels },
+    { label: t("kpis.totalPayouts"),  value: fmtCurrency(kpis.totalPayouts),    icon: Trophy,   color: "#ec4899", glow: "rgba(236,72,153,0.12)", trend: null,              trendLabels },
+    { label: t("kpis.activeJackpot"), value: fmtCurrency(kpis.activeJackpot),   icon: Shield,   color: "#38bdf8", glow: "rgba(56,189,248,0.12)", trend: null,              trendLabels },
   ] : [];
 
   return (
     <div className="space-y-6">
       {/* Page title */}
       <div>
-        <h1 className="text-2xl font-black text-[var(--text-primary)]">Dashboard</h1>
-        <p className="mt-0.5 text-sm text-[var(--text-muted)]">Live analytics for Midnight Riches</p>
+        <h1 className="text-2xl font-black text-[var(--text-primary)]">{t("overviewPage.title")}</h1>
+        <p className="mt-0.5 text-sm text-[var(--text-muted)]">{t("overviewPage.subtitle")}</p>
       </div>
 
       {/* KPI grid */}
@@ -160,7 +163,7 @@ export default function AdminOverviewPage() {
           }}
         >
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Net House Profit</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">{t("overviewPage.netHouseProfit")}</p>
             <p
               className="mt-0.5 text-3xl font-black tabular-nums"
               style={{ color: houseProfit >= 0 ? "#22c55e" : "#ef4444" }}
@@ -183,7 +186,7 @@ export default function AdminOverviewPage() {
           className="rounded-2xl border border-[var(--glass-border)] p-5"
           style={{ background: "var(--glass-bg)" }}
         >
-          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">Spins & Payouts — Last 14 Days</p>
+          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">{t("overviewPage.spinsChart")}</p>
           {loading ? (
             <Sk className="h-48" />
           ) : (
@@ -215,7 +218,7 @@ export default function AdminOverviewPage() {
           className="rounded-2xl border border-[var(--glass-border)] p-5"
           style={{ background: "var(--glass-bg)" }}
         >
-          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">New Registrations — Last 30 Days</p>
+          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">{t("overviewPage.registrationsChart")}</p>
           {loading ? (
             <Sk className="h-48" />
           ) : (
@@ -240,11 +243,11 @@ export default function AdminOverviewPage() {
           className="rounded-2xl border border-[var(--glass-border)] p-5"
           style={{ background: "var(--glass-bg)" }}
         >
-          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">Top Players by Volume</p>
+          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">{t("overviewPage.topPlayers")}</p>
           {loading ? (
             <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Sk key={i} className="h-10" />)}</div>
           ) : topP.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)] opacity-60">No data yet.</p>
+            <p className="text-sm text-[var(--text-muted)] opacity-60">{t("overviewPage.noData")}</p>
           ) : (
             <div className="space-y-2">
               {topP.map((p, i) => {
@@ -282,11 +285,11 @@ export default function AdminOverviewPage() {
           className="rounded-2xl border border-[var(--glass-border)] p-5"
           style={{ background: "var(--glass-bg)" }}
         >
-          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">Recent Sessions</p>
+          <p className="mb-4 text-sm font-bold text-[var(--text-primary)]">{t("overviewPage.recentSessions")}</p>
           {loading ? (
             <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Sk key={i} className="h-8" />)}</div>
           ) : recent.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)] opacity-60">No sessions yet.</p>
+            <p className="text-sm text-[var(--text-muted)] opacity-60">{t("overviewPage.noSessions")}</p>
           ) : (
             <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1">
               {recent.map((s) => (

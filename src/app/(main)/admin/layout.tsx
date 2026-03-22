@@ -5,14 +5,8 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { LayoutDashboard, Users, Shield, Activity } from "lucide-react";
-
-const NAV = [
-  { href: "/admin",          label: "Overview",  icon: LayoutDashboard },
-  { href: "/admin/users",    label: "Users",     icon: Users           },
-  { href: "/admin/activity", label: "Activity",  icon: Activity        },
-  { href: "/admin/security", label: "Security",  icon: Shield          },
-];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -21,12 +15,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await db.query.users.findFirst({ where: eq(users.id, session.user.id) });
   if (!user || user.role !== "admin") redirect("/game");
 
+  const t = await getTranslations("admin");
+
+  const NAV = [
+    { href: "/admin",          label: t("overview"),  icon: LayoutDashboard },
+    { href: "/admin/users",    label: t("users"),     icon: Users           },
+    { href: "/admin/activity", label: t("activity"),  icon: Activity        },
+    { href: "/admin/security", label: t("security"),  icon: Shield          },
+  ];
+
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: "var(--bg-primary)" }}
-    >
-      {/* Top bar */}
+    <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
+      {/* Admin top bar */}
       <div
         className="sticky top-14 z-40 border-b border-[var(--glass-border)]"
         style={{ background: "var(--nav-bg)", backdropFilter: "blur(20px)" }}
@@ -50,7 +50,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 backgroundClip: "text",
               }}
             >
-              Admin
+              {t("adminLabel")}
             </span>
           </Link>
 
@@ -70,13 +70,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
           <div className="ml-auto flex items-center gap-2">
             <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-400">
-              Admin Mode
+              {t("adminMode")}
             </span>
             <Link
               href="/game"
               className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
             >
-              ← Back to App
+              ← {t("backToGame")}
             </Link>
           </div>
         </div>

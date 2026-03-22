@@ -14,11 +14,13 @@ import {
   getExclusionStatus,
 } from "@/server/actions/responsible-gambling";
 import { updateProfileAction } from "@/server/actions/profile";
+import { ReferralSection } from "@/components/settings/referral-section";
+import { TwoFactorSection } from "@/components/settings/two-factor-section";
 import type { GamblingLimit, SelfExclusion } from "@/types";
 import { Camera, Check, ChevronDown, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-type Tab = "profile" | "preferences" | "security";
+type Tab = "profile" | "preferences" | "security" | "referral";
 
 interface CustomSelectOption {
   value: string;
@@ -160,6 +162,7 @@ export default function SettingsPage() {
     { id: "profile",     label: t("profile")     },
     { id: "preferences", label: t("preferences") },
     { id: "security",    label: t("security")    },
+    { id: "referral",    label: t("referral.tab") },
   ];
 
   return (
@@ -185,6 +188,7 @@ export default function SettingsPage() {
       {tab === "profile"     && <ProfileTab session={session} updateSession={updateSession} />}
       {tab === "preferences" && <PreferencesTab />}
       {tab === "security"    && <SecurityTab />}
+      {tab === "referral"    && <ReferralSection />}
     </div>
   );
 }
@@ -418,7 +422,19 @@ function PreferencesTab() {
 }
 
 function SecurityTab() {
-  return <SecurityTabContent />;
+  const t = useTranslations("settings");
+  return (
+    <div className="space-y-6">
+      {/* 2FA */}
+      <div>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-[var(--text-muted)]">{t("twoFactorAuth")}</h2>
+        <TwoFactorSection />
+      </div>
+      <div className="h-px bg-[var(--glass-border)]" />
+      {/* Responsible gambling */}
+      <SecurityTabContent />
+    </div>
+  );
 }
 
 function SecurityTabContent() {
