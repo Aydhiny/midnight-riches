@@ -346,7 +346,7 @@ function ProfileTab({
           <CardTitle className="text-[var(--text-primary)]">{t("playerStats")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
             {[
               {
                 label: t("playerStatSpins"),
@@ -365,7 +365,7 @@ function ProfileTab({
               },
             ].map(({ label, value, color }) => (
               <div key={label} className="rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3">
-                <div className={`text-2xl font-black ${color} ${statsLoading ? "animate-pulse" : ""}`}>{value}</div>
+                <div className={`text-lg sm:text-2xl font-black ${color} ${statsLoading ? "animate-pulse" : ""}`}>{value}</div>
                 <div className="text-xs text-[var(--text-muted)] mt-0.5">{label}</div>
               </div>
             ))}

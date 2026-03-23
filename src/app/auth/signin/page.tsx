@@ -9,6 +9,7 @@ import { signIn, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { signInSchema } from "@/lib/validators";
+import { checkCredentials2FA } from "@/server/actions/auth";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 function SignInForm() {
@@ -68,26 +69,34 @@ function SignInForm() {
     if (!validateFields()) return;
     setIsLoading(true);
     try {
+      // Pre-flight: validate credentials server-side and detect 2FA requirement.
+      // Auth.js sanitizes errors from authorize() in production, so we can't
+      // rely on result.error containing the userId — we check here instead.
+      const check = await checkCredentials2FA(email, password);
+
+      if (check.status === "invalid") {
+        setError(t("error"));
+        setIsLoading(false);
+        return;
+      }
+
+      if (check.status === "2fa") {
+        const dest = callbackUrl
+          ? `/auth/verify-2fa?userId=${check.userId}&cb=${encodeURIComponent(callbackUrl)}`
+          : `/auth/verify-2fa?userId=${check.userId}`;
+        router.push(dest);
+        return;
+      }
+
+      // Credentials are valid and no 2FA — complete the sign-in via Auth.js
       const result = await signIn("credentials", {
         email,
         password,
         rememberMe: rememberMe ? "true" : "false",
         redirect: false,
       });
-      if (result?.error) {
-        // 2FA required — error contains "2FARequired:<userId>"
-        if (result.error.includes("2FARequired:")) {
-          const userId = result.error.split("2FARequired:")[1];
-          const dest = callbackUrl ? `/auth/verify-2fa?userId=${userId}&cb=${encodeURIComponent(callbackUrl)}` : `/auth/verify-2fa?userId=${userId}`;
-          router.push(dest);
-          return;
-        }
-        if (result.error === "EmailNotVerified") {
-          setError(t("emailNotVerified"));
-        } else {
-          setError(t("error"));
-        }
-      } else if (result?.ok === false) {
+
+      if (result?.ok === false || result?.error) {
         setError(t("error"));
       }
       // On success the useEffect watching status === "authenticated" handles the redirect

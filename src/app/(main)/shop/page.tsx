@@ -492,7 +492,7 @@ export default function ShopPage() {
               </span>
             </div>
             <h1
-              className="text-4xl font-black tracking-tight"
+              className="text-3xl sm:text-4xl font-black tracking-tight"
               style={{
                 backgroundImage: "linear-gradient(90deg, #fbbf24 0%, #fde68a 40%, #f59e0b 100%)",
                 WebkitBackgroundClip: "text",
@@ -508,7 +508,7 @@ export default function ShopPage() {
           </div>
 
           <div
-            className="flex shrink-0 items-center gap-3 rounded-2xl border border-amber-500/30 px-5 py-4"
+            className="flex items-center gap-3 rounded-2xl border border-amber-500/30 px-4 py-3 sm:px-5 sm:py-4"
             style={{ background: "rgba(251,191,36,0.08)", backdropFilter: "blur(12px)" }}
           >
             <Image src="/images/coin-token.png" alt="tokens" width={40} height={40} className="object-contain drop-shadow-[0_0_10px_rgba(251,191,36,0.4)]" />

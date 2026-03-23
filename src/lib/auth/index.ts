@@ -33,17 +33,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      // Allow signing in with Google even when the email already exists from a
+      // credentials registration. Auth.js normally blocks this (OAuthAccountNotLinked)
+      // but it's safe here because Google has already verified email ownership.
+      allowDangerousEmailAccountLinking: true,
     }),
     ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
       ? [GitHub({
           clientId: process.env.AUTH_GITHUB_ID,
           clientSecret: process.env.AUTH_GITHUB_SECRET,
+          allowDangerousEmailAccountLinking: true,
         })]
       : []),
     ...(process.env.AUTH_DISCORD_ID && process.env.AUTH_DISCORD_SECRET
       ? [Discord({
           clientId: process.env.AUTH_DISCORD_ID,
           clientSecret: process.env.AUTH_DISCORD_SECRET,
+          allowDangerousEmailAccountLinking: true,
         })]
       : []),
     Credentials({

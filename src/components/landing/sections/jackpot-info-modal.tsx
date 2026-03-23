@@ -188,7 +188,7 @@ export function JackpotInfoModal() {
 
               {/* Jackpot number */}
               <div
-                className="text-5xl md:text-6xl font-black tabular-nums mb-1 leading-none"
+                className="text-4xl sm:text-5xl md:text-6xl font-black tabular-nums mb-1 leading-none"
                 style={{
                   background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 40%, #ef4444 80%)",
                   WebkitBackgroundClip: "text",

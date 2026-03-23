@@ -11,6 +11,35 @@ import { checkRateLimit } from "@/lib/server/rate-limiter";
 import { logger } from "@/lib/logger";
 import { createVerificationToken, sendVerificationEmail } from "@/lib/email";
 
+/**
+ * Pre-flight check for the sign-in form.
+ * Validates credentials server-side and signals whether 2FA is required —
+ * without relying on Auth.js error message propagation (which is sanitized in
+ * production and never exposes the userId we need for the 2FA redirect).
+ */
+export async function checkCredentials2FA(
+  email: string,
+  password: string,
+): Promise<
+  | { status: "ok" }
+  | { status: "2fa"; userId: string }
+  | { status: "invalid" }
+> {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email.toLowerCase().trim()),
+      columns: { id: true, passwordHash: true, twoFactorEnabled: true },
+    });
+    if (!user?.passwordHash) return { status: "invalid" };
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) return { status: "invalid" };
+    if (user.twoFactorEnabled) return { status: "2fa", userId: user.id };
+    return { status: "ok" };
+  } catch {
+    return { status: "invalid" };
+  }
+}
+
 interface AuthSuccess {
   success: true;
   /** Dev-only: set when account was created but the verification email failed to send. Never populated in production. */

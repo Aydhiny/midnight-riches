@@ -594,19 +594,19 @@ export default function WalletPage() {
       <EmailVerificationBanner emailVerified={emailVerified} />
 
       <GlowCard
-        className="p-8 text-center"
+        className="p-5 sm:p-8 text-center"
         glowColor="rgba(245, 200, 66, 0.2)"
       >
         <div className="text-sm uppercase tracking-wider text-[var(--text-secondary)]">
           {t("balance")}
         </div>
-        <div className="mt-2 text-5xl font-black text-amber-600 dark:text-yellow-400">
+        <div className="mt-2 text-4xl sm:text-5xl font-black text-amber-600 dark:text-yellow-400">
           {balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} cr
         </div>
       </GlowCard>
 
       <Card className="bg-[var(--bg-card)] border-[var(--glass-border)]">
-        <CardContent className="flex items-center justify-between p-6">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-6">
           <div>
             <h3 className="text-lg font-bold text-[var(--text-primary)]">{t("dailyBonus")}</h3>
             <p className="text-sm text-[var(--text-muted)]">

@@ -105,7 +105,7 @@ export function FinalCTASection() {
       <div className="relative z-10 mx-auto max-w-3xl px-4 text-center">
         <ScrollReveal>
           <h2
-            className="text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight bg-clip-text text-transparent"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight bg-clip-text text-transparent"
             style={{
               fontFamily: "var(--font-garamond)",
               fontWeight: 700,
@@ -119,7 +119,7 @@ export function FinalCTASection() {
 
         <ScrollReveal delay={0.15}>
           <GlassCard
-            className="mx-auto mt-10 inline-flex flex-col items-center gap-2 px-10 py-7 hover:shadow-[0_0_60px_rgba(255,215,0,0.25)] transition-all duration-300"
+            className="mx-auto mt-10 inline-flex flex-col items-center gap-2 px-6 py-5 sm:px-10 sm:py-7 hover:shadow-[0_0_60px_rgba(255,215,0,0.25)] transition-all duration-300"
             hover
           >
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[var(--text-muted)]">
@@ -131,7 +131,7 @@ export function FinalCTASection() {
               {t("jackpotLabel")}
             </div>
             <div
-              className="text-5xl md:text-7xl font-black tabular-nums text-amber-400"
+              className="text-4xl sm:text-5xl md:text-7xl font-black tabular-nums text-amber-400"
               style={flash ? { animation: "jackpotFlash 0.4s ease-out" } : undefined}
             >
               <CountUp to={jackpot} duration={1.5} separator="," />

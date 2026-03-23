@@ -329,7 +329,7 @@ export default function AchievementsPage() {
           </span>
         </div>
         <h1
-          className="text-4xl font-black tracking-tight"
+          className="text-3xl sm:text-4xl font-black tracking-tight"
           style={{
             backgroundImage: "linear-gradient(90deg, #fbbf24 0%, #fde68a 40%, #f59e0b 100%)",
             WebkitBackgroundClip: "text",
@@ -441,7 +441,7 @@ export default function AchievementsPage() {
 
       {/* ── Achievement grid ── */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 10 }).map((_, i) => (
             <AchievementCardSkeleton key={i} />
           ))}
@@ -454,7 +454,7 @@ export default function AchievementsPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+            className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4"
           >
             {filteredAchievements.map((achievement, i) => (
               <AchievementCard

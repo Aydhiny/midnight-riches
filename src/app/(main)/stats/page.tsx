@@ -190,7 +190,7 @@ export default function StatsPage() {
           </span>
         </div>
         <h1
-          className="text-4xl font-black tracking-tight"
+          className="text-3xl sm:text-4xl font-black tracking-tight"
           style={{
             backgroundImage: "linear-gradient(90deg, #fbbf24 0%, #fde68a 40%, #f59e0b 100%)",
             WebkitBackgroundClip: "text",
@@ -238,7 +238,7 @@ export default function StatsPage() {
                     <Icon className="h-4.5 w-4.5" style={{ color: card.color }} />
                   </div>
                   <div
-                    className="text-3xl font-black tabular-nums leading-none"
+                    className="text-2xl sm:text-3xl font-black tabular-nums leading-none"
                     style={{ color: card.color }}
                   >
                     <AnimatedNumber
@@ -309,7 +309,7 @@ export default function StatsPage() {
           ) : (
             <>
               <div
-                className="text-4xl font-black tabular-nums"
+                className="text-3xl sm:text-4xl font-black tabular-nums"
                 style={{ color: isProfitable ? "#22c55e" : "#ef4444" }}
               >
                 {isProfitable ? "+" : ""}

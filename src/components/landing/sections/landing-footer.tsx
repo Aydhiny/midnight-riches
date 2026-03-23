@@ -34,7 +34,7 @@ export function LandingFooter() {
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-10">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 sm:gap-10 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
