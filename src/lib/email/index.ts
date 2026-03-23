@@ -74,9 +74,9 @@ export async function createVerificationToken(email: string): Promise<string> {
 
   await db
     .delete(verificationTokens)
-    .where(eq(verificationTokens.identifier, email));
+    .where(eq(verificationTokens.identifier, `verify:${email}`));
 
-  await db.insert(verificationTokens).values({ identifier: email, token, expires });
+  await db.insert(verificationTokens).values({ identifier: `verify:${email}`, token, expires });
   return token;
 }
 

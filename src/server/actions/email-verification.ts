@@ -33,7 +33,9 @@ export async function sendVerificationEmailAction(email: string): Promise<{
     await db.insert(verificationTokens).values({ identifier: `verify:${email}`, token, expires });
 
     try {
-      await sendVerificationEmail(email, token);
+      const appUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "";
+      const verifyUrl = `${appUrl}/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+      await sendVerificationEmail(email, verifyUrl);
     } catch (e) {
       logger.error("Failed to send verification email", {
         action: "sendVerificationEmail",
