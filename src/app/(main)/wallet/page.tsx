@@ -401,7 +401,7 @@ function WithdrawalSection({ onBalanceChange }: { onBalanceChange: (b: number) =
                 type="submit"
                 variant="outline"
                 disabled={submitting}
-                className="shrink-0 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300"
+                className="w-full sm:w-auto shrink-0 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 hover:text-violet-300"
               >
                 {submitting ? t("withdrawal.submitting") : t("withdrawal.submitBtn")}
               </Button>

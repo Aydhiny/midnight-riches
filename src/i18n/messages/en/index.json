@@ -67,7 +67,8 @@
       "sessionError": "Session error — please sign in again.",
       "error": "Something went wrong. Please try again.",
       "hint": "Open your authenticator app to get the current code."
-    }
+    },
+    "signIn": "Sign In"
   },
   "game": {
     "newUserToastTitle": "Welcome! Check your inbox 📧",
