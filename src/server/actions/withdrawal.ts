@@ -89,24 +89,24 @@ export async function requestWithdrawalAction(
     const { amount } = parsed.data;
     const amountStr = amount.toFixed(2);
 
-    // Check balance
-    const wallet = await db.query.wallets.findFirst({
-      where: eq(wallets.userId, userId),
-    });
+    // Fetch wallet and pending-request check in parallel to reduce round-trips
+    const [wallet, existing] = await Promise.all([
+      db.query.wallets.findFirst({ where: eq(wallets.userId, userId) }),
+      db.query.withdrawalRequests.findFirst({
+        where: and(
+          eq(withdrawalRequests.userId, userId),
+          sql`${withdrawalRequests.status} IN ('pending','processing')`
+        ),
+        columns: { id: true },
+      }),
+    ]);
+
     if (!wallet) {
       return { success: false, error: "Wallet not found", code: "NOT_FOUND" };
     }
     if (Number(wallet.balance) < amount) {
       return { success: false, error: "Insufficient balance", code: "VALIDATION_ERROR" };
     }
-
-    // Block while a pending or processing request exists
-    const existing = await db.query.withdrawalRequests.findFirst({
-      where: and(
-        eq(withdrawalRequests.userId, userId),
-        sql`${withdrawalRequests.status} IN ('pending','processing')`
-      ),
-    });
     if (existing) {
       return {
         success: false,
@@ -115,32 +115,19 @@ export async function requestWithdrawalAction(
       };
     }
 
-    // Deduct from wallet
+    // Deduct from wallet, then insert transaction + request in parallel
     await db
       .update(wallets)
-      .set({
-        balance: sql`${wallets.balance} - ${amountStr}`,
-        updatedAt: new Date(),
-      })
+      .set({ balance: sql`${wallets.balance} - ${amountStr}`, updatedAt: new Date() })
       .where(eq(wallets.userId, userId));
 
-    // Record the withdrawal transaction
-    await db.insert(transactions).values({
-      userId,
-      type: "withdrawal",
-      amount: amountStr,
-      metadata: { status: "pending" },
-    });
+    const [[row]] = await Promise.all([
+      db.insert(withdrawalRequests).values({ userId, amount: amountStr }).returning(),
+      db.insert(transactions).values({ userId, type: "withdrawal", amount: amountStr, metadata: { status: "pending" } }),
+    ]);
 
-    // Create withdrawal request record
-    const [row] = await db
-      .insert(withdrawalRequests)
-      .values({ userId, amount: amountStr })
-      .returning();
-
-    const updatedWallet = await db.query.wallets.findFirst({
-      where: eq(wallets.userId, userId),
-    });
+    // Compute new balance locally — no extra round-trip needed
+    const newBalance = Number(wallet.balance) - amount;
 
     logger.action("requestWithdrawal", userId, 0, { amount });
 
@@ -155,7 +142,7 @@ export async function requestWithdrawalAction(
           requestedAt: row.requestedAt.toISOString(),
           processedAt: row.processedAt?.toISOString() ?? null,
         },
-        newBalance: Number(updatedWallet?.balance ?? 0),
+        newBalance,
       },
     };
   } catch (err) {
@@ -196,35 +183,27 @@ export async function cancelWithdrawalAction(
       };
     }
 
-    // Refund the balance
+    // Refund the balance, cancel request, and insert transaction in parallel
     const amountStr = withdrawal.amount;
-    await db
-      .update(wallets)
-      .set({
-        balance: sql`${wallets.balance} + ${amountStr}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(wallets.userId, userId));
+    const [updatedRows] = await Promise.all([
+      db
+        .update(wallets)
+        .set({ balance: sql`${wallets.balance} + ${amountStr}`, updatedAt: new Date() })
+        .where(eq(wallets.userId, userId))
+        .returning({ balance: wallets.balance }),
+      db
+        .update(withdrawalRequests)
+        .set({ status: "rejected", notes: "Cancelled by user", processedAt: new Date() })
+        .where(eq(withdrawalRequests.id, withdrawalId)),
+      db.insert(transactions).values({
+        userId,
+        type: "deposit",
+        amount: amountStr,
+        metadata: { type: "withdrawal_cancelled", withdrawalId },
+      }),
+    ]);
 
-    // Mark as rejected (cancelled by user)
-    await db
-      .update(withdrawalRequests)
-      .set({ status: "rejected", notes: "Cancelled by user", processedAt: new Date() })
-      .where(eq(withdrawalRequests.id, withdrawalId));
-
-    // Refund transaction record
-    await db.insert(transactions).values({
-      userId,
-      type: "deposit",
-      amount: amountStr,
-      metadata: { type: "withdrawal_cancelled", withdrawalId },
-    });
-
-    const updatedWallet = await db.query.wallets.findFirst({
-      where: eq(wallets.userId, userId),
-    });
-
-    return { success: true, data: { newBalance: Number(updatedWallet?.balance ?? 0) } };
+    return { success: true, data: { newBalance: Number(updatedRows[0]?.balance ?? 0) } };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     logger.error("Cancel withdrawal failed", { action: "cancelWithdrawal", metadata: { error: message } });
